@@ -54,6 +54,7 @@ from datetime import date, timedelta, datetime
 import argparse
 import cs2_dict
 import is2_dict
+import path_dict
 import saral_dict
 import common_functions as cf
 import warnings
@@ -67,21 +68,19 @@ from parserObjects import ParentAction,ChildAction
 # Global attributs
 ###########################################
 
-PATH_COLLOC='/home/antlafe/Documents/work/projet_cryo2ice/data/'
-PATH_ALL='/home/antlafe/Documents/work/data/'
+# Get paths
+PATH_COLLOC=path_dict.PATH_DICT['PATH_COLLOC']
+PATH_ALL=path_dict.PATH_DICT['PATH_ALL']
+PATH_OUT = path_dict.PATH_DICT['PATH_OUT']
 
-#PATH_DATA= '/home/antlafe/Documents/work/projet_cryo2ice/data/'
-PATH_OUT = "/home/antlafe/Documents/work/projet_cryo2ice/data/Cryo2Ice/"
+# ref GDR: serving as reference for all other data-sets
 REF_GDR = 'ESA_BD_GDR'
 
-#is2_gdrs = ['ATL10']
+# IS2 gdr required
 is2_gdrs = ['ATL10']
 
 colors_plot_cs2 = ['deepskyblue','dodgerblue','turquoise','royalblue','palegreen']
 colors_plot_is2 =['seagreen','forestgreen','olivedrab']
-
-#beamName=['gt1r','gt2r','gt3r','gt1l','gt2l','gt3l']
-
 
 matrixParamList = ['coherence','ph_diff','wvf']
 
@@ -129,7 +128,6 @@ beam_dict={
     'gt3r': 31,
     'gt3l': 32,   
           }
-#beamName=['gt1r','gt2r','gt3r']
 
 #---------------------------------
 # Get CS2 dates
