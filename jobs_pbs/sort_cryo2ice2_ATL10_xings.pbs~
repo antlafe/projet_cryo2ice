@@ -1,0 +1,16 @@
+#!/bin/bash
+#PBS -N sort_C2IATL10xb
+#PBS -l select=1:ncpus=1:mem=30000mb                                                                
+#PBS -l walltime=150:00:00
+#PBS -e /work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/data/Cryo2Ice/errors/ 
+#PBS -o /work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/data/Cryo2Ice/errors/                 
+
+# Load Modules here                                                                                 
+
+module load python/3.7.2
+module load ct_tools/2.18
+
+cd /work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/code/
+
+python sortnsave_cryo2ice_xings.py -s CS2 -g ESA_BD_GDR -sIS2 -gATL10 -d20201202,20201225 -x -ofn Dec_ESAxbeams
+
