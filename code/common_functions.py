@@ -1354,11 +1354,10 @@ def get_W99(datestr):
 
     return lat,lon,snow_w99
 
-def get_SIMBA_traj():
+def get_SIMBA_traj(id_simba):
 
     # plot buoys data SIMBA
-    path_data = path_dict.PATH_DICT['PATH_DATA']+'SIMBA/'
-    filepattern =path_data +'FMI*.dat'
+    filepattern = path_dict.PATH_DICT['PATH_DATA']+'SIMBA/FMI*%sGPS*.dat' %(id_simba)
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
     else:
@@ -1374,9 +1373,37 @@ def get_SIMBA_traj():
 
 
 
-def get_xings_SIMBA(lat_cs2,lon_cs2,time_cs2,delay=3,max_dist=100):
+def get_xings_SIMBA(id_simba,lat_cs2,lon_cs2,time_cs2,delay=3,max_dist=100):
+
+    # Get trajectories and time
+    #----------------------
     
-    filepattern =path_dict.PATH_DICT['PATH_DATA'] +'SIMBA/FMI*.dat'
+    filepattern =path_dict.PATH_DICT['PATH_DATA'] +'SIMBA/FMI*%sGPS*.dat' %(id_simba)
+    filename = glob.glob(filepattern)
+    if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
+    else:
+        filename = filename[0]
+        print("\nReading SIMBA file %s" %(filename))
+
+    # Get data
+    data_traj = np.loadtxt(filename)
+    lat_simba = data_traj[:,5]
+    lon_simba = data_traj[:,6]
+
+    time_simba = list()
+    year = data_traj[:,2].astype(int)
+    month = data_traj[:,1].astype(int)
+    day = data_traj[:,0].astype(int)
+
+    start_date = datetime.datetime(year[0],month[0],day[0])
+    end_date = datetime.datetime(year[-1],month[-1],day[-1])
+
+    mid_date_simba = start_date + (end_date - start_date)/2
+
+    # Get thickness data
+    #-----------------------
+    
+    filepattern =path_dict.PATH_DICT['PATH_DATA'] +'SIMBA/fmi*%s_thickness*.dat' %(id_simba)
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
     else:
@@ -1385,22 +1412,15 @@ def get_xings_SIMBA(lat_cs2,lon_cs2,time_cs2,delay=3,max_dist=100):
 
     # Get data
     data = np.loadtxt(filename)
-    lat_simba = data[:,5]
-    lon_simba = data[:,6]
-
-    time_simba = list()
-    year = data[:,2].astype(int)
-    month = data[:,1].astype(int)
-    day = data[:,0].astype(int)
-
-    start_date = datetime.datetime(year[0],month[0],day[0])
-    end_date = datetime.datetime(year[-1],month[-1],day[-1])
-
-    mid_date_simba = start_date + (end_date - start_date)/2
+    date_simba = [datenum_to_datetime(datenum) for datenum in data[:,0].astype(int)]
+    sit_simba = data[:,1]
+    sd_simba =  data[:,2]
+    
+    
 
     for n in range(lat_simba.size):
 
-        t = datetime.datetime(year[n],month[n],day[n],data[:,3].astype(int)[n],data[:,4].astype(int)[n])
+        t = datetime.datetime(year[n],month[n],day[n],data_traj[:,3].astype(int)[n],data_traj[:,4].astype(int)[n])
 
         time_simba.append((t-datetime.datetime(2000,1,1)).total_seconds())
     time_simba = np.array(time_simba)
@@ -1419,6 +1439,8 @@ def get_xings_SIMBA(lat_cs2,lon_cs2,time_cs2,delay=3,max_dist=100):
     deltaT_list = list()
     idx_colloc = list()
     day_colloc = list()
+    sit_colloc = list()
+    sd_colloc = list()
 
     outF = open("/home/antlafe/Documents/work/data/SIMBA/CRYO2ICE_xings.txt", "w")
     
@@ -1444,7 +1466,18 @@ def get_xings_SIMBA(lat_cs2,lon_cs2,time_cs2,delay=3,max_dist=100):
             deltaD_list.append(dist_sdelay[idx_min])
             deltaT_list.append(delta_time[flag_time][idx_min])
             idx_colloc.append(icre)
-            day_colloc.append(datetime.datetime(year[idx],month[idx],day[idx]))
+
+            collocDate= datetime.datetime(year[idx],month[idx],day[idx])
+            day_colloc.append(collocDate)
+            if collocDate in date_simba:
+                idx = date_simba.index(collocDate)
+                print("found data for this date")
+                sit_colloc.append(sit_simba[idx])
+                sd_colloc.append(sd_simba[idx])
+            else:
+                sit_colloc.append(np.nan)
+                sd_colloc.append(np.nan)
+                    
 
             #if day_colloc[icre]==day_colloc[icre-1]:  
 
@@ -1468,7 +1501,7 @@ def get_xings_SIMBA(lat_cs2,lon_cs2,time_cs2,delay=3,max_dist=100):
     lat_colloc = lat_cs2[idx_colloc]
     delay_colloc = deltaT_list/(60*60)
 
-    return lon_colloc,lat_colloc,delay_colloc,day_colloc,lon_simba,lat_simba
+    return idx_colloc,lon_colloc,lat_colloc,delay_colloc,day_colloc,lon_simba,lat_simba,sit_colloc,sd_colloc
 
 
 def get_data_polygon(lat,lon,polygon):
@@ -1574,3 +1607,64 @@ def get_regional_sd_mean(datasetName,polygon,monthsList,flag_FYI):
 
             
     return snow_list,snow_unc_list
+
+
+def datenum_to_datetime(datenum):
+    """
+    Convert Matlab datenum into Python datetime.
+    :param datenum: Date in datenum format
+    :return:        Datetime object corresponding to datenum.
+    """
+    days = datenum % 1
+    hours = days % 1 * 24
+    minutes = hours % 1 * 60
+    seconds = minutes % 1 * 60
+    return datetime.datetime.fromordinal(int(datenum)) \
+           + datetime.timedelta(days=int(days)) \
+           + datetime.timedelta(hours=int(hours)) \
+           + datetime.timedelta(minutes=int(minutes)) \
+           + datetime.timedelta(seconds=round(seconds)) \
+           - datetime.timedelta(days=366)
+
+
+
+def fbr2sit(fb_radar,snow_depth,ice_type,date,d_w=1024):
+
+    # Get ice density
+    d_i = np.ma.ones(fb_radar.shape)
+    d_i[ice_type==2] = 917
+    d_i[ice_type==3] = 882
+
+    # Get snow density
+    #t = ((datetime - datetime.datetime(2020,10,1))/30).days
+    #if t > 8: sys.exit()
+    #d_s =6.50t+274.51
+    d_s = 300
+
+    snow_density = d_s/d_w
+    speed_of_light_ratio = np.power(1 + 0.51*snow_density,1.5) # speed of light in snow over speed of light in vacuum
+    height_snow_penetration_corr = snow_depth*(speed_of_light_ratio-1)
+    freeboard = fb_radar + height_snow_penetration_corr
+    sit = (d_w*freeboard + d_s*snow_depth)/(d_w-d_i)
+
+    return sit
+
+
+
+def fbt2sit(fb_total,snow_depth,ice_type,date,d_w=1024):
+
+    # Get ice density
+    d_i = np.ma.ones(fb_total.shape)
+    d_i[ice_type==2] = 917
+    d_i[ice_type==3] = 882
+
+    # Get snow density
+    #t = ((datetime - datetime.datetime(2020,10,1))/30).days
+    #if t > 8: sys.exit()
+    #d_s =6.50t+274.51
+    d_s = 300
+
+    
+    sit = (d_w*(fb_total-snow_depth) + d_s*snow_depth)/(d_w-d_i)
+
+    return sit

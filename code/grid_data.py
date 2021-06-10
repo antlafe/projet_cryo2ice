@@ -27,7 +27,8 @@ EXAMPLES:
     python grid_data.py -s CS2 -g  -f path/file_names -p sla -opt 500,...ect
     python -m pdb grid_data.py -s IS2 -g ATL10 -d 202011 -p laser_fb,surface_h -hp 01
 
-
+    # nease 500 lat0=61.6
+    # npstere 451 lat0=60 
 
 COMMENTS:
 
@@ -45,13 +46,14 @@ import glob
 from datetime import date, timedelta, datetime
 import argparse
 from scipy import signal
-import cs2_dict
+import cryosat2_dict as cs2_dict
 import is2_dict
 import common_functions as cf
 import time
 from mpl_toolkits.basemap import Basemap
 import stats_tools as st
 from netCDF4 import Dataset
+import path_dict
 
 # Global attributs
 ###########################################
@@ -59,11 +61,13 @@ from netCDF4 import Dataset
 #PATH_INPUT = "/home/antlafe/Documents/work/data/"
 
 # on HAL
-PATH_INPUT = "/work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/data/all/"
+#PATH_INPUT = "/work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/data/all/"
+PATH_INPUT = path_dict.PATH_DICT['PATH_DATA']
+#PATH_GRID = path_dict.PATH_DICT['PATH_GRID']
 
 # change if looking at Antarctica
 global LAT_BOUND
-LAT_BOUND = 55 # deg north
+LAT_BOUND = 61.6  #1.8772498200144 #65 # deg north [61.6: 500]
 
 show_figure = False
 
@@ -312,8 +316,10 @@ def get_strong_beams(filename):
     flag_orientation = np.array(f.get('orbit_info/sc_orient'))
     if flag_orientation==0: #backward
         beamN = ['gt1l','gt2l','gt3l']
+        #beamN = ['gt2l']
     elif flag_orientation==1: #forward
         beamN = ['gt1r','gt2r','gt3r']
+        #beamN = ['gt2r']
     else:
         beamN = None
     return beamN
@@ -338,6 +344,8 @@ if __name__ == '__main__':
     # Add long and short arguments
     parser.add_argument("-f","--inputfile",help="provide input data files")
 
+    parser.add_argument("-o","--outputfile",default=None,help="provide input data files")
+
     parser.add_argument("-p","--parameter",default='list',help="provide parameter to be tested")
 
     parser.add_argument("-s","--satellite",help="provide input satellite name",required=True)
@@ -359,10 +367,13 @@ if __name__ == '__main__':
     gdr = args.gdr
     date = args.date
 
+    # 
+    outfolder = args.outputfile
+
     #
     if args.inputfile is None: inputfile=None
     else:
-        inputfile = [fname for fname in args.inputfile.split(',')]
+        inputfile = args.inputfile #[fname for fname in args.inputfile.split(',')]
 
     if (sat is None and gdr is None and date is None) and inputFileName is None:
         print("Provide either options -s; -g; -d or -f to locate files \n")
@@ -386,14 +397,17 @@ if __name__ == '__main__':
      
     if inputfile is not None:
 
-        for infile in inputfile:
-            inputfilepattern = PATH_INPUT + infile
-            print("\nread file %s" %(inputfilepattern))
-            filename = glob.glob(inputfilepattern)
-            if len(filename)==0: sys.exit("\n%s: No found" %(inputfilepattern))
-            elif len(filename)==1: filelist.append(filename[0])
-            else:
-                filelist.extend(filename)
+        #for infile in inputfile:
+        inputfilepattern = inputfile +"*"+ extension
+        print("\nread file %s" %(inputfilepattern))
+        filename = glob.glob(inputfilepattern)
+        if len(filename)==0:
+            sys.exit("\n%s: No found" %(inputfilepattern))
+        elif len(filename)==1:
+            filelist.append(filename[0])
+        else:
+            filelist.extend(filename)
+
     elif sat is not None and gdr is not None and date is not None:
         
         inputfilepattern = PATH_INPUT + "%s/%s/%s/*%s" %(sat,gdr,date,extension)
@@ -420,7 +434,7 @@ if __name__ == '__main__':
     # read data
     for filename in filelist:
 
-
+        print("reading: %s" %(filename.split('/')[-1]))
         if sat=='CS2':
             flag_1hz = False
             data_desc_cs2 = cs2_dict.init_dict(gdr,flag_1hz)
@@ -433,7 +447,14 @@ if __name__ == '__main__':
             for pname in plist:
                 param,units,param_is_flag = cf.get_param_from_netcdf(filename,data_desc_cs2,pname,hemispherecode,LAT_BOUND)
 
-                if param.size==0: continue
+                if param is None:
+                    lat_list.pop()
+                    lon_list.pop()
+                    break
+                if param.size==0:
+                    lat_list.pop()
+                    lon_list.pop()
+                    break
                 data_track_list[pname].append(param)
 
 
@@ -447,6 +468,8 @@ if __name__ == '__main__':
                 
                 lat_list.append(lat)
                 lon_list.append(lon)
+
+                #Lseg,units,param_is_flag = cf.get_param_from_hf5(filename,data_desc_is2,'Lseg',hemispherecode,LAT_BOUND)
 
                 for pname in plist:
                     param,units,param_is_flag = cf.get_param_from_hf5(filename,data_desc_is2,pname,hemispherecode,LAT_BOUND)
@@ -472,12 +495,18 @@ if __name__ == '__main__':
         data_array[pname] = ma.masked_invalid(data_array[pname],copy=True)
         data2grid[pname] = data_array[pname].data
         data2grid[pname][data_array[pname].mask] = np.nan
+        data2grid[pname][data_array[pname]==0.0] = np.nan
 
+    if hemispherecode=='01':
+        llcrnrlat=0; urcrnrlat=90
+    else:
+         llcrnrlat=-90; urcrnrlat=0
+         
         
     # Gridding the data
-    f2, ax = plt.subplots(1, 1,figsize=(9,8))
-    m = Basemap(projection='npstere', llcrnrlat=0,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,boundinglat=60,lon_0=0, resolution='l',round=True,ax=ax)
-    x_grid, y_grid, lat_grid_mesh, lon_grid_mesh, x_grid_mesh, y_grid_mesh, data_grid = grid_and_filter_wrt_distance(lon_array, lat_array, data2grid, m, pixel_size=12500,mode='filter_mean',range_filter=25000, verbose=0)
+    f2, ax = plt.subplots(1, 1,figsize=(9,8)) #'nplaea'
+    m = Basemap(projection='nplaea', llcrnrlat=llcrnrlat,urcrnrlat=urcrnrlat,llcrnrlon=-180,urcrnrlon=180,boundinglat=LAT_BOUND,lon_0=0, resolution='l',round=True,ax=ax)
+    x_grid, y_grid, lat_grid_mesh, lon_grid_mesh, x_grid_mesh, y_grid_mesh, data_grid = grid_and_filter_wrt_distance(lon_array, lat_array, data2grid, m, pixel_size=12500,mode='filter_mean',range_filter=50000,verbose=0)
     
     
     if show_figure:
@@ -490,9 +519,14 @@ if __name__ == '__main__':
     # Saving data in NETCDF
     #-----------------------------------------------
     
+    if outfolder: outf = outfolder
+    else:
+        outf = PATH_INPUT
+
+
     size_grid = lon_grid_mesh.shape[0]
-    pathout = PATH_INPUT+ "grid/%s/%s/%s/" %(sat,gdr,date)
-    fileoutname = '%s_%s_%s_gridded.nc' %(sat,gdr,date)
+    pathout = outf + "grid/%s/%s/" %(sat,gdr)
+    fileoutname = '%s_%s_%s.nc' %(sat,gdr,date)
 
     if not os.path.exists(pathout):
         print("creating:",pathout)
@@ -522,8 +556,7 @@ if __name__ == '__main__':
     longitude.long_name='ease grid'
 
     outparams = {}
-    for pname in plist:
-
+    for pname in data_grid.keys():
         
         outparams[pname] = dataset.createVariable(pname, np.float32, ('u','v'))
         outparams[pname][:,:]=data_grid[pname]

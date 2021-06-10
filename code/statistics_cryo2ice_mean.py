@@ -52,6 +52,7 @@ from datetime import date, timedelta, datetime
 import argparse
 import cs2_dict
 import is2_dict
+import path_dict
 import common_functions as cf
 import warnings
 import scipy.spatial
@@ -66,11 +67,11 @@ import seaborn as sns
 # Global attributs
 ###########################################
 
-PATH_DATA= '/home/antlafe/Documents/work/projet_cryo2ice/data/'
-PATH_INPUT = "/home/antlafe/Documents/work/projet_cryo2ice/data/Cryo2Ice/"
-PATH_OUT = "/home/antlafe/Documents/work/projet_cryo2ice/outputs/"
+PATH_DATA = path_dict.PATH_DICT['PATH_DATA']
+PATH_INPUT = path_dict.PATH_DICT['PATH_OUT']
+#PATH_OUT = "/home/antlafe/Documents/work/projet_cryo2ice/outputs/"
 
-PATH_GRID = '/home/antlafe/Documents/work/projet_cryo2ice/data_grid/'
+PATH_GRID = path_dict.PATH_DICT['PATH_GRID']
 
 param_opts = ['sd_month','find_regions','simba','mean_grid','comp_grid','roughness','data_maps','show_data','sd_comp']
 
@@ -104,7 +105,7 @@ if __name__ == '__main__':
 
     parser.add_argument("-p","--parameter",default='list',help="provide parameter to be tested")
 
-    parser.add_argument("-o","--outpath",default=PATH_OUT,help="[optionnal] provide outpath")
+    #parser.add_argument("-o","--outpath",default=PATH_OUT,help="[optionnal] provide outpath")
 
     #parser.add_argument("-fn","--fileName",default='data_dict',help="[optionnal] provide outpath")
 
@@ -1019,7 +1020,23 @@ if __name__ == '__main__':
             plt.show()
         
     if param=='simba':
+
+        # show buoys
+        #----------------------------------------
+        
+        """
+        f1, ax = plt.subplots(1, 1,figsize=(6,6))
+        lat_simba = {}; lon_simba= {}
+        for id_simba in ['608']:
+            lat_simba[id_simba],lon_simba[id_simba] = cf.get_SIMBA_traj(id_simba)
+            id_array[id_simba] = np.ma.ones(lat_simba[id_simba].shape)*(int(id_simba)-607)
             
+        bmap,cmap = st.plot_track_map(f1,ax,lon_simba[id_simba],lat_simba[id_simba],id_array,'#buoys',None,mid_date,'m',False,alpha=1)
+        plt.show()
+        """
+        
+        # find intersections
+        #---------------------------------------
         lat = np.concatenate(ref_seg_lat,axis=0)
         lon = np.concatenate(ref_seg_lon,axis=0)
         time = np.concatenate(ref_seg_time,axis=0)
@@ -1027,7 +1044,7 @@ if __name__ == '__main__':
         max_dist=50
 
         # get SIMBA cross-overs
-        lon_colloc,lat_colloc,delay_colloc,day_colloc,lon_simba,lat_simba = cf.get_xings_SIMBA(lat,lon,time,delay,max_dist)
+        idx_colloc,lon_colloc,lat_colloc,delay_colloc,day_colloc,lon_simba,lat_simba,sit_colloc,sd_colloc = cf.get_xings_SIMBA('608',lat,lon,time,delay,max_dist)
 
         month0 = day_colloc[0]
         id_month = list()
@@ -1045,6 +1062,65 @@ if __name__ == '__main__':
         x,y = bmap(lon_simba,lat_simba)
         bmap.plot(x,y, linewidth=1.5, color='black',linestyle='-',zorder=2)
         plt.show()
+
+
+        # Get snow depth:idx_dates
+        radar_fb = np.ma.concatenate(list(np.array(data_dict['CS2'][REF_GDR]['radar_fb'],dtype=object)[idx_dates]),axis=0)
+        laser_fb =  np.ma.concatenate(list(np.array(data_dict['IS2']['ATL10']['laser_fb_mean'],dtype=object)[idx_dates]),axis=0)
+
+        # Get icetype
+        latref = list()
+        lonref = list()
+        icetyperef = list()
+        for month,idx in idx_dates_monthly.items():
+            latref.append(np.ma.concatenate(list(np.array(data_dict['CS2'][REF_GDR]['latref'],dtype=object)[idx_dates[idx]]),axis=0))
+            lonref.append(np.ma.concatenate(list(np.array(data_dict['CS2'][REF_GDR]['lonref'],dtype=object)[idx_dates[idx]]),axis=0))
+            icetyperef.append(np.ma.concatenate(np.array(icetype_al)[idx_dates[idx]],axis=0))
+        icetype = np.ma.concatenate(icetyperef,axis=0)
+
+        # Get W99
+        sd_w99 = list()
+        for ndate,date in enumerate(month_list):
+            
+            lat_grid,lon_grid,sd_grid = cf.get_W99(date)
+            lon1 = lonref[ndate]
+            if any(np.abs(np.diff(lon1)) > 20): lon1[lon1 > 180] = lon1[lon1 > 180] - 360
+            SD_W99 = cf.grid_to_track(sd_grid,lon_grid,lat_grid,lon1,latref[ndate])
+            SD_W99[icetyperef[ndate]==2]= 0.5*SD_W99[icetyperef[ndate]==2]
+            SD_W99 = SD_W99/100
+            sd_w99.append(SD_W99)
+        SD_W99_full = np.ma.concatenate(sd_w99,axis=0)
+        
+        ds = 0.300
+        ns = (1 + 0.51*ds)**(-1.5)
+        nkm = 75 #km
+
+        sd_laku = (laser_fb - radar_fb)*ns
+
+        # Get only coincident measurements with SIMBA
+        sd_laku_sim = sd_laku[idx_colloc]
+        SD_W99_sim = SD_W99_full[idx_colloc]
+        radar_fb_sim =  radar_fb[idx_colloc]
+        laser_fb_sim = laser_fb[idx_colloc]
+        icetype_sim = icetype[idx_colloc]
+
+        
+        sit_radar_w99m = cf.fbr2sit(radar_fb_sim,SD_W99_sim,icetype_sim,day_colloc)
+
+        sit_laser_w99m = cf.fbt2sit(laser_fb_sim,SD_W99_sim,icetype_sim,day_colloc)
+
+        sit_cryo2ice = cf.fbt2sit(laser_fb_sim,sd_laku_sim,icetype_sim,day_colloc)
+
+        # plot various data
+        #-----------------------
+        plt.plot(sit_radar_w99m,label='sit_radar_w99m')
+        plt.plot(sit_laser_w99m,label='sit_radar_w99m')
+        plt.plot(sit_cryo2ice,label='sit_cryo2ice')
+        plt.plot(np.array(sit_colloc)/100,label='sit_colloc')
+        plt.legend()
+        plt.show()
+
+        
         
 
     if param=='find_regions':
