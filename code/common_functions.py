@@ -38,6 +38,7 @@ import pyproj
 from scipy.stats import pearsonr, gaussian_kde,linregress
 import requests
 from calendar import monthrange
+import path_dict
 
 def get_osisaf_ice_type(year,month,day,hemispherecode):
 
@@ -65,7 +66,7 @@ def get_osisaf_ice_type(year,month,day,hemispherecode):
     ftp_address = 'ftp.osisaf.met.no'
     #file_path = './archive/ice/type/%s/%s' %(year_str,month_str)
     file_path = './archive/ice/type/%s/%s' %(year_str,month_str)
-    local_dir = '/home/antlafe/Documents/work/projet_cryo2ice/data/OSISAF_data/'
+    local_dir = path_dict.PATH_DICT['PATH_DATA']+'OSISAF/'
 
     # Test if file already exists in local repertory
     filename = glob.glob(local_dir+filepattern)
@@ -141,7 +142,7 @@ def get_sst_metoffice(date):
     """
 
     # Surface temperature
-    path_data = '/home/antlafe/Documents/work/data/SST/'
+    path_data = path_dict.PATH_DICT['PATH_DATA'] +'SST/'
     filepattern =path_data +'*.nc'
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
@@ -1095,8 +1096,8 @@ def plot_histo(ax,xylim,units,xlabel,legend_list,data_list,commun_mask=None):
 def get_emissivity_SSMIS(date):
 
     datestr = date.strftime('%Y%m%d')
-    path_data = '/home/antlafe/Documents/work/data/SSMIS/'
-    filepattern =path_data +'*_%s*.nc' %(datestr)
+    path_data = path_dict.PATH_DICT['PATH_DATA']
+    filepattern =path_data +'SSMIS/*_%s*.nc' %(datestr)
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
     else:
@@ -1116,7 +1117,7 @@ def get_emissivity_SSMIS(date):
 def get_SD_AMSR(date):
 
     datestr = date.strftime('%Y%m%d')
-    path_data = '/home/antlafe/Documents/work/data/AMSR/'
+    path_data = path_dict.PATH_DICT['PATH_DATA']+'AMSR/'
     filepattern =path_data +'*_%s.he5' %(datestr)
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
@@ -1242,7 +1243,7 @@ def get_PIOMAS_SD(date):
     year = date.year
     month = date.month
 
-    path_data = '/home/antlafe/Documents/work/data/PIOMAS/'
+    path_data = path_dict.PATH_DICT['PATH_DATA']+'PIOMAS/'
     filepattern = path_data +'snow.H%s' %(year)
     filename = glob.glob(filepattern)
     if len(filename)==0:
@@ -1302,7 +1303,7 @@ def get_PIOMAS_SD(date):
 def get_ASD(pixsize,datestr):
     
     #datestr = date.strftime('%Y%m%d')
-    path_data = '/home/antlafe/Documents/work/data/ASD/'
+    path_data = path_dict.PATH_DICT['PATH_DATA']+'ASD/'
     filepattern =path_data +'*w%i*_%s.nc' %(pixsize,datestr)
     filename = glob.glob(filepattern)
     if len(filename)==0:
@@ -1329,7 +1330,7 @@ def get_ASD(pixsize,datestr):
 def get_W99(datestr):
     
     #datestr = date.strftime('%Y%m%d')
-    path_data = '/home/antlafe/Documents/work/data/W99/'
+    path_data = path_dict.PATH_DICT['PATH_DATA']+'W99/'
     filepattern =path_data +'snow_w99_*%s.mat' %(datestr[-2:])
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
@@ -1356,7 +1357,7 @@ def get_W99(datestr):
 def get_SIMBA_traj():
 
     # plot buoys data SIMBA
-    path_data = '/home/antlafe/Documents/work/data/SIMBA/'
+    path_data = path_dict.PATH_DICT['PATH_DATA']+'SIMBA/'
     filepattern =path_data +'FMI*.dat'
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
@@ -1375,8 +1376,7 @@ def get_SIMBA_traj():
 
 def get_xings_SIMBA(lat_cs2,lon_cs2,time_cs2,delay=3,max_dist=100):
     
-    path_data = '/home/antlafe/Documents/work/data/SIMBA/'
-    filepattern =path_data +'FMI*.dat'
+    filepattern =path_dict.PATH_DICT['PATH_DATA'] +'SIMBA/FMI*.dat'
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
     else:

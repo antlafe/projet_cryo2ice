@@ -70,7 +70,7 @@ from parserObjects import ParentAction,ChildAction
 
 # Get paths
 PATH_COLLOC=path_dict.PATH_DICT['PATH_COLLOC']
-PATH_ALL=path_dict.PATH_DICT['PATH_ALL']
+PATH_ALL=path_dict.PATH_DICT['PATH_DATA']
 PATH_OUT = path_dict.PATH_DICT['PATH_OUT']
 
 # ref GDR: serving as reference for all other data-sets
