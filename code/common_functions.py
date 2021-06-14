@@ -1403,7 +1403,7 @@ def get_xings_SIMBA(id_simba,lat_cs2,lon_cs2,time_cs2,delay=3,max_dist=100):
     # Get thickness data
     #-----------------------
     
-    filepattern =path_dict.PATH_DICT['PATH_DATA'] +'SIMBA/fmi*%s_thickness*.dat' %(id_simba)
+    filepattern =path_dict.PATH_DICT['PATH_DATA'] +'SIMBA/Hsi*%s*.dat' %(id_simba)
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
     else:
@@ -1413,11 +1413,10 @@ def get_xings_SIMBA(id_simba,lat_cs2,lon_cs2,time_cs2,delay=3,max_dist=100):
     # Get data
     data = np.loadtxt(filename)
     date_simba = [datenum_to_datetime(datenum) for datenum in data[:,0].astype(int)]
-    sit_simba = data[:,1]
-    sd_simba =  data[:,2]
+    sd_simba = data[:,1]
+    sit_simba =  data[:,2]
+    sit_simba[sit_simba<0] = -sit_simba[sit_simba<0] 
     
-    
-
     for n in range(lat_simba.size):
 
         t = datetime.datetime(year[n],month[n],day[n],data_traj[:,3].astype(int)[n],data_traj[:,4].astype(int)[n])
@@ -1646,6 +1645,7 @@ def fbr2sit(fb_radar,snow_depth,ice_type,date,d_w=1024):
     height_snow_penetration_corr = snow_depth*(speed_of_light_ratio-1)
     freeboard = fb_radar + height_snow_penetration_corr
     sit = (d_w*freeboard + d_s*snow_depth)/(d_w-d_i)
+    #sit2 = (d_w/(d_w-d_i))*fb_radar + (((speed_of_light_ratio-1)*d_w + d_s)/(d_w - d_i))*snow_depth
 
     return sit
 

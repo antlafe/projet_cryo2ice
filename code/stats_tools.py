@@ -31,6 +31,7 @@ from scipy.stats import pearsonr, gaussian_kde,linregress
 import matplotlib as mpl
 import time
 from matplotlib.patches import Polygon
+import matplotlib.dates as mdates
 
 # Global attributs
 ###########################################
@@ -237,7 +238,7 @@ def plot_track_map(fig,axm,lon,lat,data,label,xylim,date_icetype,units,flag_comp
             #xylim = [-np.max(np.abs(data)),np.max(np.abs(data))]            
             xylim = [-np.std(np.abs(data)),np.std(np.abs(data))]            
     else:
-        cmap='viridis' #'viridis' #nuplot2' # magma' #'cividis' #jet
+        cmap='tab20b' #'viridis' #'viridis' #nuplot2' # magma' #'cividis' #jet
         if xylim is None:
             xylim = [np.min(data),np.max(data)]
 
@@ -252,12 +253,12 @@ def plot_track_map(fig,axm,lon,lat,data,label,xylim,date_icetype,units,flag_comp
         OSISAF_ice_type[OSISAF_ice_type==1] = ma.masked # masked ocean
         OSISAF_ice_type[OSISAF_ice_type==3] = 4 # ambigous becomes multi-year ice
         OSISAF_ice_type[560,381] = 4 # to display colormap
-        OSISAF_ice_type[560,380] = 3
+        OSISAF_ice_type[560,380] = 2
         #lons_icetype, lats_icetype = coord_icetype
         xptsT, yptsT = m(lons, lats)
     
-        #cmap_ice = mpl.colors.ListedColormap(["lightgrey", "grey"])
-        im = m.contour(xptsT , yptsT, OSISAF_ice_type,levels=1,colors='black',zorder=4)
+        cmap_ice = mpl.colors.ListedColormap(["lightgrey", "grey"])
+        #im = m.contour(xptsT , yptsT, OSISAF_ice_type,levels=1,colors='black',zorder=4)
         #im = m.contourf(xptsT , yptsT, OSISAF_ice_type,cmap=cmap_ice, alpha=0.8,zorder=1,antialiased=True)
         #ice_boundaries = np.ones(OSISAF_ice_type.shape)
         #ice_boundaries[np.logical_or(OSISAF_ice_type==4,OSISAF_ice_type==2)] = 2
@@ -267,12 +268,12 @@ def plot_track_map(fig,axm,lon,lat,data,label,xylim,date_icetype,units,flag_comp
         #proxy = [plt.Rectangle((0,0),1,1,fc = pc.get_facecolor()[0]) for pc in im.collections]
         #plt.legend(proxy, ["MYI", "FYI"])
 
-        
-        
-        #norm = mpl.colors.BoundaryNorm(np.arange(2,4), cmap_ice.N)
-        #cbar = fig.colorbar(im,ax=axm,ticks=[2.5,3.5],orientation='horizontal',fraction=0.046, pad=0.04,extend='both',shrink=0.70)
-        #cbar.ax.set_xticklabels(['First-Year Ice','Multi-Year Ice'])
-        #cbar.set_label('OSISAF daily ice type', labelpad=3)
+        # ice type full color
+        im = m.contourf(xptsT , yptsT, OSISAF_ice_type,cmap=cmap_ice, alpha=0.8,zorder=1,antialiased=True)
+        norm = mpl.colors.BoundaryNorm(np.arange(2,4), cmap_ice.N)
+        cbar = fig.colorbar(im,ax=axm,ticks=[2.5,3.5],orientation='horizontal',fraction=0.046, pad=0.04,extend='both',shrink=0.70)
+        cbar.ax.set_xticklabels(['First-Year Ice','Multi-Year Ice'])
+        cbar.set_label('OSISAF daily ice type', labelpad=3)
         
 
     x,y = m(lon,lat)
@@ -280,10 +281,14 @@ def plot_track_map(fig,axm,lon,lat,data,label,xylim,date_icetype,units,flag_comp
     #for data in data:
     ndata = data.size - np.sum(data.mask)
     scat= m.scatter(x,y,c=data,s=size,cmap=cmap,vmin=xylim[0],vmax=xylim[1],zorder=3,alpha=alpha)
-    cbaxes = fig.add_axes([0.88, 0.28, 0.02, 0.5]) 
-    cb = fig.colorbar(scat, ax=axm,cax = cbaxes,extend='both',fraction=0.046, pad=0.04,shrink=0.80)
+    cbaxes = fig.add_axes([0.85, 0.28, 0.02, 0.5]) 
+    #cb = fig.colorbar(scat, ax=axm,cax = cbaxes,extend='both',fraction=0.046, pad=0.04,shrink=0.80)
+
+    loc = mdates.AutoDateLocator()
+    cb = fig.colorbar(scat, ticks=loc,format=mdates.AutoDateFormatter(loc),ax=axm,cax = cbaxes,extend='both',fraction=0.046, pad=0.04,shrink=0.80)
     cb.set_label("%s [%s]" %(label,units),fontsize=12)
 
+    
     # text box
     textstr ='%5s=%.2f %s %5s=%.2f %s %5s=%i' %('mean',np.ma.mean(data),units,r'$\sigma$',np.ma.std(data),units,'Npts',ndata)
     #axm.text(1E6,4E5,textstr,fontsize=15,bbox=dict(boxstyle="round",ec=(0., 0., 0.),fc=(1., 1., 1.)))

@@ -65,12 +65,13 @@ import os
 from scipy.interpolate import interp1d
 from parserObjects import ParentAction,ChildAction
 
+
 # Global attributs
 ###########################################
 
 # Get paths
 PATH_COLLOC=path_dict.PATH_DICT['PATH_COLLOC']
-PATH_ALL=path_dict.PATH_DICT['PATH_DATA']
+PATH_ALL=path_dict.PATH_DICT['PATH_ALL']
 PATH_OUT = path_dict.PATH_DICT['PATH_OUT']
 
 # ref GDR: serving as reference for all other data-sets
@@ -88,7 +89,7 @@ matrixParamList = ['coherence','ph_diff','wvf']
 
 # list of days for which CS2/IS2 are collocated with one day apart
 list_midnight_dates = {
-    'ATL07' : ['20201005','20201018','20201022','20201108','20201125','20201129','20201216','20200102','20200119','20200123'],
+    'ATL07 ': ['20201005','20201018','20201022','20201108','20201125','20201129','20201216','20200102','20200119','20200123'],
     'ATL10': ['20201005','20201018','20201022','20201108','20201125','20201129','20201216','20200102','20200119','20200123'],
     'ATL12': ['20201014','20201031'],
     }
