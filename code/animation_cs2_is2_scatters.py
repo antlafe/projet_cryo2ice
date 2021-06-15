@@ -66,13 +66,14 @@ import os
 from scipy.interpolate import interp1d
 from operator import itemgetter
 import seaborn as sns
+import path_dict
 
 # Global attributs
 ###########################################
 
-PATH_DATA= '/home/antlafe/Documents/work/projet_cryo2ice/data/'
-PATH_INPUT = "/home/antlafe/Documents/work/projet_cryo2ice/data/Cryo2Ice/"
-PATH_OUT = "/home/antlafe/Documents/work/projet_cryo2ice/outputs/"
+PATH_DATA= path_dict.PATH_DICT['PATH_DATA']
+PATH_INPUT =  path_dict.PATH_DICT['PATH_OUT']
+PATH_OUT = path_dict.PATH_DICT['PATH_FIG']
 
 # info: possibility to use lat01 to avoid POCA coord over SARin mask areas
 REF_GDR = 'ESA_BD_GDR'
