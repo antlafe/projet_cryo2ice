@@ -63,6 +63,9 @@ import stats_tools as st
 import cs2_dict
 import pandas as pd
 import seaborn as sns
+import matplotlib.dates as mdates
+       
+        
 
 # Global attributs
 ###########################################
@@ -1050,19 +1053,21 @@ if __name__ == '__main__':
 
         # get SIMBA cross-overs
         idx_colloc,lon_colloc,lat_colloc,delay_colloc,day_colloc,lon_simba,lat_simba,sit_colloc,sd_colloc = cf.get_xings_SIMBA('607',lat,lon,time,delay,max_dist)
+        idx_colloc8,lon_colloc8,lat_colloc8,delay_colloc8,day_colloc8,lon_simba8,lat_simba8,sit_colloc8,sd_colloc8 = cf.get_xings_SIMBA('608',lat,lon,time,delay,max_dist)
 
+        """
         month0 = day_colloc[0]
         id_month = list()
         for days in day_colloc:
             factor = ((days.year - month0.year) * 12 + days.month - month0.month)
             id_month.append(factor)
-
         id_month = np.ma.array(id_month)
-        import matplotlib.dates as mdates
-        id_date = np.ma.array([mdates.date2num(i) for i in day_colloc])
+        """
+        
         
         # show map
         """
+        id_date = np.ma.array([mdates.date2num(i) for i in day_colloc])
         f1, ax = plt.subplots(1, 1,figsize=(10,6))
         f1.suptitle('Month ids from October with ESA_BD from %s-%s \n delay=+-%i days/dist=%i km' %(date_period_str[0],date_period_str[-1],delay,max_dist), fontsize=12)
         bmap,cmap = st.plot_track_map(f1,ax,lon_colloc,lat_colloc,id_date,'months',None,mid_date,'m',False,alpha=1)
@@ -1137,8 +1142,11 @@ if __name__ == '__main__':
         sd_cryo2ice_std = list()
         sd_simba_mean = list()
         sd_simba_std = list()
+        sd_simba8_mean = list()
+        sd_simba8_std = list()
         sd_w99m_mean = list()
         sd_w99m_std = list()
+        list_days8 = list()
         
         for day in np.unique(day_colloc):
             idx = np.argwhere(day_colloc==day)
@@ -1157,16 +1165,26 @@ if __name__ == '__main__':
             sd_simba_std.append(np.ma.std(np.ma.array(sd_colloc)[idx])/100)
             sd_w99m_mean.append(np.ma.mean(SD_W99_sim[idx]))
             sd_w99m_std.append(np.ma.std(SD_W99_sim[idx]))
+
+            idx8 = np.argwhere(day_colloc8==day)
+            if idx8.size>0:
+                list_days8.append(day)
+                sd_simba8_mean.append(np.ma.mean(np.ma.array(sd_colloc8)[idx8])/100)
+                sd_simba8_std.append(np.ma.std(np.ma.array(sd_colloc8)[idx8])/100)
+                
+                
             
         list_days =  np.unique(day_colloc)
 
         plt.style.use('seaborn-darkgrid')
+        palette = plt.get_cmap('Set1')
 
         # plot various data
         #-----------------------
 
         # sea-ice thickness
         #-------------------------
+        """
         palette = plt.get_cmap('Set1')
         plt.plot(list_days,sit_radar_w99m_mean,label='sit_radar_w99m',color=palette(0))
         plt.fill_between(list_days,np.array(sit_radar_w99m_mean)-np.array(sit_radar_w99m_std),np.array(sit_radar_w99m_mean)+np.array(sit_radar_w99m_std),color=palette(0),alpha=0.1)
@@ -1185,6 +1203,7 @@ if __name__ == '__main__':
         plt.xlabel("date")
         plt.ylabel("sea-ice thickness [m]")
         plt.show()
+        """
 
         
         """
@@ -1207,8 +1226,11 @@ if __name__ == '__main__':
         plt.plot(list_days,sd_w99m_mean,label='sd_w99m',color=palette(1))
         plt.fill_between(list_days,np.array(sd_w99m_mean)-np.array(sd_w99m_std),np.array(sd_w99m_mean)+np.array(sd_w99m_std),color=palette(1),alpha=0.1)
         
-        plt.plot(list_days,sd_simba_mean,label='sd_simba',color=palette(2))
+        plt.plot(list_days,sd_simba_mean,label='sd_simba #607',color=palette(2))
         plt.fill_between(list_days,np.array(sd_simba_mean)-np.array(sd_simba_std),np.array(sd_simba_mean)+np.array(sd_simba_std),color=palette(2),alpha=0.1)
+
+        plt.plot(np.ma.array(list_days8),sd_simba8_mean,label='sd_simba #608',color=palette(3),marker='*')
+        plt.fill_between(list_days,np.array(sd_simba8_mean)-np.array(sd_simba8_std),np.array(sd_simba8_mean)+np.array(sd_simba8_std),color=palette(3),alpha=0.1)
        
         plt.legend()
         plt.xlabel("date")

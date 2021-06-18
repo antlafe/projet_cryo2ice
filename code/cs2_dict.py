@@ -43,6 +43,7 @@ CS2_DATA_DESC = {
         'surface_type':'surf_type_20_ku',
         #'lead_height' : 'height_sea_ice_lead_20_ku',
         'isa': 'height_sea_ice_floe_20_ku',
+        'quality_flag' : 'flag_prod_status_20_ku',
         },
             
     },
@@ -85,6 +86,7 @@ CS2_DATA_DESC = {
         'surface_type':'surf_type_20_ku',
         'lead_height' : 'height_sea_ice_lead_20_ku',
         'isa': 'height_sea_ice_floe_20_ku',
+        'quality_flag' : 'flag_prod_status_20_ku',
         },
             
     },
@@ -103,6 +105,7 @@ CS2_DATA_DESC = {
         'ph_diff'   :'ph_diff_waveform_20_ku',
         'traker'    :'window_del_20_ku',
         #'corr'      :'instr_cor_range_rx',
+        'quality_flag' : 'flag_prod_status_20_ku',
            } ,
 
         'lf':{},
@@ -128,6 +131,7 @@ CS2_DATA_DESC = {
         #'height3': 'height_3_20_ku',
         'flag_corr': 'flag_cor_applied_20_ku',
         #'alt' : 'alt_01',
+        'quality_flag' : 'flag_prod_status_20_ku',
         },
 
         'lf':{},

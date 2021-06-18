@@ -766,6 +766,17 @@ def get_param_from_netcdf(filename,data_desc,p_name,hemispherecode,LAT_BOUND):
     #select_north, = np.where(lat > LAT_MIN)
     
     param = ma.ravel(f.variables[data_desc[p_name]][:])
+
+    # Applying quality flag for baseline-D
+    if 'ESA_BD' in filename.split('/')[-3]:
+        if p_name=='radar_freeboard':
+            quality_flag = ma.ravel(f.variables[data_desc['quality_flag']][:])
+            flag = get_valid_freeboard_flag(quality_flag)
+            param = ma.masked_where(~flag,param,copy=True)
+        else:
+            param = ma.masked_where(param==0.0,param,copy=True)
+    
+    
     param = param[select_zone]
 
     if param is None: print("\nNo param %s:%s in %s" %(p_name,data_desc[p_name],filename))
@@ -1399,6 +1410,13 @@ def get_xings_SIMBA(id_simba,lat_cs2,lon_cs2,time_cs2,delay=3,max_dist=100):
     end_date = datetime.datetime(year[-1],month[-1],day[-1])
 
     mid_date_simba = start_date + (end_date - start_date)/2
+    date_simba = list()
+    for n in range(lon_simba.size):
+        t = datetime.datetime(year[n],month[n],day[n],data_traj[:,3].astype(int)[n],data_traj[:,4].astype(int)[n])
+        date_simba.append(t)
+        time_simba.append((t-datetime.datetime(2000,1,1)).total_seconds())
+    time_simba = np.array(time_simba)
+    #date_simba = np.array(date_simba)
 
     # Get thickness data
     #-----------------------
@@ -1412,17 +1430,32 @@ def get_xings_SIMBA(id_simba,lat_cs2,lon_cs2,time_cs2,delay=3,max_dist=100):
 
     # Get data
     data = np.loadtxt(filename)
-    date_simba = [datenum_to_datetime(datenum) for datenum in data[:,0].astype(int)]
-    sd_simba = data[:,1]
-    sit_simba =  data[:,2]
-    sit_simba[sit_simba<0] = -sit_simba[sit_simba<0] 
+    date_sit = [datenum_to_datetime(datenum) for datenum in data[:,0].astype(int)]
+
+    time_sit = np.array([(t-datetime.datetime(2000,1,1)).total_seconds() for t in date_sit])
+    #date_interp = [date_simba[0] + datetime.timedelta(days=d) for d in np.arange(1,(date_simba[-1] - date_simba[0]).days,2)]
+
     
-    for n in range(lat_simba.size):
+    #timstamps_sit = [d.timestamp() for d in date_simba]
+    #day_sec = 60*60*24
+    #timestamps_interp = [d for d in np.arange(timstamps_simba[0],timstamps_simba[-1],day_sec*2)]
+    
+    
+    if id_simba=='607':
+        sd_simba = data[:,1]
+        sit_simba =  data[:,2]
+        sit_simba[sit_simba<0] = -sit_simba[sit_simba<0] 
+    else: # case 608
+        sd_simba = data[:,2]
+        #sd_simba = np.interp(timestamps_interp,timstamps_simba,sd_simba)
+        sit_simba = np.zeros(sd_simba.shape)
+        #date_simba = [datetime.datetime.fromtimestamp(tm) for tm in timestamps_interp]
+    sd_simba = np.interp(time_simba,time_sit,sd_simba)
+    sit_simba = np.interp(time_simba,time_sit,sit_simba)
+        
 
-        t = datetime.datetime(year[n],month[n],day[n],data_traj[:,3].astype(int)[n],data_traj[:,4].astype(int)[n])
-
-        time_simba.append((t-datetime.datetime(2000,1,1)).total_seconds())
-    time_simba = np.array(time_simba)
+    #time_simba = np.array([(t-datetime.datetime(2000,1,1)).total_seconds() for t in date_simba])
+    
 
     from scipy.spatial import distance
     x,y,z = lon_lat_to_cartesian(lon_simba, lat_simba)
@@ -1606,6 +1639,80 @@ def get_regional_sd_mean(datasetName,polygon,monthsList,flag_FYI):
 
             
     return snow_list,snow_unc_list
+
+
+
+def get_valid_freeboard_flag(flag):
+
+    """
+
+    flag_masks = 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728, 268435456; // int
+    """
+
+    dict_error= {
+       
+        'sarin_bad_velocity'       : 2,
+        'sarin_out_of_range'       : 4,
+        'sarin_bad_baseline'       : 8,
+        'delta_time_error'         :32,
+        'mispointing_error'        :64,
+        'sarin_height_ambiguous'   :2048,
+        'surf_type_class_ocean'    :32768,
+        'freeboard_error'          :65536,
+        'peakiness_error'          :131072,
+        'ssha_interp_error'        :262144,
+        'orbit_error'              :67108864,
+        'height_sea_ice_error'     :268435456,
+        }
+       
+
+    all_flag= {
+
+        'calibration_warning'      : 1,
+        'sarin_bad_velocity'       : 2,
+        'sarin_out_of_range'       : 4,
+        'sarin_bad_baseline'       : 8,
+        'lrm_slope_model_invalid'  :16,
+        'delta_time_error'         :32,
+        'mispointing_error'        :64,
+        'surface_model_unavailable':128,
+        'sarin_side_redundant'     :256,
+        'sarin_rx_2_error'         :512,
+        'sarin_rx_1_error'         :1024,
+        'sarin_height_ambiguous'   :2048,
+        'surf_type_class_undefined':4096,
+        'surf_type_class_sea_ice'  :8192,
+        'surf_type_class_lead'     :16384,
+        'surf_type_class_ocean'    :32768,
+        'freeboard_error'          :65536,
+        'peakiness_error'          :131072,
+        'ssha_interp_error'        :262144,
+        'sig0_3_error'             :524288,
+        'sig0_2_error'             :1048576,
+        'sig0_1_error'             :2097152,
+        'height_3_error'           :4194304,
+        'height_2_error'           :8388608,
+        'height_1_error'           :16777216,
+        'orbit_discontinuity'      :33554432,
+        'orbit_error'              :67108864,
+        'block_degraded'           :134217728,
+        'height_sea_ice_error'     :268435456,
+        }
+
+    # sea ice class
+    flag_seaice = np.bitwise_and(flag, all_flag['surf_type_class_sea_ice'])/all_flag['surf_type_class_sea_ice']
+
+    # errors
+    flag_error = np.zeros(flag.size)
+    for key in dict_error.keys():
+        flag0_error = np.bitwise_and(flag,dict_error[key])/dict_error[key]
+        flag_error = np.logical_or(flag0_error,flag_error)
+
+    flag_valid_fb = flag_seaice - flag_error
+    flag_valid_fb[flag_valid_fb<0] =0
+
+    return flag_valid_fb
+
 
 
 def datenum_to_datetime(datenum):

@@ -71,7 +71,7 @@ from parserObjects import ParentAction,ChildAction
 
 # Get paths
 PATH_COLLOC=path_dict.PATH_DICT['PATH_COLLOC']
-PATH_ALL=path_dict.PATH_DICT['PATH_ALL']
+PATH_ALL=path_dict.PATH_DICT['PATH_DATA']
 PATH_OUT = path_dict.PATH_DICT['PATH_OUT']
 
 # ref GDR: serving as reference for all other data-sets
@@ -117,8 +117,10 @@ N_MAX_CROSSPTS_IN_CS2BEAMS = 50 #50
 delay_xings = 4 #h
 xing_delay = 7 # days to find files before and after first data
 MAX_DIST_INTER = 40 # km security to find out if intersections found by algo are correct
-TRACK_REDUCTION = 80 # only consider 100th of track to look at interp (avoid memory issues)
+TRACK_REDUCTION_IS2 = 80 # only consider 100th of track to look at interp (avoid memory issues)
 TRACK_REDUCTION_SAR = 20 
+N_NEIGHBORS_SAR = 10
+N_NEIGHBORS_IS2 = 40
 
 # encoding beam names into intergers
 beam_dict={
@@ -808,6 +810,140 @@ def concatenate_cs2_data(date_list,file_dict,common_data_list):
 
 
 # Finding crossings and collocated data of other sats
+def find_xings2_sat(satName,date_list,file_dict,common_data_list):
+    
+    # Init CS2 data dictionnary
+    data_dict = dict()
+    data_param = dict()
+    param_list = ['lat','lon','time','delay','dist','weight','idx_ref']
+    delta_reftime = (ref_date[satName] - ref_date['CS2']).total_seconds()
+
+    print("\nFind Crossings points with %s \n#---------------\n" %(satName))
+
+    for ngdr,gdr in enumerate(file_dict.keys()):
+
+        print("%s:\n---------" %(gdr))
+        data_dict[gdr] = dict()
+       
+        data_list = dict()
+
+        # For each collocated tracks - dates (every 1.5 days)
+        #-------------------------------------------------------
+        ndates = len(date_list)
+        for n,date in enumerate(date_list):
+            
+            date_str = date.strftime('%Y%m%d')
+            
+            # if no data for this date continue
+            #if date_str not in file_dict[gdr].keys(): continue
+            
+            print("\n%s" %(date.strftime('%d/%m/%Y')))
+
+            # ref coordinates for this date
+            lat_ref,lon_ref = common_data_list[n]['ref_lat'],common_data_list[n]['ref_lon']
+            if any(np.abs(np.diff(lon_ref)) > 20): lon_ref[lon_ref > 180] = lon_ref[lon_ref > 180] - 360 
+            time_ref = common_data_list[n]['ref_time']
+            ref_size = lon_ref.size
+            coord_ref = np.vstack((lat_ref,lon_ref)).T
+            x_ref,y_ref,z_ref = cf.lon_lat_to_cartesian(lon_ref, lat_ref)
+            coordinates_ref = np.vstack((x_ref,y_ref,z_ref)).T
+            tree = scipy.spatial.KDTree(coordinates_ref)
+
+            # maximun length list
+            max_len = 0
+            
+            # initiation array of lists
+            if n==0:
+                for p in  param_list:
+                    data_list[p] = np.frompyfunc(list, 0, 1)(np.empty((ndates,), dtype=object))
+            
+            nfiles = 0
+            for ite,val in file_dict[gdr].items():
+                if isinstance(val, str): val=[val]
+                nfiles = nfiles + len(val)
+
+            # For each file around date
+            #-------------------------------------------------------
+            nfile = 0
+            for datefile,filelist in file_dict[gdr].items():
+
+                # for case one file per day
+                if isinstance(filelist, str): filelist=[filelist]
+                for filename in filelist:
+
+                    nfile = nfile+1
+                    print("%i/%i" %(nfile,nfiles))
+
+                    # Get dictionnary
+                    if satName=='SARAL':
+                        data_desc = saral_dict.init_dict(gdr,flag_1hz)
+                    elif satName=='S3':
+                        data_desc = s3_dict.init_dict(gdr,flag_1hz)
+                    elif satName=='CS2':
+                        data_desc = cs2_dict.init_dict(gdr,flag_1hz)
+                    else:
+                        print("No dictionnary for %s" %(satName))
+
+                    if nfile==1:
+                        list_p = [p for p in data_desc.keys()] + param_list
+                        for p in data_desc.keys():
+                            if p not in param_list:
+                                data_list[p] = np.frompyfunc(list, 0, 1)(np.empty((ref_size,), dtype=object))
+                    
+                    lat,lon,time,x_dist,valid_idx = cf.get_coord_from_netcdf(filename,data_desc,'01',LAT_MIN)
+                    if lat is None: continue
+
+                    if any(np.abs(np.diff(lon)) > 20): lon[lon > 180] = lon[lon > 180] - 360 
+                    lat_sub = lat[::TRACK_REDUCTION_SAR]
+                    lon_sub = lon[::TRACK_REDUCTION_SAR]
+                    time_sub = time[::TRACK_REDUCTION_SAR]
+
+                    coord_is2 = np.vstack((lat_sub,lon_sub)).T
+
+                    # get intersections
+                    from intersection import find_intersections
+                    lat_inter, lon_inter, idx_ref, idx_sat = find_intersections(coord_ref,coord_is2,1)
+                    
+
+                    # test intersection
+                    if lat_inter==None:
+                         print("No intersection found for this track")
+                         nfile = nfile+1
+                         continue
+
+                    data_list['lat'][n].append(lat_inter)
+                    data_list['lon'][n].append(lon_inter)
+                    data_list['time'][n].append(time_sub[idx_sat])
+                    data_list['delay'][n].append(time_ref[idx_ref] - time_sub[idx_sat])
+                    data_list['idx_ref'][n].append(idx_ref)
+                    #data_list['dist'].append()
+
+                    index = TRACK_REDUCTION_SAR*idx_sat
+                    first_index = index-N_NEIGHBORS_SAR if index-N_NEIGHBORS_SAR>0 else 0
+                    last_index = index+N_NEIGHBORS_SAR if index+N_NEIGHBORS_SAR< lat.size else lat.size-1
+                    idx_sub = np.arange(first_index,last_index)
+                    
+                    for pname in data_desc.keys():
+                        if pname in ['lat','lon','time','lat01','lon01','time01','hour','minute','second'] + param_list: #add 2D params later
+                            continue
+
+                        param,units,param_is_flag = cf.get_param_from_netcdf(filename,data_desc,pname,'01',LAT_MIN)
+                        mean_p = np.ma.mean(param[idx_sub])
+                        std_p = np.ma.std(param[idx_sub])
+                        data_list[pname][n].append(mean_p)
+                        #data_list[pname]['std'].append(mean_p)
+                        
+    print("stop")
+    for p in list_p:
+        data_dict[gdr][p] = np.ma.array(data_list[p])
+                        
+                   
+            
+    return data_dict
+        
+                    
+
+# Finding crossings and collocated data of other sats
 def find_xings_sat(satName,date_list,file_dict,common_data_list):
     
     # Init CS2 data dictionnary
@@ -880,11 +1016,13 @@ def find_xings_sat(satName,date_list,file_dict,common_data_list):
                         print("No dictionnary for %s" %(satName))
 
                     # initiation array of lists for specific params
+                    """
                     if nfile==0:
                         for p in data_desc.keys():
                             if p not in param_list:
                                 data_list[p] = np.frompyfunc(list, 0, 1)(np.empty((ref_size,), dtype=object))
 
+                    """
                     lat,lon,time,x_dist,valid_idx = cf.get_coord_from_netcdf(filename,data_desc,'01',LAT_MIN)
 
                     if any(np.abs(np.diff(lon)) > 20): lon[lon > 180] = lon[lon > 180] - 360 
@@ -903,6 +1041,9 @@ def find_xings_sat(satName,date_list,file_dict,common_data_list):
                          print("No intersection found for this track")
                          nfile = nfile+1
                          continue
+
+
+                  
                     
                     # test
                     """
@@ -1014,6 +1155,142 @@ def find_xings_sat(satName,date_list,file_dict,common_data_list):
 
 
 # Finding crossings and collocated data of IS2
+def find_xings2_is2(date_list,file_dict,file_dict_colloc,common_data_list):
+    
+    # Init CS2 data dictionnary
+    data_dict = dict()
+    data_param = dict()
+    param_list = ['lat','lon','time','delay','beam','weight','idx_ref']
+    delta_reftime = (ref_date['IS2'] - ref_date['CS2']).total_seconds()
+ 
+    print("\nFind Crossings points with IceSat-2 \n#---------------\n")
+
+    for ngdr,gdr in enumerate(file_dict.keys()):
+
+        print("%s:\n---------" %(gdr))
+        data_dict[gdr] = dict()
+       
+        data_list = dict()
+
+        # For each collocated tracks - dates (every 1.5 days)
+        #-------------------------------------------------------
+        ndates = len(date_list)
+        for n,date in enumerate(date_list):
+            
+            date_str = date.strftime('%Y%m%d')
+            
+            # if no data for this date continue
+            #if date_str not in file_dict[gdr].keys(): continue
+            
+            print("\n%s" %(date.strftime('%d/%m/%Y')))
+
+            # ref coordinates for this date
+            lat_ref,lon_ref = common_data_list[n]['ref_lat'],common_data_list[n]['ref_lon']
+            if any(np.abs(np.diff(lon_ref)) > 20): lon_ref[lon_ref > 180] = lon_ref[lon_ref > 180] - 360 
+            time_ref = common_data_list[n]['ref_time']
+            ref_size = lon_ref.size
+            coord_ref = np.vstack((lat_ref,lon_ref)).T
+            x_ref,y_ref,z_ref = cf.lon_lat_to_cartesian(lon_ref, lat_ref)
+            coordinates_ref = np.vstack((x_ref,y_ref,z_ref)).T
+            tree = scipy.spatial.KDTree(coordinates_ref)
+
+            # maximun length list
+            max_len = 0
+            
+            # initiation array of lists
+            if n==0:
+                for p in  param_list:
+                    data_list[p] = np.frompyfunc(list, 0, 1)(np.empty((ndates,), dtype=object))
+            
+            nfiles = 0
+            for ite,val in file_dict[gdr].items():
+                if isinstance(val, str): val=[val]
+                nfiles = nfiles + len(val)
+
+            # For each file around date
+            #-------------------------------------------------------
+            nfile = 0
+            for datefile,filelist in file_dict[gdr].items():
+
+                # for case one file per day
+                if isinstance(filelist, str): filelist=[filelist]
+                for filename in filelist:
+
+                    nfile = nfile+1
+                    print("%i/%i" %(nfile,nfiles))
+                    
+                    # get orientation
+                    beamName = get_strong_beams(filename)
+                    if beamName is None: continue
+                    
+                    # to avoid considering collocated tracks
+                    if filename.split('/')[-1]==file_dict_colloc[gdr][date_str].split('/')[-1]:
+                        print("colloc files: Not used for intersections")
+                        continue
+
+                    # for each beam
+                    for beam in beamName:
+
+                        print("%s" %(beam))
+                        data_desc = is2_dict.init_dict(gdr,beam,'granules')
+
+                        # initiation array of lists for specific params
+                        if nfile==1:
+                            list_p = [p for p in data_desc.keys()] + param_list
+                            for p in data_desc.keys():
+                                if p not in param_list:
+                                    data_list[p] = np.frompyfunc(list, 0, 1)(np.empty((ref_size,), dtype=object))
+                    
+
+                        lat,lon,time,x_dist,valid_idx = cf.get_coord_from_hf5(filename,data_desc,'01',LAT_MIN)
+                        if lat is None: continue
+                        
+                        if any(np.abs(np.diff(lon)) > 20): lon[lon > 180] = lon[lon > 180] - 360 
+                        lat_sub = lat[::TRACK_REDUCTION_IS2]
+                        lon_sub = lon[::TRACK_REDUCTION_IS2]
+                        time_sub = time[::TRACK_REDUCTION_IS2]
+
+                        coord_is2 = np.vstack((lat_sub,lon_sub)).T
+                        # get intersections
+                        from intersection import find_intersections
+                        lat_inter, lon_inter, idx_ref, idx_is2 = find_intersections(coord_ref,coord_is2,1)
+                        # test intersection
+                        if lat_inter==None:
+                            print("No intersection found for this track")
+                            continue
+
+                        data_list['lat'][n].append(lat_inter)
+                        data_list['lon'][n].append(lon_inter)
+                        data_list['time'][n].append(time_sub[idx_is2])
+                        data_list['delay'][n].append(time_ref[idx_ref] - time_sub[idx_is2])
+                        data_list['idx_ref'][n].append(idx_ref)
+                        data_list['beam'][n].append(beam)
+                        #data_list['dist'].append()
+
+                        index = TRACK_REDUCTION_IS2*idx_is2
+                        first_index = index-N_NEIGHBORS_IS2 if index-N_NEIGHBORS_IS2>0 else 0
+                        last_index = index+N_NEIGHBORS_IS2 if index+N_NEIGHBORS_IS2< lat.size else lat.size-1
+                        idx_sub = np.arange(first_index,last_index)
+                    
+                        for pname in data_desc.keys():
+                            if pname in ['lat','lon','time','lat01','lon01','time01','hour','minute','second'] + param_list: #add 2D params later
+                                continue
+
+                            param,units,param_is_flag = cf.get_param_from_hf5(filename,data_desc,pname,'01',LAT_MIN)
+                            mean_p = np.ma.mean(param[idx_sub])
+                            std_p = np.ma.std(param[idx_sub])
+                            data_list[pname][n].append(mean_p)
+
+    
+    for p in list_p:
+        data_dict[gdr][p] = np.ma.array(data_list[p])
+
+    return data_dict
+
+                        
+
+        
+# Finding crossings and collocated data of IS2
 def find_xings_is2(date_list,file_dict,file_dict_colloc,common_data_list):
     
     # Init CS2 data dictionnary
@@ -1102,9 +1379,9 @@ def find_xings_is2(date_list,file_dict,file_dict_colloc,common_data_list):
                         if lat is None: continue
                         
                         if any(np.abs(np.diff(lon)) > 20): lon[lon > 180] = lon[lon > 180] - 360 
-                        lat_sub = lat[::TRACK_REDUCTION]
-                        lon_sub = lon[::TRACK_REDUCTION]
-                        time_sub = time[::TRACK_REDUCTION]
+                        lat_sub = lat[::TRACK_REDUCTION_IS2]
+                        lon_sub = lon[::TRACK_REDUCTION_IS2]
+                        time_sub = time[::TRACK_REDUCTION_IS2]
 
                         coord_is2 = np.vstack((lat_sub,lon_sub)).T
                         # get intersections
@@ -1135,9 +1412,9 @@ def find_xings_is2(date_list,file_dict,file_dict_colloc,common_data_list):
                             continue
 
                         # get subsection of track
-                        index = TRACK_REDUCTION*idx_is2
-                        first_index = index-int(index/TRACK_REDUCTION) if index-int(index/TRACK_REDUCTION)>0 else 0
-                        last_index = index+int(index/TRACK_REDUCTION) if index+int(index/TRACK_REDUCTION)< lat.size else lat.size-1
+                        index = TRACK_REDUCTION_IS2*idx_is2
+                        first_index = index-int(index/TRACK_REDUCTION_IS2) if index-int(index/TRACK_REDUCTION_IS2)>0 else 0
+                        last_index = index+int(index/TRACK_REDUCTION_IS2) if index+int(index/TRACK_REDUCTION_IS2)< lat.size else lat.size-1
                         idx_sub = np.arange(first_index,last_index)
                         lat_sect = lat[idx_sub]
                         lon_sect = lon[idx_sub]
@@ -1889,10 +2166,10 @@ if __name__ == '__main__':
         data_dict[sat]= {}
         data_dict[sat]['xings'] = {}
         if sat=='IS2':
-            data_dict['IS2']['xings'] = find_xings_is2(date_list,file_dict_all['IS2'],file_dict_colloc['IS2'],common_data_list)
+            data_dict['IS2']['xings'] = find_xings2_is2(date_list,file_dict_all['IS2'],file_dict_colloc['IS2'],common_data_list)
         else:
-            data_dict[sat]['xings'] = find_xings_sat(sat,date_list,file_dict_all[sat],common_data_list)
-
+            data_dict[sat]['xings'] = find_xings2_sat(sat,date_list,file_dict_all[sat],common_data_list)
+    
     """
     # apply weighting coefficients
     print("Applying weighting coefficients to xings params")
