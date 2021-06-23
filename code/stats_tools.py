@@ -43,9 +43,10 @@ PATH_OUT = "/home/antlafe/Documents/work/projet_cryo2ice/outputs/"
 param_opts = ['sd_month','find_regions']
 
 colors_scatter = ['mediumseagreen','cornflowerblue','red']
-colors_histo = ['mediumseagreen','cornflowerblue','royalblue','dodgerblue','navy','turquoise']
+colors_histo = ['mediumseagreen','cornflowerblue','royalblue','dodgerblue','navy','turquoise','blue']
+colors_histo_fill = ['mediumseagreen','cornflowerblue','cornflowerblue','cornflowerblue','cornflowerblue','cornflowerblue','cornflowerblue','cornflowerblue']
 color_line_histo =  ['mediumseagreen','cornflowerblue','royalblue','dodgerblue','navy','turquoise','dodgerblue']
-colors_plot_cs2 = ['deepskyblue','dodgerblue','turquoise','royalblue','palegreen','cornflowerblue','royalblue']
+colors_plot_cs2 = ['deepskyblue','dodgerblue','turquoise','royalblue','palegreen','cornflowerblue','royalblue','blue']
 
 ###########################################
 #
@@ -185,7 +186,7 @@ def plot_histo(ax,xylim,units,xlabel,legend_list,data_list,flag_commun_mask=Fals
     
     for n,(data,label) in enumerate(zip(data_list,legend_list)):
         #ax.hist(data[~data.mask], 100, range=[xylim[0],xylim[1]], histtype='step',alpha=0.1,linewidth=1.5,fill=True,label=label,color=colors_histo[n],edgecolor='black')
-        h = ax.hist(data[~data.mask], 100, range=[xylim[0],xylim[1]],lw=1,histtype=u'step', facecolor="None",edgecolor=colors_histo[n],label=label)
+        h = ax.hist(data[~data.mask], 100, range=[xylim[0],xylim[1]],lw=1,histtype=u'step', facecolor="None",edgecolor=colors_histo[n],label=label,fill=True,color=colors_histo_fill[n])
         if n==0: max_h = np.max(h[0])
         #data = ma.masked_where(np.isnan(data),data,copy=True) #[common_mask].
         Npts = np.sum(~data.mask)

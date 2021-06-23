@@ -138,8 +138,8 @@ if __name__ == '__main__':
     
     # Get gdr list
     # ---------------------------------------------------------
-    #prod_L2P = [g for g in args.gdrs.split(',')]
-    prod_L2P = ["LEGOS_T50","CPOM","ESA_BD_GDR","UOB","LEGOS_SAM"]
+    prod_L2P = [g for g in args.gdrs.split(',')]
+    #prod_L2P = ["LEGOS_T50","CPOM","ESA_BD_GDR","UOB","LEGOS_SAM"]
 
     # test if prod is available in pkl file
     if not all([g is not data_dict['CS2'].keys() for g in prod_L2P]):
@@ -1462,6 +1462,8 @@ if __name__ == '__main__':
         gaussian_w = np.ma.concatenate(list(np.array(data_dict['IS2']['ATL10']['gaussian_w_mean'],dtype=object)[idx_dates]),axis=0)
         roughness_log = np.ma.concatenate(list(np.array(data_dict['CS2']['UOB']['roughness'],dtype=object)[idx_dates]),axis=0)
 
+        icetype = np.ma.concatenate(icetype_al,axis=0)
+
         #atIS2 = np.ma.concatenate(list(np.array(data_dict['IS2']['ATL10']['lat'],dtype=object)[idx_dates]),axis=0)
         latCS2 = np.ma.concatenate(list(np.array(data_dict['CS2']['ESA_BD_GDR']['lat'],dtype=object)[idx_dates]),axis=0)
         lonCS2 = np.ma.concatenate(list(np.array(data_dict['CS2']['ESA_BD_GDR']['lon'],dtype=object)[idx_dates]),axis=0)
@@ -1494,10 +1496,58 @@ if __name__ == '__main__':
 
         # Histogramm freeboard
         #-------------------------------
-        """
+        
         xylim = [-0.2,0.6]
+       
+
+        # FYI
         f2, axh = plt.subplots(1, 1,figsize=(8,8))
-        f2.suptitle('Histogram of laser vs radar freeboard', fontsize=14)
+        flag_FYI = icetype==2
+        f2.suptitle('Histogram of laser vs radar freeboard FYI', fontsize=14)
+        
+        label_list = list()
+        data_list = list()
+        legend_list = list()
+        
+        label_IS2 = 'laser fb IS2 (m)'
+        legend_list.append(label_IS2)
+        data_list.append(laser_fb[flag_FYI])
+        xlabel= 'freeboard (m)'
+        
+        for nprod,cs2_gdr in enumerate(prod_L2P):
+
+            legend_list.append('radar freeboard [%s] (m)' %(cs2_gdr))
+            data_list.append(radar_fb_list[nprod][flag_FYI])
+        
+        st.plot_histo(axh,xylim,'m',xlabel,legend_list,data_list,True)
+        plt.show()
+
+
+        # MYI
+        f3, axh = plt.subplots(1, 1,figsize=(8,8))
+        flag_MYI = icetype==4
+        f3.suptitle('Histogram of laser vs radar freeboard MYI', fontsize=14)
+        
+        label_list = list()
+        data_list = list()
+        legend_list = list()
+        
+        label_IS2 = 'laser fb IS2 (m)'
+        legend_list.append(label_IS2)
+        data_list.append(laser_fb[flag_MYI])
+        xlabel= 'freeboard (m)'
+        
+        for nprod,cs2_gdr in enumerate(prod_L2P):
+
+            legend_list.append('radar freeboard [%s] (m)' %(cs2_gdr))
+            data_list.append(radar_fb_list[nprod][flag_MYI])
+        
+        st.plot_histo(axh,xylim,'m',xlabel,legend_list,data_list,True)
+        plt.show()
+
+        # ALL
+        f1, axh = plt.subplots(1, 1,figsize=(8,8))
+        f1.suptitle('Histogram of laser vs radar freeboard', fontsize=14)
         
         label_list = list()
         data_list = list()
@@ -1515,7 +1565,9 @@ if __name__ == '__main__':
         
         st.plot_histo(axh,xylim,'m',xlabel,legend_list,data_list,True)
         plt.show()
-        """
+        
+        
+        
 
         
         # map freeboard
