@@ -98,7 +98,7 @@ list_midnight_dates = {
 flag_1hz = False # should 1Hz data converted to 20hz
 flag_IS2_mean = True
 
-MAX_DIST_OF_COLLOC_DATA= 4.5 #
+MAX_DIST_OF_COLLOC_DATA= 5.5 #
 LAT_MIN = 55 # deg North
 N_IS2PTS_IN_CS2BEAMS = 200 #1500 #80
 
@@ -312,9 +312,9 @@ def get_strong_beams(filename):
     f=h5py.File(filename,'r')
     flag_orientation = np.array(f.get('orbit_info/sc_orient'))
     if flag_orientation==0: #backward
-        beamN = ['gt1l','gt2l','gt3l']
+        beamN = {'b1':'gt1l','b2':'gt2l','b3':'gt3l'}
     elif flag_orientation==1: #forward
-        beamN = ['gt1r','gt2r','gt3r']
+        beamN = {'b1':'gt1r','b2':'gt2r','b3':'gt3r'}
     else:
         beamN = None
     return beamN
@@ -388,12 +388,12 @@ def get_collocated_data(date_list,file_dict):
 
             print(beamName)
             
-            for beam in beamName:
+            for beam in beamName.keys():
 
                 print("\n Beam %s: %s\n-----------" %(beam,is2_gdr))
 
                 dict_common_data[is2_gdr][beam] = {}
-                data_desc_is2 = is2_dict.init_dict(is2_gdr,beam,'granules')    
+                data_desc_is2 = is2_dict.init_dict(is2_gdr,beamName[beam],'granules')    
                 lat_i,lon_i,time_i,x_dist,valid_idx = cf.get_coord_from_hf5(filename,data_desc_is2,'01',LAT_MIN)
 
                 # check collocation
@@ -508,9 +508,9 @@ def get_collocated_data(date_list,file_dict):
             # Selection of common track section
             # initiate and end all data with same CS2 beam
             #cs2_inter = np.arange(lat_c.size)[1:-1] #initialize with all indexes to avoid associating data from far before first point
-            cs2_union = dict_common_data[is2_gdr][beamName[0]]['idx_cs2'][0:-1]
+            cs2_union = dict_common_data[is2_gdr]['b2']['idx_cs2'][0:-1]
             # WARNING: beware of small IS25 beam that constrain other
-            for beam in beamName:
+            for beam in beamName.keys():
                 #cs2_inter = list(set(cs2_inter)&set(dict_common_data[is2_gdr][beam]['idx_cs2']))
                 cs2_union = list(set(cs2_union)|set(dict_common_data[is2_gdr][beam]['idx_cs2'][0:-1]))
 
@@ -536,7 +536,7 @@ def get_collocated_data(date_list,file_dict):
             print("\n Data gaps in ref track %s \n %s :\n" %(REF_GDR,date_str), dict_common_data['idx_gaps'])
             
             # For each beam apply selection
-            for beam in beamName:
+            for beam in beamName.keys():
                 #flag_common_track = np.logical_and(dict_common_data[is2_gdr][beam]['cs2_idx_in_is2']>=cs2_inter[0],dict_common_data[is2_gdr][beam]['cs2_idx_in_is2']<=cs2_inter[-1])
                 #dict_common_data[is2_gdr][beam]['cs2_idx_in_is2'] = dict_common_data[is2_gdr][beam]['cs2_idx_in_is2'] #[flag_common_track]
                 dict_common_data[is2_gdr][beam]['ref_idx'] = dict_common_data[is2_gdr][beam]['cs2_idx_in_is2'] - cs2_union[0]# - cs2_inter[0]
@@ -1229,10 +1229,10 @@ def find_xings2_is2(date_list,file_dict,file_dict_colloc,common_data_list):
                         continue
 
                     # for each beam
-                    for beam in beamName:
+                    for beam in beamName.keys():
 
                         print("%s" %(beam))
-                        data_desc = is2_dict.init_dict(gdr,beam,'granules')
+                        data_desc = is2_dict.init_dict(gdr,beamName[beam],'granules')
 
                         # initiation array of lists for specific params
                         if nfile==1:
@@ -1364,10 +1364,10 @@ def find_xings_is2(date_list,file_dict,file_dict_colloc,common_data_list):
                         continue
 
                     # for each beam
-                    for beam in beamName:
+                    for beam in beamName.keys():
 
                         print("%s" %(beam))
-                        data_desc = is2_dict.init_dict(gdr,beam,'granules')
+                        data_desc = is2_dict.init_dict(gdr,beamName[beam],'granules')
 
                         # initiation of data list for params
                         if nfile==1:
@@ -1447,7 +1447,7 @@ def find_xings_is2(date_list,file_dict,file_dict_colloc,common_data_list):
                             #if len(data_list['delay'][idx])>0:
                                 #print('delay',idx,np.array(data_list['delay'][idx]))
                             data_list['dist'][idx].extend(new_dist[np.argwhere(ref_idx==idx).flatten()].tolist())
-                            data_list['beam'][idx].extend((beam_dict[beamName[beam]]*np.ones(size)).tolist())
+                            data_list['beam'][idx].extend((beam_dict[beam]*np.ones(size)).tolist())
 
                             data_list['weight'][idx].extend(weight[np.argwhere(ref_idx==idx).flatten()].tolist())
                         # Adding new track parameters data to list
@@ -1532,7 +1532,7 @@ def concatenate_is2_data(date_list,file_dict,common_data_list):
                 is2_data_dict[gdr]['beamName'] = beamName
             
             # + ['swath'] if swath added
-            for b in beamName:
+            for b in beamName.keys():
 
                 flag_data_dict[gdr][date_str][b] = dict()
                 #if gdr=='ATL07' and b=='swath':continue
@@ -1541,7 +1541,7 @@ def concatenate_is2_data(date_list,file_dict,common_data_list):
                 # init data dict for beam b
                 if n==0:is2_data_dict[gdr][b]= {}
             
-                data_desc_is2 = is2_dict.init_dict(gdr,b,'granules')
+                data_desc_is2 = is2_dict.init_dict(gdr,beamName[b],'granules')
                 lat_i,lon_i,time_i,x_dist,valid_idx = cf.get_coord_from_hf5(filename,data_desc_is2,'01',LAT_MIN)
 
                 
@@ -1697,7 +1697,7 @@ def get_beamwise_mean(date_list,ref_data_dict,is2_data_dict,is2_info_dict): #,co
                 for p in is2_list_param[gdr]: is2_data_list[p] = list();
                 # For each beam
                 beamName = is2_data_dict[gdr]['beamName']
-                for b in beamName:
+                for b in beamName.keys():
 
                     idx, = np.where(is2_data_dict[gdr][b]['ref_idx'][n]==ref_idx)
                     #if idx.size==0: continue
@@ -1842,7 +1842,7 @@ def sort_IS2_in_CS2_beam(date_list,ref_data_dict,is2_data_dict,is2_info_dict,com
 
     for n,date in enumerate(date_list):
          for gdr in is2_gdrs:
-             for b in beamName:
+             for b in beamName.keys():
                  
                  unique, counts = np.unique(is2_data_dict[gdr][b]['ref_idx'][n], return_counts=True)
                  print("%i:%s:%s - %i" %(n,gdr,b,np.max(counts)))
@@ -1869,7 +1869,7 @@ def sort_IS2_in_CS2_beam(date_list,ref_data_dict,is2_data_dict,is2_info_dict,com
 
                 for p in is2_list_param[gdr]: is2_data_list[p] = list();
                 # For each beam
-                for b in beamName:
+                for b in beamName.keys():
 
                     idx, = np.where(is2_data_dict[gdr][b]['ref_idx'][n]==ref_idx)
                     #print("%s: %s - %i" %(gdr,b,idx.size))
@@ -1880,7 +1880,7 @@ def sort_IS2_in_CS2_beam(date_list,ref_data_dict,is2_data_dict,is2_info_dict,com
                         # if param is beam
                         if p=='beam':
                             #is2_data_list[p].append(np.array([b for n in np.arange(idx.size)]))
-                            id_beam = beam_dict[beamName[b]]
+                            id_beam = beam_dict[b]
                             is2_data_list[p].append(np.array([id_beam for n in np.arange(idx.size)]))
                         # if in list of common params
                         elif p in list_params_all +list_params_coords:

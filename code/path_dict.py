@@ -2,6 +2,7 @@
 # PATH dictionnary
 ################################
 
+"""
 # on PC
 #---------------
 PATH_DICT = {
@@ -17,18 +18,19 @@ PATH_DICT = {
     # Repertory to store output figures
     'PATH_FIG': '/home/antlafe/Documents/work/figures/cryo2ice/outputs/',
 }
-
-
 """
+
+
+
 # onHAL:
 #---------------
 PATH_DICT = {
     
     'PATH_OUT': '/work/ALT/odatis/seaice/users/laforga/data/CRYO2ICE/Cryo2Ice/',
-    'PATH_DATA': '/home/antlafe/Documents/work/data/',
-    'PATH_COLLOC': '/home/antlafe/Documents/work/data/CRYO2ICE/',
+    'PATH_DATA': '/work/ALT/odatis/seaice/users/laforga/data/',
+    'PATH_COLLOC': '/work/ALT/odatis/seaice/users/laforga/data/CRYO2ICE/',
     'PATH_GRID': '/work/ALT/odatis/seaice/users/laforga/grid_data/',
     'PATH_FIG': '/work/ALT/odatis/seaice/users/laforga/figures/',
 
 }
-"""
+
