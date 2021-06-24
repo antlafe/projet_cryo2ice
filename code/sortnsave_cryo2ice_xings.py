@@ -928,8 +928,12 @@ def find_xings2_sat(satName,date_list,file_dict,common_data_list):
                             continue
 
                         param,units,param_is_flag = cf.get_param_from_netcdf(filename,data_desc,pname,'01',LAT_MIN)
-                        mean_p = np.ma.mean(param[idx_sub])
-                        std_p = np.ma.std(param[idx_sub])
+                        if param is None:
+                            mean_p = np.nan
+                            std_p = np.nan
+                        else:
+                            mean_p = np.ma.mean(param[idx_sub])
+                            std_p = np.ma.std(param[idx_sub])
                         data_list[pname][n].append(mean_p)
                         #data_list[pname]['std'].append(mean_p)
                         
@@ -1277,8 +1281,13 @@ def find_xings2_is2(date_list,file_dict,file_dict_colloc,common_data_list):
                                 continue
 
                             param,units,param_is_flag = cf.get_param_from_hf5(filename,data_desc,pname,'01',LAT_MIN)
-                            mean_p = np.ma.mean(param[idx_sub])
-                            std_p = np.ma.std(param[idx_sub])
+                            if param is None:
+                                mean_p = np.nan
+                                std_p = np.nan
+                            else:
+                                mean_p = np.ma.mean(param[idx_sub])
+                                std_p = np.ma.std(param[idx_sub])
+                                
                             data_list[pname][n].append(mean_p)
 
     
