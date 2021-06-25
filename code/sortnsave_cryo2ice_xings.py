@@ -307,14 +307,28 @@ def get_avail_files(satName,prod_list,date_list,flag_colloc):
     return file_dict,date_list
 
 
-def get_strong_beams(filename):
+def get_strong_beams(filename,is2Beams):
 
     f=h5py.File(filename,'r')
     flag_orientation = np.array(f.get('orbit_info/sc_orient'))
     if flag_orientation==0: #backward
-        beamN = {'b1':'gt1l','b2':'gt2l','b3':'gt3l'}
+        if is2Beams==['b1']:
+            beamN = {'b1':'gt1l'}
+        elif is2Beams==['b2']:
+            beamN = {'b2':'gt2l'}
+        elif is2Beams==['b3']:
+            beamN = {'b3':'gt3l'}
+        else:
+            beamN = {'b1':'gt1l','b2':'gt2l','b3':'gt3l'}
     elif flag_orientation==1: #forward
-        beamN = {'b1':'gt1r','b2':'gt2r','b3':'gt3r'}
+        if is2Beams==['b1']:
+            beamN = {'b1':'gt1r'}
+        elif is2Beams==['b2']:
+            beamN = {'b2':'gt2r'}
+        elif is2Beams==['b3']:
+            beamN = {'b3':'gt3r'}
+        else:
+            beamN = {'b1':'gt1r','b2':'gt2r','b3':'gt3r'}
     else:
         beamN = None
     return beamN
@@ -325,7 +339,7 @@ def get_strong_beams(filename):
 #---------------------------------
 
 
-def get_collocated_data(date_list,file_dict):
+def get_collocated_data(date_list,file_dict,is2Beams):
 
     """
     Associate and sort collocated track points 
@@ -383,7 +397,7 @@ def get_collocated_data(date_list,file_dict):
             #else: beam_list = ['swath']; continue # XXX to modify
             dict_common_data[is2_gdr] = {}
             filename = file_dict['IS2'][is2_gdr][date_str]
-            beamName = get_strong_beams(filename)
+            beamName = get_strong_beams(filename,is2Beams)
             if beamName is None: continue
 
             print(beamName)
@@ -508,7 +522,7 @@ def get_collocated_data(date_list,file_dict):
             # Selection of common track section
             # initiate and end all data with same CS2 beam
             #cs2_inter = np.arange(lat_c.size)[1:-1] #initialize with all indexes to avoid associating data from far before first point
-            cs2_union = dict_common_data[is2_gdr]['b2']['idx_cs2'][0:-1]
+            cs2_union = dict_common_data[is2_gdr][is2Beams[0]]['idx_cs2'][0:-1]
             # WARNING: beware of small IS25 beam that constrain other
             for beam in beamName.keys():
                 #cs2_inter = list(set(cs2_inter)&set(dict_common_data[is2_gdr][beam]['idx_cs2']))
@@ -754,12 +768,20 @@ def concatenate_cs2_data(date_list,file_dict,common_data_list):
                     # param status
                     if param is None:
                         flag_data_dict[gdr][date_str_cs2][pname]['status']='NOK'
-                        continue
+                        
+                        #continue
                     else:
                         flag_data_dict[gdr][date_str_cs2][pname]['status']='OK'
 
                     # initiate masked array to record data
-                    if pname in matrixParamList:
+                    if param is None:
+                        data_param = ma.masked_array(np.zeros((ref_size,)),mask=np.ones((ref_size,)))
+                        cs2_data_dict[gdr][pname].append(data_param)
+                        flag_data_dict[gdr][date_str_cs2][pname]['is_flag'] = param_is_flag
+                        flag_data_dict[gdr][date_str_cs2][pname]['name'] = prodname
+                        continue
+                        
+                    elif pname in matrixParamList:
                         ngate = param.shape[1]
                         data_param = ma.masked_array(np.zeros((ref_size,ngate)),mask=np.ones((ref_size,ngate)))
                     elif flag_1hz and freq=='hf':
@@ -1159,7 +1181,7 @@ def find_xings_sat(satName,date_list,file_dict,common_data_list):
 
 
 # Finding crossings and collocated data of IS2
-def find_xings2_is2(date_list,file_dict,file_dict_colloc,common_data_list):
+def find_xings2_is2(date_list,file_dict,file_dict_colloc,common_data_list,is2Beams):
     
     # Init CS2 data dictionnary
     data_dict = dict()
@@ -1224,7 +1246,7 @@ def find_xings2_is2(date_list,file_dict,file_dict_colloc,common_data_list):
                     print("%i/%i" %(nfile,nfiles))
                     
                     # get orientation
-                    beamName = get_strong_beams(filename)
+                    beamName = get_strong_beams(filename,is2Beams)
                     if beamName is None: continue
                     
                     # to avoid considering collocated tracks
@@ -1300,7 +1322,7 @@ def find_xings2_is2(date_list,file_dict,file_dict_colloc,common_data_list):
 
         
 # Finding crossings and collocated data of IS2
-def find_xings_is2(date_list,file_dict,file_dict_colloc,common_data_list):
+def find_xings_is2(date_list,file_dict,file_dict_colloc,common_data_list,is2Beams):
     
     # Init CS2 data dictionnary
     data_dict = dict()
@@ -1364,7 +1386,7 @@ def find_xings_is2(date_list,file_dict,file_dict_colloc,common_data_list):
                     nfile = nfile+1
 
                     # get orientation
-                    beamName = get_strong_beams(filename)
+                    beamName = get_strong_beams(filename,is2Beams)
                     if beamName is None: continue
                     
                     # to avoid considering collocated tracks
@@ -1513,7 +1535,7 @@ def find_xings_is2(date_list,file_dict,file_dict_colloc,common_data_list):
     return data_dict
 
 
-def concatenate_is2_data(date_list,file_dict,common_data_list):
+def concatenate_is2_data(date_list,file_dict,common_data_list,is2Beams):
 
     # Init IS2 data dictionnary
     is2_data_dict = dict()
@@ -1535,7 +1557,7 @@ def concatenate_is2_data(date_list,file_dict,common_data_list):
             filename = file_dict[gdr][date_str]
 
             # get beam names
-            beamName = get_strong_beams(filename)
+            beamName = get_strong_beams(filename,is2Beams)
             if beamName is None: continue
             else:
                 is2_data_dict[gdr]['beamName'] = beamName
@@ -2023,6 +2045,9 @@ if __name__ == '__main__':
     parent = parser.add_argument('-s', '--satellite',required=True,action=ParentAction)
     
     parser.add_argument("-g","--gdrs",help="set desired gdr (only for CryoSat-2)",action=ChildAction, parent=parent)
+    
+    
+    parser.add_argument("-b","--is2Beams",required=True,help="provide IS2 strongs beams to plot")
 
     parser.add_argument("-d","--date",required=True,help="provide CS2 track date")
 
@@ -2062,6 +2087,9 @@ if __name__ == '__main__':
         print("No available data in ",cs2_gdrs)
         print("Check CS2 dictionnary")
         sys.exit()
+
+    # get Is2 beams
+    is2Beams = [b for b in args.is2Beams.split(',')]
 
     # Xings options
     #-----------------------------------------------------
@@ -2143,7 +2171,7 @@ if __name__ == '__main__':
     # Get position of matching data between IS2 and CS2
     # -----------------------------------------------------------
     print("\n# Sorting data\n##################")
-    common_data_list = get_collocated_data(date_list,file_dict_colloc)
+    common_data_list = get_collocated_data(date_list,file_dict_colloc,is2Beams)
 
     # Concatanate data
     # -----------------------------------------------------------
@@ -2158,7 +2186,7 @@ if __name__ == '__main__':
     # find xings points with collocated tracks
     
     data_dict['CS2'],cs2_info_dict = concatenate_cs2_data(date_list,file_dict_colloc['CS2'],common_data_list)
-    data_dict['IS2'],is2_info_dict = concatenate_is2_data(date_list,file_dict_colloc['IS2'],common_data_list)
+    data_dict['IS2'],is2_info_dict = concatenate_is2_data(date_list,file_dict_colloc['IS2'],common_data_list,is2Beams)
 
     # Get only mean values or full matrices
     if flag_IS2_mean:
@@ -2175,7 +2203,7 @@ if __name__ == '__main__':
         data_dict[sat]= {}
         data_dict[sat]['xings'] = {}
         if sat=='IS2':
-            data_dict['IS2']['xings'] = find_xings2_is2(date_list,file_dict_all['IS2'],file_dict_colloc['IS2'],common_data_list)
+            data_dict['IS2']['xings'] = find_xings2_is2(date_list,file_dict_all['IS2'],file_dict_colloc['IS2'],common_data_list,is2Beams)
         else:
             data_dict[sat]['xings'] = find_xings2_sat(sat,date_list,file_dict_all[sat],common_data_list)
     

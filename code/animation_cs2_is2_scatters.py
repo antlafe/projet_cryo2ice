@@ -98,7 +98,7 @@ list_midnight_dates = {
 
 #list_midnight_dates = ['20201018','20201108'] 
 
-dist_frame = 40#km
+dist_frame = 100#km
 interval = 10 #ms
 show_plot = False
 outfilename= 'colloc_nov_jan20_full_esa'
@@ -108,7 +108,7 @@ MIN_IS2_DATA_DENSITY = 1 #00 # pts/km
 MIN_CS2_DATA_DENSITY = 0.3 # pts/km
 
 # limits 
-xylim = [-0.3, 0.5] # scatter limits
+xylim = [-0.3, 0.6] # scatter limits
 snowlim = [0,0.4]
 
 
@@ -1112,11 +1112,10 @@ if __name__ == '__main__':
 
     # define annotations
     # ---------------------------------------------------------
-    
     bbox_props = dict(boxstyle="round", fc="white", ec="black",alpha=0.8, lw=1)
     # annotations
-    an_is2 = ax2.annotate('', xy=(0, 0), xycoords='data', xytext=(-500, -500), textcoords='data',fontsize=14,color='black',zorder=4)
-    an_cs2 = ax2.annotate('', xy=(0, 0), xycoords='data', xytext=(-500, -500), textcoords='data',fontsize=14,color='black',zorder=4)
+    an_is2 = ax2.annotate('', xy=(0, 0), xycoords='data', xytext=(-500, -500), textcoords='data',fontsize=14,color='black',zorder=4,bbox=bbox_props)
+    an_cs2 = ax2.annotate('', xy=(0, 0), xycoords='data', xytext=(-500, -500), textcoords='data',fontsize=14,color='black',zorder=4,bbox=bbox_props)
     an_delay = ax2.annotate("", xy=(0.02, 0.90), xycoords='axes fraction', fontsize=11,bbox=bbox_props)
     an_dist = ax2.annotate("", xy=(0.02, 0.85), xycoords='axes fraction', fontsize=11,bbox=bbox_props)
     an_date = ax2.annotate("", xy=(0.02, 0.95), xycoords='axes fraction', fontsize=11,bbox=bbox_props)

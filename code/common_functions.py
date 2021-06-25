@@ -769,9 +769,13 @@ def get_param_from_netcdf(filename,data_desc,p_name,hemispherecode,LAT_BOUND):
 
     # Applying quality flag for baseline-D
     if 'ESA_BD' in filename.split('/')[-3]:
-        if p_name=='radar_freeboard':
+        if p_name=='radar_fb':
             quality_flag = ma.ravel(f.variables[data_desc['quality_flag']][:])
-            flag = get_valid_freeboard_flag(quality_flag)
+            flag = get_valid_freeboard_flag(quality_flag).astype(bool)
+            param = ma.masked_where(~flag,param,copy=True)
+        elif p_name=='sla':
+            quality_flag = ma.ravel(f.variables[data_desc['quality_flag']][:])
+            flag = get_valid_sla_flag(quality_flag).astype(bool)
             param = ma.masked_where(~flag,param,copy=True)
         else:
             param = ma.masked_where(param==0.0,param,copy=True)
@@ -1640,6 +1644,69 @@ def get_regional_sd_mean(datasetName,polygon,monthsList,flag_FYI):
             
     return snow_list,snow_unc_list
 
+def get_valid_sla_flag(flag):
+
+    dict_error= {
+       
+        #'sarin_bad_velocity'       : 2,
+        #'sarin_out_of_range'       : 4,
+        'sarin_bad_baseline'       : 8,
+        'delta_time_error'         :32,
+        'mispointing_error'        :64,
+        'sarin_height_ambiguous'   :2048,
+        'surf_type_class_ocean'    :32768,
+        #'peakiness_error'          :131072,
+        'ssha_interp_error'        :262144,
+        'orbit_error'              :67108864,
+        #'height_sea_ice_error'     :268435456,
+        }
+
+    all_flag= {
+
+        'calibration_warning'      : 1,
+        'sarin_bad_velocity'       : 2,
+        'sarin_out_of_range'       : 4,
+        'sarin_bad_baseline'       : 8,
+        'lrm_slope_model_invalid'  :16,
+        'delta_time_error'         :32,
+        'mispointing_error'        :64,
+        'surface_model_unavailable':128,
+        'sarin_side_redundant'     :256,
+        'sarin_rx_2_error'         :512,
+        'sarin_rx_1_error'         :1024,
+        'sarin_height_ambiguous'   :2048,
+        'surf_type_class_undefined':4096,
+        'surf_type_class_sea_ice'  :8192,
+        'surf_type_class_lead'     :16384,
+        'surf_type_class_ocean'    :32768,
+        'freeboard_error'          :65536,
+        'peakiness_error'          :131072,
+        'ssha_interp_error'        :262144,
+        'sig0_3_error'             :524288,
+        'sig0_2_error'             :1048576,
+        'sig0_1_error'             :2097152,
+        'height_3_error'           :4194304,
+        'height_2_error'           :8388608,
+        'height_1_error'           :16777216,
+        'orbit_discontinuity'      :33554432,
+        'orbit_error'              :67108864,
+        'block_degraded'           :134217728,
+        'height_sea_ice_error'     :268435456,
+        }
+
+    # sea ice class
+    flag_seaice = np.bitwise_and(flag, all_flag['surf_type_class_sea_ice'])/all_flag['surf_type_class_sea_ice']
+
+    # errors
+    flag_error = np.zeros(flag.size)
+    for key in dict_error.keys():
+        flag0_error = np.bitwise_and(flag,dict_error[key])/dict_error[key]
+        flag_error = np.logical_or(flag0_error,flag_error)
+
+    flag_valid_sla = flag_seaice - flag_error
+    flag_valid_sla[flag_valid_sla<0] =0
+
+    return flag_valid_sla
 
 
 def get_valid_freeboard_flag(flag):

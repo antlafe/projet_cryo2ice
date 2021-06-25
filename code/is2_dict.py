@@ -59,7 +59,7 @@ def init_dict(dataproduct,BeamN,segment):
 
             'h_confidence': '/'+BeamN+'/freeboard_beam_segment/height_segments/height_segment_confidence',
             'gaussian_w': '/'+BeamN+'/freeboard_beam_segment/height_segments/height_segment_w_gaussian',
-            'bsnow_con' : '/'+BeamN+'/freeboard_beam_segment/height_segments/bsnow_con',
+            #'bsnow_con' : '/'+BeamN+'/freeboard_beam_segment/height_segments/bsnow_con',
             'flag_leads'   : '/'+BeamN+'/freeboard_beam_segment/height_segments/height_segment_ssh_flag',
             'surface_h'    : '/'+BeamN+'/freeboard_beam_segment/height_segments/height_segment_height',
             'surface_type' :  '/'+BeamN+'/freeboard_beam_segment/height_segments/height_segment_type',
@@ -68,6 +68,17 @@ def init_dict(dataproduct,BeamN,segment):
 
             # group: geophysical
             'mss'          : '/'+BeamN+'/freeboard_beam_segment/geophysical/height_segment_mss',
+            'dac': '/'+BeamN+'/freeboard_beam_segment/geophysical/height_segment_dac',
+            'earth': '/'+BeamN+'/freeboard_beam_segment/geophysical/height_segment_earth',
+            'earth_f2m': '/'+BeamN+'/freeboard_beam_segment/geophysical/height_segment_earth_free2mean',
+            'load': '/'+BeamN+'/freeboard_beam_segment/geophysical/height_segment_load',
+            'lpe': '/'+BeamN+'/freeboard_beam_segment/geophysical/height_segment_lpe',
+            'ocean': '/'+BeamN+'/freeboard_beam_segment/geophysical/height_segment_ocean',
+            'pole': '/'+BeamN+'/freeboard_beam_segment/geophysical/height_segment_tide_pole',
+
+
+
+
             },
 
             'swath':{

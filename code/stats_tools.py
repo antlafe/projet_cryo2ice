@@ -186,7 +186,8 @@ def plot_histo(ax,xylim,units,xlabel,legend_list,data_list,flag_commun_mask=Fals
     
     for n,(data,label) in enumerate(zip(data_list,legend_list)):
         #ax.hist(data[~data.mask], 100, range=[xylim[0],xylim[1]], histtype='step',alpha=0.1,linewidth=1.5,fill=True,label=label,color=colors_histo[n],edgecolor='black')
-        h = ax.hist(data[~data.mask], 100, range=[xylim[0],xylim[1]],lw=1,histtype=u'step', facecolor="None",edgecolor=colors_histo[n],label=label,fill=True,color=colors_histo_fill[n])
+        h = ax.hist(data[~data.mask], 200, range=[xylim[0],xylim[1]],lw=1,histtype=u'step', facecolor=colors_histo_fill[n],label=label,fill=True,alpha=0.3)
+        h = ax.hist(data[~data.mask], 200, range=[xylim[0],xylim[1]],lw=1,histtype=u'step', facecolor="None",edgecolor=colors_histo[n])
         if n==0: max_h = np.max(h[0])
         #data = ma.masked_where(np.isnan(data),data,copy=True) #[common_mask].
         Npts = np.sum(~data.mask)
@@ -283,10 +284,10 @@ def plot_track_map(fig,axm,lon,lat,data,label,xylim,date_icetype,units,flag_comp
     ndata = data.size - np.sum(data.mask)
     scat= m.scatter(x,y,c=data,s=size,cmap=cmap,vmin=xylim[0],vmax=xylim[1],zorder=3,alpha=alpha)
     cbaxes = fig.add_axes([0.85, 0.28, 0.02, 0.5]) 
-    #cb = fig.colorbar(scat, ax=axm,cax = cbaxes,extend='both',fraction=0.046, pad=0.04,shrink=0.80)
+    cb = fig.colorbar(scat, ax=axm,cax = cbaxes,extend='both',fraction=0.046, pad=0.04,shrink=0.80)
 
-    loc = mdates.AutoDateLocator()
-    cb = fig.colorbar(scat, ticks=loc,format=mdates.AutoDateFormatter(loc),ax=axm,cax = cbaxes,extend='both',fraction=0.046, pad=0.04,shrink=0.80)
+    #loc = mdates.AutoDateLocator()
+    #cb = fig.colorbar(scat, ticks=loc,format=mdates.AutoDateFormatter(loc),ax=axm,cax = cbaxes,extend='both',fraction=0.046, pad=0.04,shrink=0.80)
     cb.set_label("%s [%s]" %(label,units),fontsize=12)
 
     

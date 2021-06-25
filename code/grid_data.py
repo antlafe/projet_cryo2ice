@@ -46,7 +46,8 @@ import glob
 from datetime import date, timedelta, datetime
 import argparse
 from scipy import signal
-import cryosat2_dict as cs2_dict
+import cs2_dict
+#import cryosat2_dict as cs2_dict
 import is2_dict
 import common_functions as cf
 import time
@@ -67,7 +68,8 @@ PATH_INPUT = path_dict.PATH_DICT['PATH_DATA']
 
 # change if looking at Antarctica
 global LAT_BOUND
-LAT_BOUND = 61.6  #1.8772498200144 #65 # deg north [61.6: 500]
+LAT_BOUND = 49.9532  #1.8772498200144 #65 # deg north [61.6: 500]
+#LAT_BOUND = 61.6  #1.8772498200144 #65 # deg north [61.6: 500]
 
 show_figure = False
 
@@ -310,16 +312,28 @@ def grid_and_filter_wrt_distance(lon, lat, all_data_in, map_frame, pixel_size=10
     return x_grid, y_grid, lat_grid_mesh, lon_grid_mesh, x_grid_mesh, y_grid_mesh, data_results
 
 
-def get_strong_beams(filename):
+def get_strong_beams(filename,is2Beams):
 
     f=h5py.File(filename,'r')
     flag_orientation = np.array(f.get('orbit_info/sc_orient'))
     if flag_orientation==0: #backward
-        beamN = ['gt1l','gt2l','gt3l']
-        #beamN = ['gt2l']
+        if is2Beams==['b1']:
+            beamN = {'b1':'gt1l'}
+        elif is2Beams==['b2']:
+            beamN = {'b2':'gt2l'}
+        elif is2Beams==['b3']:
+            beamN = {'b3':'gt3l'}
+        else:
+            beamN = {'b1':'gt1l','b2':'gt2l','b3':'gt3l'}
     elif flag_orientation==1: #forward
-        beamN = ['gt1r','gt2r','gt3r']
-        #beamN = ['gt2r']
+        if is2Beams==['b1']:
+            beamN = {'b1':'gt1r'}
+        elif is2Beams==['b2']:
+            beamN = {'b2':'gt2r'}
+        elif is2Beams==['b3']:
+            beamN = {'b3':'gt3r'}
+        else:
+            beamN = {'b1':'gt1r','b2':'gt2r','b3':'gt3r'}
     else:
         beamN = None
     return beamN
@@ -352,6 +366,8 @@ if __name__ == '__main__':
 
     parser.add_argument("-g","--gdr",help="provide input gdr")
 
+    parser.add_argument("-b","--is2Beams",required=True,help="provide IS2 strongs beams to plot")
+
     parser.add_argument("-d","--date",help="provide input date (month)")
 
     parser.add_argument("-hp","--hemisphere",required=True,help="provide hemisphere code (N=01/S=02)")
@@ -369,6 +385,9 @@ if __name__ == '__main__':
 
     # 
     outfolder = args.outputfile
+
+    #
+    is2Beams = [b for b in args.is2Beams.split(',')]
 
     #
     if args.inputfile is None: inputfile=None
@@ -459,9 +478,9 @@ if __name__ == '__main__':
 
 
         elif sat=='IS2':
-            beamName = get_strong_beams(filename)
-            for beam in beamName:
-                data_desc_is2 = is2_dict.init_dict(gdr,beam,'granules')
+            beamName = get_strong_beams(filename,is2Beams)
+            for beam in beamName.keys():
+                data_desc_is2 = is2_dict.init_dict(gdr,beamName[beam],'granules')
 
                 lat,lon,timeIS2,x_dist,selected_idx = cf.get_coord_from_hf5(filename,data_desc_is2,hemispherecode,LAT_BOUND)
                 if lat is None: continue
