@@ -1,0 +1,21 @@
+[PROLOGUE] Starting prologue on node node221 at date Mon Jul  5 07:44:38 UTC 2021
+[PROLOGUE] Ending prologue on node node221 at date Mon Jul  5 07:44:38 UTC 2021
+[EPILOGUE] Starting epilogue on node node221 at date Mon Jul  5 07:44:45 UTC 2021
+
+------------ JOB INFO 11044413.admin01 -------------
+
+JOBID		: 11044413.admin01
+USER		: laforga
+GROUP		: pmfaps
+JOB NAME	: sort_C2IATL10xb
+SESSION		: 11705
+RES REQSTED	: ncpus=1,mem=35000mb,walltime=250:00:00,place=free
+RES USED	: cpupercent=0,cput=00:00:02,ncpus=1,vmem=89016kb,mem=89016kb,walltime=00:00:06
+BILLING         : 00:00:06 (ncpus x walltime)
+QUEUE		: qtmax
+ACCOUNT		: null
+JOB EXIT CODE	: 2
+
+------------ END JOB INFO 11044413.admin01 ---------
+
+[EPILOGUE] Ending epilogue on node node221 at date Mon Jul  5 07:44:45 UTC 2021

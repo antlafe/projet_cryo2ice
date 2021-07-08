@@ -1,0 +1,22 @@
+#!/bin/bash
+#PBS -N check_SA
+#PBS -l select=1:ncpus=2:mem=15000mb                                                                
+#PBS -l walltime=50:00:00
+#PBS -e /work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/jobs_pbs/errors/ 
+#PBS -o /work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/jobs_pbs/errors/                 
+
+# Load Modules here                                                                                 
+
+module load python/3.7.2
+module load ct_tools/2.18
+
+cd /work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/code/
+
+python check_siralb_cryo2ice.py -pi /work/ALT/odatis/seaice/users/laforga/data/CRYO2ICE/IS2/ATL10/202011/  -pc /work/ALT/odatis/seaice/users/laforga/data/CRYO2ICE/CS2/ESA_BD_GDR/202011/ -b b1 -d20201101,20201130 -o /work/ALT/odatis/seaice/users/laforga/figures/check_siralB/b1_
+
+python check_siralb_cryo2ice.py -pi /work/ALT/odatis/seaice/users/laforga/data/CRYO2ICE/IS2/ATL10/202012/  -pc /work/ALT/odatis/seaice/users/laforga/data/CRYO2ICE/CS2/ESA_BD_GDR/202012/ -b b1 -d20201201,20201231 -o /work/ALT/odatis/seaice/users/laforga/figures/check_siralB/b1_
+
+python check_siralb_cryo2ice.py -pi /work/ALT/odatis/seaice/users/laforga/data/CRYO2ICE/IS2/ATL10/202101/  -pc /work/ALT/odatis/seaice/users/laforga/data/CRYO2ICE/CS2/ESA_BD_GDR/202101/ -b b1 -d20210101,20210131 -o /work/ALT/odatis/seaice/users/laforga/figures/check_siralB/b1_
+
+
+

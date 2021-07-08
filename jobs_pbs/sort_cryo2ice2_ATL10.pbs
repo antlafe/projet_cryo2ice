@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -N sort_C2Iall
+#PBS -N sort_C2ESA
 #PBS -l select=1:ncpus=1:mem=25000mb
 #PBS -l walltime=9:00:00
 #PBS -e /work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/data/Cryo2Ice/errors/
@@ -12,6 +12,6 @@ module load ct_tools/2.18
 
 cd /work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/code/
 
-python sortnsave_cryo2ice_xings.py -s CS2 -g ESA_BD_GDR,CPOM,LEGOS_SAM,LEGOS_T50,UOB,AWI -d20201101,20201231 -ofn NovDec_all
+python sortnsave_cryo2ice_xings.py -s CS2 -g ESA_BD_GDR -d20201101,20210131 -ofn NovJan_ESA
 #python sortnsave_cryo2ice_xings.py -s CS2 -g ESA_BD_GDR -d20201101,20210131 -ofn NovJan_ESA
 

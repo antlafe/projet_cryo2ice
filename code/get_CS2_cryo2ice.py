@@ -38,11 +38,13 @@ import glob
 import argparse
 from datetime import datetime,timedelta
 import xlrd
+import path_dict
+import netCDF4 as nc
 
 # Global attributs
 ###########################################
 
-spreadsheetpath = '/home/antlafe/Documents/work/projet_cryo2ice/data/CRYO2ICE_tracks.xlsx'
+spreadsheetpath = path_dict.PATH_DICT['PATH_SPREADSHEET']+ '/CRYO2ICE_tracks.xlsx'
 
 
 filepattern={
@@ -128,42 +130,73 @@ if __name__ == '__main__':
     wb = xlrd.open_workbook(loc)
     sheet = wb.sheet_by_index(0)
 
-    # Get equator time of collocated tracks
-    equator_time = list()
-    print("find time at equator of collocated tracks")
-    for i in range(sheet.nrows):
-        time = sheet.cell_value(i, 3)
-        if time[:2] != '20': continue
-        print(time)
-        time = datetime.strptime(sheet.cell_value(i, 3),"%Y-%m-%dT%H:%M")
-        if time.strftime("%Y%m") != month: continue
-        else:
-            equator_time.append(time)
 
+    # For the case ESA with can use absolute orbit number
+    abs_orb_list  = np.arange(57361,58779,19).tolist()
+    #abs_orb_list = list()
+    if 'ESA_BD' in product:
+        
+        """
+        for i in range(sheet.nrows):
+            abs_orb = sheet.cell_value(i, 0)
+            if isinstance(abs_orb, str): continue
+            abs_orb_list.append(int(abs_orb))
+        """
 
-    # Get collocated file in provided folder
-    filenames = glob.glob(pathname + filepattern[product])
-    
-    if len(filenames) > 0:
-        print("\nFile found: %s \n" %(filenames))
+        abs_orb_list.sort()
+            
+        fileColloc = list()
+        idx = list()
+        for fileN in glob.glob(pathname+'*.nc'):
+            
+            f = nc.Dataset(fileN)
+            abs_orb_file = f.getncattr('abs_orbit_number')
+            if abs_orb_file in abs_orb_list:
+                fileColloc.append(fileN)
+                idx.append(abs_orb_list.index(abs_orb_file))
+        
+        fileColloc=np.array(fileColloc)[np.argsort(idx)]
+        #fileColloc = np.array(fileColloc)
+         
+    # /!\ Need equator time in spreadsheet to find values
     else:
-        print("No file found in provided folder %s with file pattern %s" %(pathname,filepattern[product]) )
-        sys.exit()
+        # Get equator time of collocated tracks
+        equator_time = list()
+        print("find time at equator of collocated tracks")
+        for i in range(sheet.nrows):
+            time = sheet.cell_value(i, 3)
+            if time[:2] != '20': continue
+            print(time)
+            time = datetime.strptime(sheet.cell_value(i, 3),"%Y-%m-%dT%H:%M")
+            if time.strftime("%Y%m") != month: continue
+            else:
+                equator_time.append(time)
 
 
-    # Find collocated file in provided folder
-    index_colloc = list()
-    for N,fileN in enumerate(filenames):
-        timefile = get_date_in_file(product,fileN)
-        for eqtime in equator_time:
-            if timefile >= eqtime and timefile < eqtime + timedelta(minutes=50):
-                index_colloc.append(N)
+        # Get collocated file in provided folder
+        filenames = glob.glob(pathname + filepattern[product])
+
+        if len(filenames) > 0:
+            print("\nFile found: %s \n" %(filenames))
+        else:
+            print("No file found in provided folder %s with file pattern %s" %(pathname,filepattern[product]) )
+            sys.exit()
 
 
-    fileColloc= np.array(filenames)[index_colloc]
+        # Find collocated file in provided folder
+        index_colloc = list()
+        for N,fileN in enumerate(filenames):
+            timefile = get_date_in_file(product,fileN)
+            for eqtime in equator_time:
+                if timefile >= eqtime and timefile < eqtime + timedelta(minutes=50):
+                    index_colloc.append(N)
 
 
-    if fileColloc.size==0: print("No collocated files found")
+        fileColloc= np.array(filenames)[index_colloc]
+
+
+    if fileColloc.size==0:
+        print("No collocated files found")
     else:
         print("#----------------------------")
         print("# CRYO2ICE collocated tracks")
@@ -172,7 +205,10 @@ if __name__ == '__main__':
         print("pathname: %s\n" %(pathname))
         for fileN in fileColloc:
             print(fileN.split('/')[-1])
-        
-    
- 
+
+        for fileN in fileColloc:
+            print("cp %s ./" %(fileN))
+
+
+
     

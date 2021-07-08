@@ -17,6 +17,8 @@ PATH_DICT = {
     'PATH_GRID': '/home/antlafe/Documents/work/grid_data/',
     # Repertory to store output figures
     'PATH_FIG': '/home/antlafe/Documents/work/figures/cryo2ice/outputs/',
+    # repertory to store spreadsheet
+    'PATH_SPREADSHEET': '/home/antlafe/Documents/work/projet_cryo2ice/data/',
 }
 """
 
@@ -31,6 +33,7 @@ PATH_DICT = {
     'PATH_COLLOC': '/work/ALT/odatis/seaice/users/laforga/data/CRYO2ICE/',
     'PATH_GRID': '/work/ALT/odatis/seaice/users/laforga/grid_data/',
     'PATH_FIG': '/work/ALT/odatis/seaice/users/laforga/figures/',
+    'PATH_SPREADSHEET': '/work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/',
 
 }
 

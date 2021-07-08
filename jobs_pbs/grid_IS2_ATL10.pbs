@@ -1,0 +1,15 @@
+#!/bin/bash
+#PBS -N grid_IS2
+#PBS -l select=1:ncpus=6:mem=60000mb
+#PBS -l walltime=5:00:00
+#PBS -e /work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/jobs_pbs/errors/
+#PBS -o /work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/jobs_pbs/errors/
+
+# Load Modules here
+
+module load python/3.7.2
+module load ct_tools/2.18
+
+cd /work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/code/
+
+(for d in {201904,202010,202011,202012,202101,202102,202103,202104}; do python grid_data.py -s IS2 -g ATL10 -b b2 -d ${d} -p laser_fb,gaussian_w -hp 01 -o /work/ALT/odatis/seaice/users/laforga/grid_data/SD_products/712; done)

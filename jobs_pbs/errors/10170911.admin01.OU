@@ -1,0 +1,2923 @@
+[PROLOGUE] Starting prologue on node node143 at date Tue Jun 15 10:06:15 UTC 2021
+[PROLOGUE] Ending prologue on node node143 at date Tue Jun 15 10:06:15 UTC 2021
+NO XINGS: add option -x 
+#----------------
+
+
+All CRYO2ICE tracks from 01/11/20 to 31/01/21 requested: 
+
+
+#Looking for available files
+#######################
+
+MISSION: CS2
+#########
+
+ESA_BD_GDR:
+#----------
+
+/work/ALT/odatis/seaice/users/laforga/data/CRYO2ICE/CS2/ESA_BD_GDR/202011/
+
+01/11/20: File found: CS_OFFL_SIR_GDR_2__20201101T044624_20201101T062539_D001.nc
+02/11/20: File found: CS_OFFL_SIR_GDR_2__20201102T121203_20201102T135118_D001.nc
+03/11/20: File found: CS_OFFL_SIR_GDR_2__20201103T193742_20201103T211657_D001.nc
+04/11/20: No file found
+05/11/20: File found: CS_OFFL_SIR_GDR_2__20201105T030321_20201105T044236_D001.nc
+06/11/20: File found: CS_OFFL_SIR_GDR_2__20201106T102900_20201106T120815_D001.nc
+07/11/20: File found: CS_OFFL_SIR_GDR_2__20201107T175439_20201107T193353_D001.nc
+08/11/20: No file found
+09/11/20: File found: CS_OFFL_SIR_GDR_2__20201109T012018_20201109T025932_D001.nc
+10/11/20: File found: CS_OFFL_SIR_GDR_2__20201110T084556_20201110T102511_D001.nc
+11/11/20: File found: CS_OFFL_SIR_GDR_2__20201111T161135_20201111T175050_D001.nc
+12/11/20: File found: CS_OFFL_SIR_GDR_2__20201112T233714_20201113T011629_D001.nc
+13/11/20: File found: CS_OFFL_SIR_GDR_2__20201112T233714_20201113T011629_D001.nc
+14/11/20: File found: CS_OFFL_SIR_GDR_2__20201114T070253_20201114T084207_D001.nc
+15/11/20: File found: CS_OFFL_SIR_GDR_2__20201115T142832_20201115T160746_D001.nc
+16/11/20: File found: CS_OFFL_SIR_GDR_2__20201116T215410_20201116T233325_D001.nc
+17/11/20: No file found
+18/11/20: File found: CS_OFFL_SIR_GDR_2__20201118T051949_20201118T065904_D001.nc
+19/11/20: File found: CS_OFFL_SIR_GDR_2__20201119T124528_20201119T142442_D001.nc
+20/11/20: File found: CS_OFFL_SIR_GDR_2__20201120T201106_20201120T215021_D001.nc
+21/11/20: No file found
+22/11/20: File found: CS_OFFL_SIR_GDR_2__20201122T033645_20201122T051600_D001.nc
+23/11/20: File found: CS_OFFL_SIR_GDR_2__20201123T110223_20201123T124138_D001.nc
+24/11/20: File found: CS_OFFL_SIR_GDR_2__20201124T182802_20201124T200717_D001.nc
+25/11/20: No file found
+26/11/20: File found: CS_OFFL_SIR_GDR_2__20201126T015341_20201126T033255_D001.nc
+27/11/20: File found: CS_OFFL_SIR_GDR_2__20201127T091919_20201127T105834_D001.nc
+28/11/20: File found: CS_OFFL_SIR_GDR_2__20201128T164459_20201128T182413_D001.nc
+29/11/20: No file found
+30/11/20: File found: CS_OFFL_SIR_GDR_2__20201130T001037_20201130T014952_D001.nc
+01/12/20: File found: CS_OFFL_SIR_GDR_2__20201201T073616_20201201T091531_D001.nc
+02/12/20: File found: CS_OFFL_SIR_GDR_2__20201202T150155_20201202T164110_D001.nc
+03/12/20: File found: CS_OFFL_SIR_GDR_2__20201203T222734_20201204T000649_D001.nc
+04/12/20: File found: CS_OFFL_SIR_GDR_2__20201203T222734_20201204T000649_D001.nc
+05/12/20: File found: CS_OFFL_SIR_GDR_2__20201205T055313_20201205T073227_D001.nc
+06/12/20: File found: CS_OFFL_SIR_GDR_2__20201206T131852_20201206T145807_D001.nc
+07/12/20: File found: CS_OFFL_SIR_GDR_2__20201207T204431_20201207T222345_D001.nc
+08/12/20: No file found
+09/12/20: File found: CS_OFFL_SIR_GDR_2__20201209T041010_20201209T054924_D001.nc
+10/12/20: File found: CS_OFFL_SIR_GDR_2__20201210T113548_20201210T131503_D001.nc
+11/12/20: File found: CS_OFFL_SIR_GDR_2__20201211T190127_20201211T204042_D001.nc
+12/12/20: No file found
+13/12/20: File found: CS_OFFL_SIR_GDR_2__20201213T022706_20201213T040621_D001.nc
+14/12/20: File found: CS_OFFL_SIR_GDR_2__20201214T095245_20201214T113200_D001.nc
+15/12/20: No file found
+16/12/20: No file found
+17/12/20: File found: CS_OFFL_SIR_GDR_2__20201217T004402_20201217T022317_D001.nc
+18/12/20: File found: CS_OFFL_SIR_GDR_2__20201218T080941_20201218T094856_D001.nc
+19/12/20: File found: CS_OFFL_SIR_GDR_2__20201219T153520_20201219T171435_D001.nc
+20/12/20: File found: CS_OFFL_SIR_GDR_2__20201220T230059_20201221T004013_D001.nc
+21/12/20: File found: CS_OFFL_SIR_GDR_2__20201220T230059_20201221T004013_D001.nc
+22/12/20: File found: CS_OFFL_SIR_GDR_2__20201222T062637_20201222T080552_D001.nc
+23/12/20: File found: CS_OFFL_SIR_GDR_2__20201223T135216_20201223T153131_D001.nc
+24/12/20: File found: CS_OFFL_SIR_GDR_2__20201224T211755_20201224T225709_D001.nc
+25/12/20: No file found
+26/12/20: File found: CS_OFFL_SIR_GDR_2__20201226T044334_20201226T062248_D001.nc
+27/12/20: File found: CS_OFFL_SIR_GDR_2__20201227T120912_20201227T134827_D001.nc
+28/12/20: File found: CS_OFFL_SIR_GDR_2__20201228T193451_20201228T211406_D001.nc
+29/12/20: No file found
+30/12/20: File found: CS_OFFL_SIR_GDR_2__20201230T030030_20201230T043944_D001.nc
+31/12/20: File found: CS_OFFL_SIR_GDR_2__20201231T102609_20201231T120523_D001.nc
+01/01/21: File found: CS_OFFL_SIR_GDR_2__20210101T175147_20210101T193102_D001.nc
+02/01/21: No file found
+03/01/21: File found: CS_OFFL_SIR_GDR_2__20210103T011726_20210103T025641_D001.nc
+04/01/21: File found: CS_OFFL_SIR_GDR_2__20210104T084305_20210104T102219_D001.nc
+05/01/21: File found: CS_OFFL_SIR_GDR_2__20210105T160844_20210105T174758_D001.nc
+06/01/21: File found: CS_OFFL_SIR_GDR_2__20210106T233422_20210107T011337_D001.nc
+07/01/21: File found: CS_OFFL_SIR_GDR_2__20210106T233422_20210107T011337_D001.nc
+08/01/21: File found: CS_OFFL_SIR_GDR_2__20210108T070001_20210108T083916_D001.nc
+09/01/21: File found: CS_OFFL_SIR_GDR_2__20210109T142540_20210109T160454_D001.nc
+10/01/21: File found: CS_OFFL_SIR_GDR_2__20210110T215118_20210110T233033_D001.nc
+11/01/21: No file found
+12/01/21: File found: CS_OFFL_SIR_GDR_2__20210112T051657_20210112T065611_D001.nc
+13/01/21: File found: CS_OFFL_SIR_GDR_2__20210113T124236_20210113T142150_D001.nc
+14/01/21: File found: CS_OFFL_SIR_GDR_2__20210114T200814_20210114T214729_D001.nc
+15/01/21: No file found
+16/01/21: File found: CS_OFFL_SIR_GDR_2__20210116T033353_20210116T051307_D001.nc
+17/01/21: File found: CS_OFFL_SIR_GDR_2__20210117T105931_20210117T123846_D001.nc
+18/01/21: File found: CS_OFFL_SIR_GDR_2__20210118T182510_20210118T200425_D001.nc
+19/01/21: No file found
+20/01/21: File found: CS_OFFL_SIR_GDR_2__20210120T015049_20210120T033003_D001.nc
+21/01/21: File found: CS_OFFL_SIR_GDR_2__20210121T091627_20210121T105542_D001.nc
+22/01/21: File found: CS_OFFL_SIR_GDR_2__20210122T164206_20210122T182120_D001.nc
+23/01/21: No file found
+24/01/21: File found: CS_OFFL_SIR_GDR_2__20210124T000745_20210124T014659_D001.nc
+25/01/21: File found: CS_OFFL_SIR_GDR_2__20210125T073323_20210125T091238_D001.nc
+26/01/21: File found: CS_OFFL_SIR_GDR_2__20210126T145902_20210126T163816_D001.nc
+27/01/21: File found: CS_OFFL_SIR_GDR_2__20210127T222441_20210128T000356_D001.nc
+28/01/21: File found: CS_OFFL_SIR_GDR_2__20210127T222441_20210128T000356_D001.nc
+29/01/21: File found: CS_OFFL_SIR_GDR_2__20210129T055020_20210129T072935_D001.nc
+30/01/21: File found: CS_OFFL_SIR_GDR_2__20210130T131559_20210130T145514_D001.nc
+31/01/21: File found: CS_OFFL_SIR_GDR_2__20210131T204138_20210131T222053_D001.nc
+
+Missing some CS2 data at:
+04/11/2020
+08/11/2020
+17/11/2020
+21/11/2020
+25/11/2020
+29/11/2020
+08/12/2020
+12/12/2020
+15/12/2020
+16/12/2020
+25/12/2020
+29/12/2020
+02/01/2021
+11/01/2021
+15/01/2021
+19/01/2021
+23/01/2021
+# of files found: 75
+
+
+MISSION: IS2
+#########
+
+ATL10:
+#----------
+
+/work/ALT/odatis/seaice/users/laforga/data/CRYO2ICE/IS2/ATL10/202011/
+
+01/11/20: File found: ATL10-01_20201101015750_05790901_004_01.h5
+02/11/20: File found: ATL10-01_20201102092337_05990901_004_01.h5
+03/11/20: File found: ATL10-01_20201103164924_06190901_004_01.h5
+04/11/20: No file found
+05/11/20: File found: ATL10-01_20201105001511_06390901_004_01.h5
+06/11/20: File found: ATL10-01_20201106074058_06590901_004_01.h5
+07/11/20: File found: ATL10-01_20201107150646_06790901_004_01.h5
+08/11/20: File found: ATL10-01_20201108223234_06990901_004_01.h5
+09/11/20: No file found
+10/11/20: File found: ATL10-01_20201110055822_07190901_004_01.h5
+11/11/20: File found: ATL10-01_20201111132410_07390901_004_01.h5
+12/11/20: File found: ATL10-01_20201112204958_07590901_004_01.h5
+13/11/20: No file found
+14/11/20: File found: ATL10-01_20201114041546_07790901_004_01.h5
+15/11/20: File found: ATL10-01_20201115114134_07990901_004_01.h5
+16/11/20: File found: ATL10-01_20201116190722_08190901_004_01.h5
+17/11/20: No file found
+18/11/20: File found: ATL10-01_20201118023310_08390901_004_01.h5
+19/11/20: File found: ATL10-01_20201119095857_08590901_004_01.h5
+20/11/20: File found: ATL10-01_20201120172445_08790901_004_01.h5
+21/11/20: No file found
+22/11/20: File found: ATL10-01_20201122005034_08990901_004_01.h5
+23/11/20: File found: ATL10-01_20201123081621_09190901_004_01.h5
+24/11/20: No file found
+25/11/20: File found: ATL10-01_20201125230757_09590901_004_01.h5
+26/11/20: No file found
+27/11/20: File found: ATL10-01_20201127063343_09790901_004_01.h5
+28/11/20: File found: ATL10-01_20201128135931_09990901_004_01.h5
+29/11/20: File found: ATL10-01_20201129212518_10190901_004_01.h5
+30/11/20: No file found
+01/12/20: File found: ATL10-01_20201201045106_10390901_004_01.h5
+02/12/20: File found: ATL10-01_20201202121654_10590901_004_01.h5
+03/12/20: File found: ATL10-01_20201203194241_10790901_004_01.h5
+04/12/20: No file found
+05/12/20: File found: ATL10-01_20201205030829_10990901_004_01.h5
+06/12/20: File found: ATL10-01_20201206103417_11190901_004_01.h5
+07/12/20: File found: ATL10-01_20201207180004_11390901_004_01.h5
+08/12/20: No file found
+09/12/20: No file found
+10/12/20: File found: ATL10-01_20201210085141_11790901_004_01.h5
+11/12/20: File found: ATL10-01_20201211161729_11990901_004_01.h5
+12/12/20: No file found
+13/12/20: No file found
+14/12/20: File found: ATL10-01_20201214070905_12390901_004_01.h5
+15/12/20: File found: ATL10-01_20201215143452_12590901_004_01.h5
+16/12/20: File found: ATL10-01_20201216220040_12790901_004_01.h5
+17/12/20: No file found
+18/12/20: File found: ATL10-01_20201218052627_12990901_004_01.h5
+19/12/20: File found: ATL10-01_20201219125215_13190901_004_01.h5
+20/12/20: File found: ATL10-01_20201220201803_13390901_004_01.h5
+21/12/20: No file found
+22/12/20: No file found
+23/12/20: File found: ATL10-01_20201223110938_13790901_004_01.h5
+24/12/20: File found: ATL10-01_20201224183525_00121001_004_01.h5
+25/12/20: No file found
+26/12/20: File found: ATL10-01_20201226020113_00321001_004_01.h5
+27/12/20: File found: ATL10-01_20201227092701_00521001_004_01.h5
+28/12/20: File found: ATL10-01_20201228165247_00721001_004_01.h5
+29/12/20: No file found
+30/12/20: File found: ATL10-01_20201230001836_00921001_004_01.h5
+31/12/20: File found: ATL10-01_20201231074425_01121001_004_01.h5
+01/01/21: File found: ATL10-01_20210101151012_01321001_004_01.h5
+02/01/21: File found: ATL10-01_20210102223600_01521001_004_01.h5
+03/01/21: No file found
+04/01/21: File found: ATL10-01_20210104060147_01721001_004_01.h5
+05/01/21: File found: ATL10-01_20210105132734_01921001_004_01.h5
+06/01/21: File found: ATL10-01_20210106205322_02121001_004_01.h5
+07/01/21: No file found
+08/01/21: File found: ATL10-01_20210108041910_02321001_004_01.h5
+09/01/21: No file found
+10/01/21: File found: ATL10-01_20210110191048_02721001_004_01.h5
+11/01/21: No file found
+12/01/21: No file found
+13/01/21: File found: ATL10-01_20210113100222_03121001_004_01.h5
+14/01/21: File found: ATL10-01_20210114172809_03321001_004_01.h5
+15/01/21: No file found
+16/01/21: File found: ATL10-01_20210116005357_03521001_004_01.h5
+17/01/21: File found: ATL10-01_20210117081941_03721001_004_01.h5
+18/01/21: File found: ATL10-01_20210118154529_03921001_004_01.h5
+19/01/21: File found: ATL10-01_20210119231119_04121001_004_01.h5
+20/01/21: No file found
+21/01/21: File found: ATL10-01_20210121063708_04321001_004_01.h5
+22/01/21: File found: ATL10-01_20210122140257_04521001_004_01.h5
+23/01/21: File found: ATL10-01_20210123212844_04721001_004_01.h5
+24/01/21: No file found
+25/01/21: File found: ATL10-01_20210125045431_04921001_004_01.h5
+26/01/21: File found: ATL10-01_20210126122019_05121001_004_01.h5
+27/01/21: File found: ATL10-01_20210127194608_05321001_004_01.h5
+28/01/21: No file found
+29/01/21: File found: ATL10-01_20210129031155_05521001_004_01.h5
+30/01/21: File found: ATL10-01_20210130103743_05721001_004_01.h5
+31/01/21: File found: ATL10-01_20210131180330_05921001_004_01.h5
+
+Missing some IS2 data at:
+04/11/2020
+09/11/2020
+13/11/2020
+17/11/2020
+21/11/2020
+24/11/2020
+26/11/2020
+30/11/2020
+04/12/2020
+08/12/2020
+09/12/2020
+12/12/2020
+13/12/2020
+17/12/2020
+21/12/2020
+22/12/2020
+25/12/2020
+29/12/2020
+03/01/2021
+07/01/2021
+09/01/2021
+11/01/2021
+12/01/2021
+15/01/2021
+20/01/2021
+24/01/2021
+28/01/2021
+# of files found: 65
+
+
+Keeping available dates
+IS2 date: 08/11/2020 correspond to CS2 date: 09/11/2020
+IS2 date: 25/11/2020 correspond to CS2 date: 26/11/2020
+IS2 date: 29/11/2020 correspond to CS2 date: 30/11/2020
+15/12/2020 from IS2 not found for CS2 15/12/2020
+IS2 date: 16/12/2020 correspond to CS2 date: 17/12/2020
+02/01/2021 from IS2 not found for CS2 02/01/2021
+19/01/2021 from IS2 not found for CS2 19/01/2021
+23/01/2021 from IS2 not found for CS2 23/01/2021
+
+All GDR data found for:
+01/11/20
+02/11/20
+03/11/20
+05/11/20
+06/11/20
+07/11/20
+08/11/20
+10/11/20
+11/11/20
+12/11/20
+14/11/20
+15/11/20
+16/11/20
+18/11/20
+19/11/20
+20/11/20
+22/11/20
+23/11/20
+25/11/20
+27/11/20
+28/11/20
+29/11/20
+01/12/20
+02/12/20
+03/12/20
+05/12/20
+06/12/20
+07/12/20
+10/12/20
+11/12/20
+14/12/20
+16/12/20
+18/12/20
+19/12/20
+20/12/20
+23/12/20
+24/12/20
+26/12/20
+27/12/20
+28/12/20
+30/12/20
+31/12/20
+01/01/21
+04/01/21
+05/01/21
+06/01/21
+08/01/21
+10/01/21
+13/01/21
+14/01/21
+16/01/21
+17/01/21
+18/01/21
+21/01/21
+22/01/21
+25/01/21
+26/01/21
+27/01/21
+29/01/21
+30/01/21
+31/01/21
+
+# Sorting data
+##################
+
+Reading collocated data
+ #------------------
+
+ max distance between tracks: 4 km
+
+
+01/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -170 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -170 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -170 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201101 :
+ [674 689 701 675 690 702]
+
+Showing tracks on map
+
+
+02/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -170 min
+Mean distance: 3 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -170 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -170 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201102 :
+ [747 755 761 767 768 748 756 762 768 769]
+
+Showing tracks on map
+
+
+03/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -170 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -170 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201103 :
+ []
+
+Showing tracks on map
+
+
+05/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -170 min
+Mean distance: 1 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -170 min
+Mean distance: 3 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 4 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201105 :
+ []
+
+Showing tracks on map
+
+
+06/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201106 :
+ [134 162 720 735 770 849 862 876 880 881 893 135 163 721 736 771 850 863
+ 877 881 882 894]
+
+Showing tracks on map
+
+
+07/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 3 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201107 :
+ [59 60]
+
+Showing tracks on map
+
+
+08/11/2020: 
+IS2 date: 08/11/2020 correspond to CS2 date: 09/11/2020
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 4 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201108 :
+ []
+
+Showing tracks on map
+
+
+10/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201110 :
+ [506 510 517 541 560 588 593 622 624 628 629 630 634 635 639 642 648 650
+ 653 670 677 684 690 507 511 518 542 561 589 594 623 625 629 630 631 635
+ 636 640 643 649 651 654 671 678 685 691]
+
+Showing tracks on map
+
+
+11/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 3 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201111 :
+ []
+
+Showing tracks on map
+
+
+12/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 1 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201112 :
+ [523 524]
+
+Showing tracks on map
+
+
+14/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -169 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201114 :
+ [  52  796  825  828  830  833  837  841  884 1007   53  797  826  829
+  831  834  838  842  885 1008]
+
+Showing tracks on map
+
+
+15/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 3 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 1 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201115 :
+ []
+
+Showing tracks on map
+
+
+16/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201116 :
+ [481 482]
+
+Showing tracks on map
+
+
+18/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201118 :
+ []
+
+Showing tracks on map
+
+
+19/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201119 :
+ []
+
+Showing tracks on map
+
+
+20/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 1 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201120 :
+ [811 812]
+
+Showing tracks on map
+
+
+22/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -168 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201122 :
+ [613 643 614 644]
+
+Showing tracks on map
+
+
+23/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201123 :
+ [ 858  880  881  905  906  985 1004  859  881  882  906  907  986 1005]
+
+Showing tracks on map
+
+
+25/11/2020: 
+IS2 date: 25/11/2020 correspond to CS2 date: 26/11/2020
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 4 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201125 :
+ []
+
+Showing tracks on map
+
+
+27/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201127 :
+ [185 713 738 742 877 885 888 899 911 934 186 714 739 743 878 886 889 900
+ 912 935]
+
+Showing tracks on map
+
+
+28/11/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201128 :
+ [54 73 75 55 74 76]
+
+Showing tracks on map
+
+
+29/11/2020: 
+IS2 date: 29/11/2020 correspond to CS2 date: 30/11/2020
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 4 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201129 :
+ []
+
+Showing tracks on map
+
+
+01/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 1 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -167 min
+Mean distance: 1 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201201 :
+ [189 207 227 241 267 268 270 274 275 278 283 334 338 344 190 208 228 242
+ 268 269 271 275 276 279 284 335 339 345]
+
+Showing tracks on map
+
+
+02/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 3 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201202 :
+ []
+
+Showing tracks on map
+
+
+03/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201203 :
+ [523 524]
+
+Showing tracks on map
+
+
+05/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201205 :
+ [798 812 816 844 847 850 936 944 947 983 986 799 813 817 845 848 851 937
+ 945 948 984 987]
+
+Showing tracks on map
+
+
+06/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 3 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 1 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201206 :
+ []
+
+Showing tracks on map
+
+
+07/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201207 :
+ [ 39 719  40 720]
+
+Showing tracks on map
+
+
+10/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -166 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -165 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -165 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201210 :
+ [854 855]
+
+Showing tracks on map
+
+
+11/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -165 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -165 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -165 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201211 :
+ []
+
+Showing tracks on map
+
+
+14/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -165 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -165 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -165 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201214 :
+ [ 866  885  888  889  895  955  956  966  979 1008 1010 1020 1027 1033
+ 1042 1055 1056 1064  867  886  889  890  896  956  957  967  980 1009
+ 1011 1021 1028 1034 1043 1056 1057 1065]
+
+Showing tracks on map
+
+
+16/12/2020: 
+IS2 date: 16/12/2020 correspond to CS2 date: 17/12/2020
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -165 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -165 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -165 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201216 :
+ []
+
+Showing tracks on map
+
+
+18/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -165 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -165 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201218 :
+ [ 265  845  849  981  984 1021 1028 1034  266  846  850  982  985 1022
+ 1029 1035]
+
+Showing tracks on map
+
+
+19/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201219 :
+ [50 54 51 55]
+
+Showing tracks on map
+
+
+20/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201220 :
+ [629 630]
+
+Showing tracks on map
+
+
+23/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201223 :
+ []
+
+Showing tracks on map
+
+
+24/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201224 :
+ []
+
+Showing tracks on map
+
+
+26/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 4 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201226 :
+ [487 502 505 506 507 511 519 527 529 560 566 670 488 503 506 507 508 512
+ 520 528 530 561 567 671]
+
+Showing tracks on map
+
+
+27/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201227 :
+ []
+
+Showing tracks on map
+
+
+28/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -164 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 4 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201228 :
+ [17 18]
+
+Showing tracks on map
+
+
+30/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201230 :
+ [659 660]
+
+Showing tracks on map
+
+
+31/12/2020: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20201231 :
+ []
+
+Showing tracks on map
+
+
+01/01/2021: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 3 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210101 :
+ [ 42  46  50  62  72 103 105 122 133 136 167 175 177 188 196 200 205  43
+  47  51  63  73 104 106 123 134 137 168 176 178 189 197 201 206]
+
+Showing tracks on map
+
+
+04/01/2021: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -162 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210104 :
+ [ 750  886  928  979 1022 1032 1038 1042 1044 1049 1061 1065 1066 1070
+ 1074  751  887  929  980 1023 1033 1039 1043 1045 1050 1062 1066 1067
+ 1071 1075]
+
+Showing tracks on map
+
+
+05/01/2021: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -163 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -162 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210105 :
+ [ 27  53  66  71  82  91  93 115 116  28  54  67  72  83  92  94 116 117]
+
+Showing tracks on map
+
+
+06/01/2021: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -162 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -162 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -162 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210106 :
+ []
+
+Showing tracks on map
+
+
+08/01/2021: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -162 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -162 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -162 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210108 :
+ [1062 1069 1088 1091 1096 1104 1063 1070 1089 1092 1097 1105]
+
+Showing tracks on map
+
+
+10/01/2021: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -162 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -162 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -162 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210110 :
+ []
+
+Showing tracks on map
+
+
+13/01/2021: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -162 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -162 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210113 :
+ []
+
+Showing tracks on map
+
+
+14/01/2021: 
+Associating tracks
+-----------------------
+['gt1l', 'gt2l', 'gt3l']
+
+ Beam gt1l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 2 km
+
+ Beam gt2l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 2 km
+
+ Beam gt3l: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210114 :
+ [637 638]
+
+Showing tracks on map
+
+
+16/01/2021: 
+Associating tracks
+-----------------------
+['gt1r', 'gt2r', 'gt3r']
+
+ Beam gt1r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 1 km
+
+ Beam gt2r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 2 km
+
+ Beam gt3r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 1 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210116 :
+ [769 783 793 814 827 871 878 888 770 784 794 815 828 872 879 889]
+
+Showing tracks on map
+
+
+17/01/2021: 
+Associating tracks
+-----------------------
+['gt1r', 'gt2r', 'gt3r']
+
+ Beam gt1r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 2 km
+
+ Beam gt2r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 2 km
+
+ Beam gt3r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210117 :
+ []
+
+Showing tracks on map
+
+
+18/01/2021: 
+Associating tracks
+-----------------------
+['gt1r', 'gt2r', 'gt3r']
+
+ Beam gt1r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 2 km
+
+ Beam gt2r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 2 km
+
+ Beam gt3r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210118 :
+ []
+
+Showing tracks on map
+
+
+21/01/2021: 
+Associating tracks
+-----------------------
+['gt1r', 'gt2r', 'gt3r']
+
+ Beam gt1r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 2 km
+
+ Beam gt2r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 2 km
+
+ Beam gt3r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210121 :
+ []
+
+Showing tracks on map
+
+
+22/01/2021: 
+Associating tracks
+-----------------------
+['gt1r', 'gt2r', 'gt3r']
+
+ Beam gt1r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -161 min
+Mean distance: 3 km
+
+ Beam gt2r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Beam gt3r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210122 :
+ [ 86 124 127 130 138 142 146 166 178 188 201 222 224  87 125 128 131 139
+ 143 147 167 179 189 202 223 225]
+
+Showing tracks on map
+
+
+25/01/2021: 
+Associating tracks
+-----------------------
+['gt1r', 'gt2r', 'gt3r']
+
+ Beam gt1r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Beam gt2r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Beam gt3r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210125 :
+ [193 719 752 791 855 922 194 720 753 792 856 923]
+
+Showing tracks on map
+
+
+26/01/2021: 
+Associating tracks
+-----------------------
+['gt1r', 'gt2r', 'gt3r']
+
+ Beam gt1r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Beam gt2r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Beam gt3r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210126 :
+ [ 63  65  81 119 122 126 128 132 135  64  66  82 120 123 127 129 133 136]
+
+Showing tracks on map
+
+
+27/01/2021: 
+Associating tracks
+-----------------------
+['gt1r', 'gt2r', 'gt3r']
+
+ Beam gt1r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Beam gt2r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Beam gt3r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210127 :
+ []
+
+Showing tracks on map
+
+
+29/01/2021: 
+Associating tracks
+-----------------------
+['gt1r', 'gt2r', 'gt3r']
+
+ Beam gt1r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Beam gt2r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Beam gt3r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210129 :
+ [ 850 1028 1031 1046 1047 1052 1055 1097 1105  851 1029 1032 1047 1048
+ 1053 1056 1098 1106]
+
+Showing tracks on map
+
+
+30/01/2021: 
+Associating tracks
+-----------------------
+['gt1r', 'gt2r', 'gt3r']
+
+ Beam gt1r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Beam gt2r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Beam gt3r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -159 min
+Mean distance: 2 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210130 :
+ []
+
+Showing tracks on map
+
+
+31/01/2021: 
+Associating tracks
+-----------------------
+['gt1r', 'gt2r', 'gt3r']
+
+ Beam gt1r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Beam gt2r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -160 min
+Mean distance: 2 km
+
+ Beam gt3r: ATL10
+-----------
+Writing data in dict_common_data
+Mean time difference: -159 min
+Mean distance: 3 km
+
+ Data gaps in ref track ESA_BD_GDR 
+ 20210131 :
+ []
+
+Showing tracks on map
+
+Concatenating CS2 data
+#---------------
+
+ESA_BD_GDR:
+---------
+
+01/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+02/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+03/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+05/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+06/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+07/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+IS2 date: 08/11/2020 correspond to CS2 date: 09/11/2020
+
+08/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+No data in ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+No data in swh
+u10
+No data in u10
+
+10/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+11/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+12/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+14/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+15/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+No data in ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+No data in swh
+u10
+No data in u10
+
+16/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+No data in ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+No data in swh
+u10
+No data in u10
+
+18/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+19/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+No data in ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+No data in swh
+u10
+No data in u10
+
+20/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+22/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+23/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+IS2 date: 25/11/2020 correspond to CS2 date: 26/11/2020
+
+25/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+27/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+28/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+IS2 date: 29/11/2020 correspond to CS2 date: 30/11/2020
+
+29/11/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+No data in ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+No data in swh
+u10
+No data in u10
+
+01/12/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+02/12/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+03/12/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+05/12/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+u10
+
+06/12/2020
+
+Recording hf data:
+
+radar_fb
+sla
+radar_h
+surface_type
+isa
+
+Recording lf data:
+
+ssb
+No data in ssb
+load_tide
+ocean_tide
+ocean_eq_tide
+pole_tide
+solid_earth_tide
+dac
+geoid
+sic
+mss
+swh
+No data in swh
+u10
+No data in u10
+
+07/12/2020
+
+Recording hf data:
+
+radar_fb
+[EPILOGUE] Starting epilogue on node node143 at date Tue Jun 15 10:10:25 UTC 2021
+
+------------ JOB INFO 10170911.admin01 -------------
+
+JOBID		: 10170911.admin01
+USER		: laforga
+GROUP		: pmfaps
+JOB NAME	: sort_C2Iall
+SESSION		: 26312
+RES REQSTED	: ncpus=1,mem=25000mb,walltime=09:00:00,place=free
+RES USED	: cpupercent=53,cput=00:03:58,ncpus=1,vmem=1382756kb,mem=1382756kb,walltime=00:04:09
+BILLING         : 00:04:09 (ncpus x walltime)
+QUEUE		: qt72h
+ACCOUNT		: null
+JOB EXIT CODE	: 1
+
+------------ END JOB INFO 10170911.admin01 ---------
+
+[EPILOGUE] Ending epilogue on node node143 at date Tue Jun 15 10:10:25 UTC 2021
