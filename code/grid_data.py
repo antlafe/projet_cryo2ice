@@ -68,7 +68,7 @@ PATH_INPUT = path_dict.PATH_DICT['PATH_DATA']
 
 # change if looking at Antarctica
 global LAT_BOUND
-LAT_BOUND = 49.9532  #1.8772498200144 #65 # deg north [61.6: 500]
+LAT_BOUND = 49.08  #1.8772498200144 #65 # deg north [61.6: 500] [49.08: 712]
 #LAT_BOUND = 61.6  #1.8772498200144 #65 # deg north [61.6: 500]
 
 show_figure = False
