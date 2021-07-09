@@ -17,11 +17,11 @@ CS2_DATA_DESC = {
 
         # correction
         'ssb': 'sea_state_bias_01_ku',
-        'load_tide': 'load_tide_01',
-        'ocean_tide': 'ocean_tide_01',
-        'ocean_eq_tide': 'ocean_tide_eq_01',
-        'pole_tide' : 'pole_tide_01',
-        'solid_earth_tide': 'solid_earth_tide_01',
+        'load': 'load_tide_01',
+        'ocean': 'ocean_tide_01',
+        'lpe': 'ocean_tide_eq_01',
+        'pole' : 'pole_tide_01',
+        'earth': 'solid_earth_tide_01',
         'dac': 'hf_fluct_total_cor_01',
         'geoid': 'geoid_01',
         'sic':  'sea_ice_concentration_01',

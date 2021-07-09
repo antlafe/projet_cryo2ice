@@ -2,7 +2,7 @@
 # PATH dictionnary
 ################################
 
-"""
+
 # on PC
 #---------------
 PATH_DICT = {
@@ -20,10 +20,10 @@ PATH_DICT = {
     # repertory to store spreadsheet
     'PATH_SPREADSHEET': '/home/antlafe/Documents/work/projet_cryo2ice/data/',
 }
+
+
+
 """
-
-
-
 # onHAL:
 #---------------
 PATH_DICT = {
@@ -36,4 +36,4 @@ PATH_DICT = {
     'PATH_SPREADSHEET': '/work/ALT/odatis/seaice/users/laforga/projet_cryo2ice/',
 
 }
-
+"""

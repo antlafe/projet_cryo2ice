@@ -1127,6 +1127,8 @@ if __name__ == '__main__':
 
         sit_cryo2ice = cf.fbt2sit(laser_fb_sim,sd_laku_sim,icetype_sim,day_colloc)
 
+        #sit_radar_sdsimba = cf.fbr2sit(radar_fb_sim,SD_W99_sim,icetype_sim,day_colloc)
+
         # get mean and std value
         #--------------------------
         sit_radar_w99m_mean = list()

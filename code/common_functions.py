@@ -854,7 +854,7 @@ def get_coord_from_hf5(filename,data_desc,hemispherecode,LAT_BOUND):
     #x_dist,valid_idx = distance_from_first_trk_pts(lat,lon)
     x_dist = distance_from_first_trk_pts(lat,lon,0)
     #lat = lat[valid_idx]; lon = lon[valid_idx]; time = time[valid_idx]
-
+    if any(np.abs(np.diff(lon)) > 300) or any(lon < 0): lon[lon < 0] = lon[lon < 0] + 360
     selected_idx = select_zone#[valid_idx]
 
     return lat,lon,time,x_dist,selected_idx

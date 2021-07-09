@@ -75,13 +75,17 @@ def init_dict(dataproduct,BeamN,segment):
             'lpe': '/'+BeamN+'/freeboard_beam_segment/geophysical/height_segment_lpe',
             'ocean': '/'+BeamN+'/freeboard_beam_segment/geophysical/height_segment_ocean',
             'pole': '/'+BeamN+'/freeboard_beam_segment/geophysical/height_segment_tide_pole',
-
-
-
+            
 
             },
 
             'swath':{
+
+            # swath param
+            'lat': '/'+BeamN+'/freeboard_beam_segment/latitude',
+            'lon': '/'+BeamN+'/freeboard_beam_segment/longitude',
+            'slasw': '/'+BeamN+'/freeboard_beam_segment/beam_refsurf_height',
+            'time': '/'+ BeamN+'/freeboard_beam_segment/delta_time',
 
             # For each 10Km swath segments
             'fb_swath'      : '/'+BeamN+'/freeboard_beam_segment/beam_fb_length',
