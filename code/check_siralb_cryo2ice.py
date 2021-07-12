@@ -74,6 +74,8 @@ list_midnight_dates = {
 REF_GDR_CS2 = 'ESA_BD_GDR'
 REF_GDR_IS2 = 'ATL10'
 
+LAT_MIN = 60
+
 
 # Functions
 ###########################################
@@ -100,173 +102,6 @@ def is2date_2_cs2date(date,is2gdr):
     return date_1
 
 
-def align_sla_swath_seg(common_data_list,cs2_gdr,is2_gdr,is2_b,LAT_MIN):
-
-    # parameters to align
-    plist_cs2_20hz = ['sla']
-    plist_cs2_1hz = ['mss','dac','earth','pole','lpe','ocean','load']
-    plist_is2_granules = ['mss','dac','earth','pole','lpe','ocean','load']
-    plist_is2_swath = ['slasw']
-
-    cs2_pDict = {}
-    is2_pDict = {}
-    swath_data_array = {}
-    swath_data_array['CS2'] = {}; swath_data_array['IS2'] = {};
-
-    for n,date in enumerate(date_list):
-
-        # initiate lists
-        if n==0:
-            
-            for p in plist_cs2_20hz + plist_cs2_1hz + ['lat','lon']:
-                cs2_pDict[p] = list()
-                swath_data_array['CS2'][p] = list()
-                
-            for p in plist_is2_granules + plist_is2_swath + ['lat','lon']:
-                is2_pDict[p] = list()
-                swath_data_array['IS2'][p] = list()
-
-        # Get CS2 sla + corrs
-        #--------------------------
-        date_cs2 = is2date_2_cs2date(date,is2_gdr)
-        date_str_cs2 = date_cs2.strftime('%Y%m%d')
-
-        print("\n%s" %(date.strftime('%d/%m/%Y')))
-        filename = file_dict['CS2'][cs2_gdr][date_str_cs2]
-        file_format = filename.split('.')[-1]
-        
-        data_desc_cs2_20hz = cs2_dict.init_dict(cs2_gdr,False)
-        data_desc_cs2_1hz = cs2_dict.init_dict(cs2_gdr,True)
-        
-        if file_format=='nc':
-            lat_c_20,lon_c_20,time_c_20,x_dist,valid_idx = cf.get_coord_from_netcdf(filename,data_desc_cs2_20hz,'01',LAT_MIN)
-            lat_c_01,lon_c_01,time_c_01,x_dist,valid_idx = cf.get_coord_from_netcdf(filename,data_desc_cs2_1hz,'01',LAT_MIN)
-        else:
-            print("Unknown file format")
-            sys.exit()
-
-        cs2_pDict['lat'].append(lat_c_20)
-        cs2_pDict['lon'].append(lon_c_20)
-        #cs2_pDict['lat_01'].append(lat_c_01)
-        #cs2_pDict['lon_01'].append(lon_c_01)
-        
-        for pname in plist_cs2_20hz:
-            param,units,param_is_flag = cf.get_param_from_netcdf(filename,data_desc_cs2_20hz,pname,'01',LAT_MIN)
-            cs2_pDict[pname].append(param)
-            
-        for pname in plist_cs2_1hz:
-            param,units,param_is_flag = cf.get_param_from_netcdf(filename,data_desc_cs2_1hz,pname,'01',LAT_MIN)
-            param_hf = cf.interp_1hz_to_20hz(param,time_c_01,time_c_20)
-            cs2_pDict[pname].append(param_hf)
-        
-
-
-        # Get IS2 sla + corrs
-        #------------------------
-        
-        date_str = date.strftime('%Y%m%d')
-        filename = file_dict['IS2'][is2_gdr][date_str]
-        is2_beam = snsc.get_strong_beams(filename,[is2_b])
-
-        # Granule data
-        data_desc_is2_gran = is2_dict.init_dict(is2_gdr,is2_beam[is2_b],'granules')
-        lat_i_gran,lon_i_gran,time_i_gran,x_dist,valid_idx = cf.get_coord_from_hf5(filename,data_desc_is2_gran,'01',LAT_MIN)
-
-        # Swath data
-        data_desc_is2_sw = is2_dict.init_dict(is2_gdr,is2_beam[is2_b],'swath')
-        lat_i_sw,lon_i_sw,time_i_sw,x_dist,valid_idx = cf.get_coord_from_hf5(filename,data_desc_is2_sw,'01',LAT_MIN)
-
-        is2_pDict['lat'].append(lat_i_sw)
-        is2_pDict['lon'].append(lon_i_sw)
-        
-        for pname in plist_is2_granules:
-            param,units,param_is_flag = cf.get_param_from_hf5(filename,data_desc_is2_gran,pname,'01',LAT_MIN)
-            is2_pDict[pname].append(param)
-            
-        for pname in plist_is2_swath:
-            param,units,param_is_flag = cf.get_param_from_hf5(filename,data_desc_is2_sw,pname,'01',LAT_MIN)
-            is2_pDict[pname].append(param)
-        
-
-
-        # get common sections
-        #------------------------
-        #selected_idx = common_data_list[n][gdr][b]['idx_is2']
-        ref_lat = common_data_list[n]['ref_lat']
-        ref_lon = common_data_list[n]['ref_lon']
-        coord_ref = np.vstack((ref_lon,ref_lat)).T
-        tree = scipy.spatial.cKDTree(coord_ref)
-        
-        # coordinates SWATH
-        coord_sw = np.vstack((lon_i_sw,lat_i_sw)).T
-        # Looking for collocated section in SWATH tracks
-        distance,closest_ind = tree.query(coord_sw,1)
-        flag_colloc = distance < 1 #km
-
-        # ref SWATH collocs
-        lat_swath = lat_i_sw[flag_colloc]; lon_swath = lon_i_sw[flag_colloc]
-        ref_size = lat_swath.shape[0]
-        coord_sw = np.vstack((lon_swath,lat_swath)).T
-        tree = scipy.spatial.cKDTree(coord_sw)
-
-
-        # Associate CS2 20hz data association to 10km SWATH-SEG coordinate
-        coord_cs2 = np.vstack((lon_c_20,lat_c_20)).T
-        distance,closest_ind = tree.query(coord_cs2,1)
-
-        
-        flag_colloc = distance < 1
-        selected_idx = closest_ind[flag_colloc]
-        
-        data_array_cs2 = dict()
-        for p in cs2_pDict.keys():
-            data_array_cs2[p] = ma.masked_array(np.zeros((ref_size,)),mask=np.ones((ref_size,)))
-            
-        for idx in np.unique(selected_idx):
-            argidx = np.argwhere(closest_ind==idx)
-            for p in cs2_pDict.keys():
-                data_array_cs2[p][idx] = np.ma.mean(cs2_pDict[p][n][argidx]) 
-            
-            
-        # Associate IS2 granule data to 10km SWATH-SEG coordinates
-        coord_is2 = np.vstack((lon_i_gran,lat_i_gran)).T
-        distance,closest_ind = tree.query(coord_is2,1)
-
-        flag_colloc = distance < 1
-        selected_idx = closest_ind[flag_colloc]
-        idx_swath = np.unique(selected_idx)
-        
-        data_array_is2 = dict()
-        for p in is2_pDict.keys():
-            data_array_is2[p] = ma.masked_array(np.zeros((ref_size,)),mask=np.ones((ref_size,)))
-
-        data_array_is2['lat'] = lat_swath #[flag_colloc]
-        data_array_is2['lon'] = lon_swath #[flag_colloc]
-        #data_array_is2['slasw'] = is2_pDict['slasw'][n][idx_swath]
-            
-        for idx in idx_swath:
-            argidx = np.argwhere(closest_ind==idx)
-            for p in is2_pDict.keys():
-                if p in ['lat','lon']: continue
-                if 'sla' in p:
-                    data_array_is2[p][idx] = is2_pDict[p][n][idx]
-                else:
-                    data_array_is2[p][idx] = np.ma.mean(is2_pDict[p][n][argidx])
-
-
-        # Adding data to final array
-        for p in is2_pDict.keys():
-            swath_data_array['IS2'][p].append(data_array_is2[p])
-
-        # Adding data to final array
-        for p in cs2_pDict.keys():
-            swath_data_array['CS2'][p].append(data_array_cs2[p])
-
-        
-    return swath_data_array  
-
-
-            
 
 # Main
 ###########################################
@@ -425,20 +260,111 @@ if __name__ == '__main__':
     common_data_list = snsc.get_collocated_data(date_list,file_dict,is2Beams)
 
     
-
+    #####################################################
+    #
+    #     Get SLA over swath segments
+    #
+    ####################################################
     
-   
-    is2_gdr='ATL10'
-    cs2_gdr='ESA_BD_GDR'
-    is2_b = 'b2'
-    LAT_MIN=60
-    swath_data_array = align_sla_swath_seg(common_data_list,cs2_gdr,is2_gdr,is2_b,LAT_MIN)
+    swath_data_array = snsc.align_sla_swath_seg(date_list,file_dict,common_data_list,REF_GDR_CS2,REF_GDR_IS2,is2Beams[0],LAT_MIN)
 
+    lon = np.ma.concatenate(swath_data_array['CS2']['lon'],axis=0)
+    lat = np.ma.concatenate(swath_data_array['CS2']['lat'],axis=0)
+    
+    # SLA CS2
+    sla_cs2 = np.ma.concatenate(swath_data_array['CS2']['sla'],axis=0)
+    mss_cs2 = np.ma.concatenate(swath_data_array['CS2']['mss'],axis=0)
+
+    # corrections
+    #array_model = np.ma.zeros(sla_cs2.shape)
+    earth = np.ma.concatenate(swath_data_array['CS2']['earth'],axis=0)
+    lpe = np.ma.concatenate(swath_data_array['CS2']['lpe'],axis=0)
+    dac = np.ma.concatenate(swath_data_array['CS2']['dac'],axis=0)
+    pole = np.ma.concatenate(swath_data_array['CS2']['pole'],axis=0)
+    ocean = np.ma.concatenate(swath_data_array['CS2']['ocean'],axis=0)
+    load = np.ma.concatenate(swath_data_array['CS2']['load'],axis=0)
+    #list_corrs = [earth,lpe,dac,pole,ocean,load]
+    corrections_cs2 = earth + lpe + dac + ocean + load +pole
+    
+    # corrections
+    earth = np.ma.concatenate(swath_data_array['IS2']['earth'],axis=0)
+    lpe = np.ma.concatenate(swath_data_array['IS2']['lpe'],axis=0)
+    dac = np.ma.concatenate(swath_data_array['IS2']['dac'],axis=0)
+    pole = np.ma.concatenate(swath_data_array['IS2']['pole'],axis=0)
+    ocean = np.ma.concatenate(swath_data_array['IS2']['ocean'],axis=0)
+    load = np.ma.concatenate(swath_data_array['IS2']['load'],axis=0)
+    corrections_is2 = earth + lpe + dac + ocean + load  +pole
+
+    # SLA IS2
+    sla_is2 = np.ma.concatenate(swath_data_array['IS2']['slasw'],axis=0)
+    mss_is2 = np.ma.concatenate(swath_data_array['IS2']['mss'],axis=0)
+    sla_is2 = sla_is2 + mss_is2 - mss_cs2 + corrections_is2 - corrections_cs2
+    sla_is2 = ma.masked_invalid(sla_is2,copy=True)
+    
+    """
+    plt.plot(sla_cs2)
+    plt.plot(sla_is2)
+    plt.show()
+    """
+
+    delta_sla = sla_is2 - sla_cs2
     
         
     print('[strop')
+
+    # histogramm
+    #-------------------
+    f2, axh = plt.subplots(1, 1,figsize=(8,8))
+    f2.suptitle('Histogram of SSH', fontsize=14)
+    xylim = [-0.1,0.5]
+    legend_list = ['SLA IS2 (m)','SLA CS2 (m)']
+    data_list = [sla_is2,sla_cs2]
+    xlabel = 'SLA (m)'
+    st.plot_histo(axh,xylim,'m',xlabel,legend_list,data_list,True)
+    #plt.savefig(pathout+'histo_ssh_%s.png' %(mid_month))
+
+    if pathout is not None:
+        plt.savefig(pathout+'histo_ssh_%s_swath.png' %(mid_month))
+    else:
+        plt.show()
+
+    # scatter plot
+    #---------------
+    xylim = [[-0.1,0.5], [-0.1,0.5]]
+    f1, ax = plt.subplots(1, 1, sharey=True)
+    f1.suptitle('Scatter plot', fontsize=12)
+    x_data = sla_is2
+    x_label = 'SLA IS2 (m)'
+    y_label='SLA CS2 (m)'
+    y_data = sla_cs2
+    st.plot_scatter(ax,xylim,'','m',x_data,x_label,y_data,y_label,None)
+    #plt.savefig(pathout+'scatter_ssh_%s.png' %(mid_month))
+
+    if pathout is not None:
+        plt.savefig(pathout+'scatter_ssh_%s_swath.png' %(mid_month))
+    else:
+        plt.show()
+
+
+    # map
+    #-----------------
+    f1, ax = plt.subplots(1, 1,figsize=(8,6))
+    xylim = [-0.1,0.1]
+    f1.suptitle('Delta sla (la-ku) %s' %(mid_month), fontsize=12)
+    bmap,cmap = st.plot_track_map(f1,ax,lon,lat,delta_sla,'Delta sla(La-ku)',xylim,mid_date,'m',True,alpha=1)
+
+    if pathout is not None:
+        plt.savefig(pathout+'map_delta_sla_%s_swath.png' %(mid_month))
+    else:
+        plt.show()
         
-    
+        
+
+    #####################################################
+    #
+    #     Get SLA/FB from CS2 beam-wise association
+    #
+    ####################################################
 
     # Get aligned data
     data_dict = dict()
