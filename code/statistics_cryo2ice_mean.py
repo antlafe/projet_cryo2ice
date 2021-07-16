@@ -31,6 +31,8 @@ EXAMPLES:
 
     python -m pdb statistics_cryo2ice_mean.py -f NovJan_all -g ESA_BD_GDR,LEGOS_SAM,LEGOS_T50,CPOM,UOB -p comp_grid -d20201101,20201130
 
+    python -m pdb statistics_cryo2ice_mean.py -f NovMar_ESA -g ESA_BD_GDR -p simba -d20201101,20201130
+
 
 COMMENTS:
 
@@ -76,7 +78,7 @@ PATH_INPUT = path_dict.PATH_DICT['PATH_OUT']
 
 PATH_GRID = path_dict.PATH_DICT['PATH_GRID']
 
-param_opts = ['sd_month','find_regions','simba','mean_grid','comp_grid','roughness','data_maps','show_data','sd_comp']
+param_opts = ['sd_month','find_regions','simba','mean_grid','comp_grid','roughness','data_maps','show_data','sd_comp','xings']
 
 beamList=['gt1r','gt2r','gt3r'] #,'gt1l','gt2l','gt3l']
 MAX_ACROSS_DIST = 1.5 #KM
@@ -299,6 +301,15 @@ if __name__ == '__main__':
         bmap,cmap = st.plot_track_map(f1,ax,lon_list,lat_list,param_list,pname,[0,0.5],mid_date,'m',False,alpha=1,size=5)
         
         plt.show()
+
+
+    if param=='xings':
+
+        lon = np.ma.concatenate(list(np.array(data_dict['CS2']['ESA_BD_GDR']['lon'],dtype=object)[idx_dates]),axis=0)
+        lat = np.ma.concatenate(list(np.array(data_dict['CS2']['ESA_BD_GDR']['lat'],dtype=object)[idx_dates]),axis=0)
+        
+
+        
         
 
     if param=='data_maps':
@@ -1066,7 +1077,7 @@ if __name__ == '__main__':
         
         
         # show map
-        """
+        
         id_date = np.ma.array([mdates.date2num(i) for i in day_colloc])
         f1, ax = plt.subplots(1, 1,figsize=(10,6))
         f1.suptitle('Month ids from October with ESA_BD from %s-%s \n delay=+-%i days/dist=%i km' %(date_period_str[0],date_period_str[-1],delay,max_dist), fontsize=12)
@@ -1076,7 +1087,7 @@ if __name__ == '__main__':
         x,y = bmap(lon_simba,lat_simba)
         bmap.plot(x,y, linewidth=1.5, color='red',linestyle='-',zorder=2)
         plt.show()
-        """
+        
 
 
         # Get snow depth:idx_dates

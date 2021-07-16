@@ -415,73 +415,9 @@ if __name__ == '__main__':
     
     #--------------------------------------------------
     #
-    #               get ICESAT-2 data
-    #
-    #---------------------------------------------------
-
-    
-    # We consider the longest IS2 beam to display
-    """
-    longest_beam = list()
-    size_beams = list()
-    for b in beam_is2:
-        size_beams.append(np.concatenate(data_dict['IS2'][gdr_is2][b]['latfull'],axis=0).size)
-    beam_to_show = beam_is2[size_beams.index(max(size_beams))]
-    """
-    beam_to_show = 'b2' # warning if not required !
-    
-    # Get full lat/lon
-    is2_full_lats = list(np.array(data_dict['IS2'][gdr_is2][beam_to_show]['latfull'],dtype=object)[idx_dates])                    
-    is2_full_lons = list(np.array(data_dict['IS2'][gdr_is2][beam_to_show]['lonfull'],dtype=object)[idx_dates])
-    
-    # interpolate to get missing data (over the land)
-    is2_full_lats_interp = list() # coordinates to display
-    is2_full_lons_interp = list()
-    x_dist_is2 = list()
-    for n in range(ndates):
-        # eliminates duplicates (To do)
-        #lat = is2_full_lats[n]
-        #lon = is2_full_lons[n]
-        #unique,idx,num_occ = np.unique(lat,return_index=True,return_counts=True) 
-        #flag_occurence = num_occ>1
-        lat_interp,lon_interp = interp_coordinates(is2_full_lats[n],is2_full_lons[n],dist_frame,arr_step_is2)
-        is2_full_lats_interp.append(lat_interp)
-        is2_full_lons_interp.append(lon_interp)
-
-   
-    
-    # get data to display
-    delay = dict()
-    dist = dict()
-    data_is2 = dict()
-    x_dist_seg_is2 = dict()
-    lat_is2 = dict()
-    lon_is2 = dict()
-    #for b in beam_is2: x_dist_seg_is2[b]=list() 
-    
-    # Retreive data
-    for b in beam_is2:
-        lat_is2[b] = list(np.array(data_dict['IS2'][gdr_is2][b]['lat'],dtype=object)[idx_dates]) 
-        lon_is2[b] = list(np.array(data_dict['IS2'][gdr_is2][b]['lon'],dtype=object)[idx_dates])
-        data_is2[b] = list(np.array(data_dict['IS2'][gdr_is2][b][pname_is2],dtype=object)[idx_dates])       
-        delay[b] = list(np.array(data_dict['IS2'][gdr_is2][b]['delay'],dtype=object)[idx_dates])
-        dist[b] = list(np.array(data_dict['IS2'][gdr_is2][b]['dist'],dtype=object)[idx_dates])
-    
-    # compute mean distance
-    mean_delta_dist = [np.mean(d) for d in dist[b]]
-
-    # Compute mean delay
-    mean_delay = [np.mean(d) for d in delay[b]]
-    mean_delay_sign = [np.sign(md) for md in mean_delay]
-    mean_delay_str = [str(timedelta(minutes=np.abs(mins)))[:7] for mins in mean_delay]
-    
-
-    #--------------------------------------------------
-    #
     #               get CRYOSAT-2 data
     #
     #---------------------------------------------------
-
     # check if REF GDR in data_file
     if not REF_GDR in data_dict['CS2'].keys():
         print("CS2 REF GDR: %s is not in data_dict" %(REF_GDR))
@@ -491,49 +427,34 @@ if __name__ == '__main__':
     # Get full coordinates
     cs2_full_lats = list(np.array(data_dict['CS2'][REF_GDR]['latref_full'],dtype=object)[idx_dates])
     cs2_full_lons = list(np.array(data_dict['CS2'][REF_GDR]['lonref_full'],dtype=object)[idx_dates])
-    
     # Get ref lat/lon
-    ref_seg_lats = list(np.array(data_dict['CS2'][REF_GDR]['latref'],dtype=object)[idx_dates])
-    ref_seg_lons = list(np.array(data_dict['CS2'][REF_GDR]['lonref'],dtype=object)[idx_dates])
-   
-    # interpolate to get missing data (over the land)
-    cs2_full_lats_interp = list()
-    cs2_full_lons_interp = list()
-    x_dist_cs2 = list()
-    for n in range(ndates):
-        lat_interp,lon_interp = interp_coordinates(cs2_full_lats[n],cs2_full_lons[n],dist_frame,arr_step_cs2)
-        cs2_full_lats_interp.append(lat_interp)
-        cs2_full_lons_interp.append(lon_interp)
-        
-    
-    # get data to display
-    data_is2_2d = list()
+    ref_seg_lats = list(np.array(data_dict['CS2'][REF_GDR]['lat'],dtype=object)[idx_dates])
+    ref_seg_lons = list(np.array(data_dict['CS2'][REF_GDR]['lon'],dtype=object)[idx_dates])
+
     data_cs2 = dict()
     for cs2_prod in gdrs_cs2: data_cs2[cs2_prod]= list()
+
+    for cs2_prod in gdrs_cs2:
+        data_array_cs2 = list(np.array(data_dict['CS2'][cs2_prod][pname_cs2],dtype=object)[idx_dates])
+        data_cs2[cs2_prod].append(data_array_cs2)
+
+    #--------------------------------------------------
+    #
+    #               get ICESAT-2 data
+    #
+    #---------------------------------------------------
     
-    for n in idx_dates:
+    data_array_is2 = list(np.array(data_dict['IS2'][gdr_is2][pname_is2+'_mean'],dtype=object)[idx_dates])
+    data_array_is2_std = list(np.array(data_dict['IS2'][gdr_is2][pname_is2+'_std'],dtype=object)[idx_dates])
 
-        # get 2-D data from IS2
-        data_mat = data_dict['IS2'][gdr_is2][pname_is2+'_mean'][n]
-        data_mat[data_mat.mask] = np.nan
-        data_is2_2d.append(data_mat.data)
-        for cs2_prod in gdrs_cs2:
-            # convert to masked array
-            data_array_cs2 = ma.masked_invalid(data_dict['CS2'][cs2_prod][pname_cs2][n])
-            data_cs2[cs2_prod].append(data_array_cs2) # [valid_idx])
-            #data_cs2[cs2_prod].append(np.mean(data_dict['IS2']['ATL10']['laser_fb'][n],axis=0))
-            
-
-
-    
+        
     #--------------------------------------------------
     #
     #         Define common interpolated track
     #
     #---------------------------------------------------
-
     # Min lat to show in basemap (depends on MIN_LAT chosen in sortnsave algo)
-    min_lat = min(np.min(np.concatenate(is2_full_lats,axis=0)), np.min(np.concatenate(cs2_full_lats,axis=0)))
+    min_lat = np.min(np.concatenate(cs2_full_lats,axis=0))
 
     # Rq: Track used to plot the data
 
@@ -547,18 +468,12 @@ if __name__ == '__main__':
         ref_lats_interp.append(lat_ref_interp)
         ref_lons_interp.append(lon_ref_interp)
         x_dist.append(cf.distance_from_first_trk_pts(ref_lats_interp[n],ref_lons_interp[n],0))
-
-    #ref_lons_interp[0]
-    #from scipy.signal import savgol_filter
-    #yhat = savgol_filter(ref_lons_interp[0],11, 2) # window size 51, polynomial order 3
     
     #--------------------------------------------------
     #
     #               get OSISAF data
     #
     #---------------------------------------------------
-
-
     
     # Draw osisaf ice type with first data
     lons_icetype = list()
@@ -585,9 +500,8 @@ if __name__ == '__main__':
         icetype_al.append(icetype_alongtrack)
 
     icetype_al_full = np.ma.concatenate(icetype_al,axis=0)
-        
-            
 
+    
     #---------------------------------------------------------------------------------------------
 
 
@@ -597,6 +511,7 @@ if __name__ == '__main__':
     #
     #---------------------------------------------------
 
+    print('stop')
 
     # IS2 params
 
@@ -754,6 +669,9 @@ if __name__ == '__main__':
     ntrack_idx.append(ntrack)
     full_frame.append(len(full_frame)+1)
 
+    
+
+    
     #-------------------------------------------------------------------------------------------
 
 
@@ -763,191 +681,8 @@ if __name__ == '__main__':
     #
     #---------------------------------------------------
 
-    
 
-    is2_data_pts = dict()
-    is2_mean_dist = dict()
-    is2_ndata_pts = dict()
-    idx_pts_is2 = dict()
-    dist_save = dict()
-    is2_mean_data_line = list()
-    is2_mean_dist_line = list()
-    is2_mean_data_pts = list()
-    for b in beam_is2:
-        idx_pts_is2[b] = list()
-        is2_data_pts[b] = list()
-        is2_mean_dist[b] = list()
-        is2_ndata_pts[b] = list()
-        dist_save[b] = list()
-
-    cs2_data_pts = dict()
-    cs2_mean_dist = dict()
-    cs2_ndata_pts = dict()
-    idx_pts_cs2 = dict()
-    cs2_mean_data_pts = list()
-    for gdr in gdrs_cs2:
-        idx_pts_cs2[gdr] = list()
-        cs2_data_pts[gdr] = list()
-        cs2_mean_dist[gdr] = list()
-        cs2_ndata_pts[gdr] = list()
-
-    for ntrack in range(ndates):
-        
-        ##########################
-        # define IS2 data array
-        ##########################
-        #dist_start_seg = x_dist_is2[ntrack][is2_idx_common_data_seg[ntrack][0]]
-        for b in beam_is2:
-
-            for idx_frame in is2_idx_common_data_seg[ntrack]:
-
-                # Case data found around this point
-                idx_pts_is2[b].append(idx_frame)
-                if idx_frame in is2_frame_seg_uniq_b[b][ntrack]:
-
-                    idx = is2_frame_seg_b[b][ntrack]==idx_frame
-                    ndata = np.sum(~np.isnan(data_is2[b][ntrack][idx]))
-                    data_density = ndata/dist_frame
-                    is2_ndata_pts[b].append(ndata)
-
-                    # if data density sufficient
-                    if data_density > MIN_IS2_DATA_DENSITY:
-                        is2_mean_dist[b].append(x_dist[ntrack][idx_frame])
-                        is2_data_pts[b].append(np.nanmean(data_is2[b][ntrack][idx]))
-
-                    else:
-                        is2_data_pts[b].append(np.nan)
-                        is2_mean_dist[b].append(np.nan)
-                    #print("%s: density: %s, ndata: %s, dist: %s, data: %s" %(b,data_density,ndata,np.nanmean(data_is2[b][ntrack][idx]),x_dist[ntrack][idx_frame]))
-
-                # case no data found around this point
-                else:
-                    is2_data_pts[b].append(np.nan)
-                    is2_mean_dist[b].append(np.nan)
-                    is2_ndata_pts[b].append(0)
-
-        
-       
-        
-        
-        ##########################
-        # define CS2 data array
-        ##########################
-        for ngdr,gdr in enumerate(gdrs_cs2):
-
-            for idx_frame in cs2_idx_common_data_seg[ntrack]:
-
-                # Case data found around this point
-                if idx_frame in cs2_frame_seg_uniq[ntrack]:
-
-                    idx = cs2_frame_seg[ntrack]==idx_frame
-                    
-                    ndata = np.ma.sum(~np.isnan(data_cs2[gdr][ntrack][idx]))
-                    if np.ma.is_masked(ndata): ndata=np.sum(~data_cs2[gdr][ntrack][idx].mask)
-                    data_density = ndata/dist_frame
-                    cs2_ndata_pts[gdr].append(ndata)
-
-                    # if data density sufficient
-                    if data_density > MIN_CS2_DATA_DENSITY:
-                        cs2_data_pts[gdr].append(np.ma.mean(data_cs2[gdr][ntrack][idx]))
-                        cs2_mean_dist[gdr].append(x_dist[ntrack][idx_frame])
-                        
-                        #Save mean data for IS2 sorted in the CS2 beams
-                        if ngdr==0:
-                            is2_mean_data_pts.append(np.nanmean(data_is2_2d[ntrack][idx]))
-                            #is2_mean_data_pts.append(np.nanmean(data_is2_2d[ntrack][:,idx]))
-                       
-                    else:
-                        cs2_data_pts[gdr].append(np.nan)
-                        cs2_mean_dist[gdr].append(np.nan)
-                        if ngdr==0: is2_mean_data_pts.append(np.nan)
-                    #print("%s: density: %s, ndata: %s, dist: %s, data: %s" %(gdr,data_density,ndata,np.ma.mean(data_cs2[gdr][ntrack][idx]),x_dist[ntrack][idx_frame]))
-
-                # case no data found around this point
-                else:
-                    cs2_data_pts[gdr].append(np.nan)
-                    cs2_mean_dist[gdr].append(np.nan)
-                    cs2_ndata_pts[gdr].append(0)
-                    if ngdr==0: is2_mean_data_pts.append(np.nan)
-
-
-    # define mean values CS2 & IS2
-    #-------------------------------------
-    data_list = list()
-    data_dist_list = list()
-    for b in beam_is2:
-        data_list.append(is2_data_pts[b])
-        data_dist_list.append(is2_mean_dist[b])
-    is2_data_matrix = np.array(data_list)
-    is2_data_dist_matrix = np.array(data_dist_list)
-    is2_mean_data_line.extend(np.nanmean(is2_data_matrix,axis=0))
-    is2_mean_dist_line.extend(np.nanmedian(is2_data_dist_matrix,axis=0))
-
-    # define rolling median of CS2
-    data_array = np.ma.masked_invalid(np.array(cs2_data_pts[gdr]),copy=True)
-    cs2_mean_data = stats.rolling_stats(data_array, 4, stats=['mean'])[0]
-    # temporary XXX
-    cs2_mean_data[np.isnan(cs2_data_pts[gdr])] = ma.masked
-    cs2_mean_data_pts.extend(cs2_mean_data)
-
-    
-    print("stop")
-        
-    """
-    plt.plot(is2_data_matrix[0,:],'*')
-    plt.plot(is2_data_matrix[1,:],'*')
-    plt.plot(is2_data_matrix[2,:],'*')
-    plt.plot(is2_mean_data_line,'.-')
-    plt.show()
-    """
-
-    
-    
-    """
-    # XXX TEST scatter
-    xylim = [-0.3,0.5]
-    f11, ax = plt.subplots(1, 1, sharey=True)
-    x_data = np.array(is2_mean_data_pts)
-    x_label = 'IS2 laser fb (m)'
-    y_data = np.array(cs2_data_pts['ESA_BD_GDR'])
-    y_label = 'CS2 radar fb (m)'
-    commun_mask = np.logical_and(~np.isnan(x_data),~np.isnan(y_data))
-
-    # SCATTER
-    #cf.statistics('freeboard',param,'m',is_flag)
-    icetype = np.ma.concatenate(icetype_al,axis=0)
-    f11, ax = plt.subplots(1, 1, sharey=True)
-    stats.plot_scatter(ax,xylim,y_data,y_label,x_data,x_label,icetype)
-   
-    #tips = sns.load_dataset("tips")
-    #ax = sns.regplot(x="total_bill", y="tip", data=tips)
-    p = sns.regplot(x=y_data, y=x_data, color="darkgray",fit_reg=True,scatter=False,ax=ax)
-    slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(x=p.get_lines()[0].get_xdata(),y=p.get_lines()[0].get_ydata())
-    
-    ax.legend()
-
-    # HISTO
-    f12, ax = plt.subplots(1, 1, sharey=True)
-    legend_list = [x_label,y_label]
-    data_list = [x_data,y_data]
-    stats.plot_histo(ax,xylim,'m','freeboard [m]',legend_list,data_list,commun_mask)
-    plt.show()
-    """
-
-    
-    #print("stop")
-    """
-    x_cs2_myi = np.array(cs2_mean_data_pts)[icetype_al_full.data==4]
-    y_is2_myi = np.array(is2_mean_data_line)[icetype_al_full.data==4]
-    common_mask = np.logical_and(~np.isnan(x_cs2_myi),~np.isnan(y_is2_myi))
-    res = scipy.stats.linregress(x_cs2_myi[common_mask],y_is2_myi[common_mask])
-    x_abs_myi = np.arange(np.round(np.nanmin(x_cs2_myi),2),np.round(np.nanmax(x_cs2_myi),2),0.02)
-    y_reg = res.intercept + res.slope*x_abs_myi
-    plt.plot(x_abs_myi,x_abs_myi)
-    plt.fill_between(x_abs_myi, x_abs_myi, y_reg, color='lightgrey' )
-    plt.show()
-    """
-                    
+                     
     #--------------------------------------------------
     #
     #               Define figures
@@ -1549,3 +1284,4 @@ if __name__ == '__main__':
     
 
     
+

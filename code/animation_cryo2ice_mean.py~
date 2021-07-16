@@ -1,0 +1,441 @@
+#! /home/antlafe/anaconda3/bin/python
+
+#
+# comp_al_IS2_CS2.py
+#
+# ----------------------------------------------------------------------
+# Copyright (c) 2020 LEGOS/SERCO
+# All rights reserved.
+#
+
+
+
+"""
+DESCRIPTION:
+
+     Animated plot to show comparison of IS2 and CS2 data
+
+USAGE:
+
+     animation_cs2_is2.py [options]
+
+optional arguments:
+
+EXAMPLES:
+
+    python -m ipdb animation_cs2_is2.py -g ESA_BD,AWI -p radar_fb -g ATL07 -b gt1r,gt2r,gt3r -p surface_h -d20200301,20200303 -f 202003
+
+PRINCIPLE:
+
+- interpolating a reference track
+- indexing each IS2 beams and CS2 product data on this reference beam
+- indenting these indexes on IS2 ref track (for the display)
+- producing data arrays indented on this ref track
+- developping data frame based on ref track
+
+
+# ERRORS: possible errors on ref track can spread to the rest of the data  
+
+
+"""
+
+import sys
+import h5py
+import netCDF4 as nc
+import numpy as np
+from numpy import ma 
+from mpl_toolkits.basemap import Basemap
+import matplotlib.pyplot as plt
+from matplotlib import cm
+import glob
+from datetime import date, timedelta, datetime
+import argparse
+import cs2_dict
+import is2_dict
+import common_functions as cf
+import statistics_cryo2ice as stats
+import warnings
+import scipy.spatial
+from scipy.stats import gaussian_kde
+import pickle
+import matplotlib.animation as animation
+from matplotlib import gridspec
+from parserObjects import ParentAction,ChildAction
+import matplotlib as mpl
+import os
+from scipy.interpolate import interp1d
+from operator import itemgetter
+import seaborn as sns
+import path_dict
+
+# Global attributs
+###########################################
+
+PATH_DATA= path_dict.PATH_DICT['PATH_DATA']
+PATH_INPUT =  path_dict.PATH_DICT['PATH_OUT']
+PATH_OUT = path_dict.PATH_DICT['PATH_FIG']
+
+# info: possibility to use lat01 to avoid POCA coord over SARin mask areas
+REF_GDR = 'ESA_BD_GDR'
+
+is2_gdrs = ['ATL10']
+
+colors_plot_cs2 = ['deepskyblue','dodgerblue','turquoise','royalblue','palegreen']
+colors_plot_is2 =['palegreen','mediumseagreen','green']
+cs2_color = 'dodgerblue'
+is2_color = 'seagreen'
+common_color ='black'
+colors_lineplot = [is2_color,cs2_color]
+
+beamList=['gt1r','gt2r','gt3r','gt1l','gt2l','gt3l']
+
+list_midnight_dates = {
+    'ATL07' : ['20201005','20201018','20201022','20201108','20201125','20201129','20201216','20200102','20200119','20200123'],
+    'ATL10': ['20201005','20201018','20201022','20201108','20201125','20201129','20201216','20200102','20200119','20200123'],
+    'ATL12': ['20201014','20201031'],
+    }
+
+
+#list_midnight_dates = ['20201018','20201108'] 
+
+dist_frame = 100#km
+interval = 10 #ms
+show_plot = False
+outfilename= 'colloc_nov_jan20_full_esa'
+
+# mean density to show data
+MIN_IS2_DATA_DENSITY = 1 #00 # pts/km
+MIN_CS2_DATA_DENSITY = 0.3 # pts/km
+
+# limits 
+xylim = [-0.3, 0.6] # scatter limits
+snowlim = [0,0.4]
+
+
+arr_step_is2 = 15
+arr_step_cs2 = 1
+
+###########################################
+#
+#              Functions
+#
+###########################################
+
+#---------------------------------
+# Get CS2 dates
+#--------------------------------
+
+def is2date_2_cs2date(date,is2gdr):
+    """
+    this function deals with cases when IS2/CS2 collocated tracks are one day apart
+    the function simplys add one day to CS2 date for these specific cases
+    """
+    
+    #if date in [datetime.strptime(d,'%Y%m%d') for d in list_midnight_dates]:
+    datestr = date.strftime('%Y%m%d')
+    if datestr in list_midnight_dates[is2gdr]:
+        date_1 =  date + timedelta(days=1)
+        print("IS2 date: %s correspond to CS2 date: %s" %(date.strftime('%d/%m/%Y'),date_1.strftime('%d/%m/%Y')))
+        #date_1 = date_1.strftime('%Y%m%d')
+    else:
+        date_1 = date
+
+    return date_1
+
+#---------------------------------
+# Get CS2 dates
+#--------------------------------
+"""
+def is2date_2_cs2date(date,is2gdr):
+    '''
+    this function deals with cases when IS2/CS2 collocated tracks are one day apart
+    the function simplys add one day to CS2 date for these specific cases
+    '''
+
+    
+    if date in [datetime.strptime(d,'%Y%m%d') for d in list_midnight_dates[is2gdr]]:
+        date_1 =  date + timedelta(days=1)
+        print("IS2 date: %s correspond to CS2 date: %s" %(date.strftime('%d/%m/%Y'),date_1.strftime('%d/%m/%Y')))
+        #date_1 = date_1.strftime('%Y%m%d')
+    else:
+        date_1 = date
+
+    return date_1
+"""
+
+
+# function to interpolate coordinates where data are missing
+def interp_coordinates(lat,lon,delta_d,arr_step):
+
+    """
+    Function to interpolate over a set of coordinates with a distance of delta_d
+
+    lat       : (1D array) latitude
+    lon       : (1D array) longitude
+    delta_d   : (int) along-track length interval  
+    arr_step  : (int) only consider data every arr_step in lat,lon arrays
+    ADVICE: increase this number if double number error in interpolation
+
+    """
+    if any(np.abs(np.diff(lon)) > 20): lon[lon > 180] = lon[lon > 180] - 360   
+    lat = lat[::arr_step] # warning using only every 5 data to avoid having same data in distance param
+    lon = lon[::arr_step] # if bug increase that value
+    #lon[lon <0] = lon[lon <0] + 360
+    distance = np.nancumsum(cf.dist_btw_two_coords(lat[1:],lat[:-1],lon[1:],lon[:-1]))
+    max_distance = distance[-1]
+    distance = np.insert(distance, 0, 0)/max_distance
+    alpha = np.linspace(0, 1, int(max_distance/delta_d))
+    points =  np.array([lat.tolist(),lon.tolist()]).T
+    interpolator =  interp1d(distance, points, kind='quadratic', axis=0)
+    interp_pts = interpolator(alpha)
+    lat = interp_pts[:,0]; lon = interp_pts[:,1]
+    if any(np.abs(np.diff(lon)) > 300) or any(lon < 0): lon[lon < 0] = lon[lon < 0] + 360
+    return lat,lon
+
+
+
+
+def onClick(event):
+    global pause
+    pause ^= True
+
+
+import matplotlib.lines
+from matplotlib.transforms import Bbox, TransformedBbox
+from matplotlib.legend_handler import HandlerBase
+from matplotlib.image import BboxImage
+
+class HandlerLineImage(HandlerBase):
+
+    def __init__(self, path, space=15, offset = 10):
+        self.space=space
+        self.offset=offset
+        #self.width = width
+        self.image_data = plt.imread(path)        
+        super(HandlerLineImage, self).__init__()
+
+    def create_artists(self, legend, orig_handle,
+                       xdescent, ydescent, width, height, fontsize, trans):
+
+        l = matplotlib.lines.Line2D([xdescent+self.offset,xdescent+(width-self.space)/3.+self.offset],
+                                     [ydescent+height/2., ydescent+height/2.])
+        l.update_from(orig_handle)
+        l.set_clip_on(False)
+        l.set_transform(trans)
+
+        bb = Bbox.from_bounds(xdescent +(width+self.space)/3.+self.offset,
+                              ydescent,
+                              height*self.image_data.shape[1]/self.image_data.shape[0],
+                              height)
+
+        tbb = TransformedBbox(bb, trans)
+        image = BboxImage(tbb)
+        image.set_data(self.image_data)
+
+        self.update_prop(image, orig_handle, legend)
+        return [l,image]
+
+
+###########################################
+#
+#              Main
+#
+###########################################
+
+
+if __name__ == '__main__':
+
+    # Define programme description
+    description ='Animated plot to show comparison of IS2 and CS2 data'
+
+    # Initiate the parser with a description
+    parser = argparse.ArgumentParser(description=description)
+
+    # Add long and short arguments
+    # -------------------------------------------------------
+    parent = parser.add_argument('-g', '--gdr', action=ParentAction)
+
+    parser.add_argument("-b","--beamN",default=None,help="set desired IS2 beam",action=ChildAction, parent=parent)
+    
+    parser.add_argument("-p","--parameters",required=True,help="provide parameters to plot. If absent, list all available parameters",action=ChildAction, parent=parent)
+    
+    parser.add_argument("-f","--inputfolder",help="provide input pickle data file",required=True)
+
+    #parser.add_argument("-g","--gdrs",help="set desired CS2 products to best tested",required=True)
+
+    parser.add_argument("-d","--date",required=True,help="provide CS2 track date")
+
+    #parser.add_argument("-p","--parameters",required=True,help="provide CS2 parameter to plot")
+
+    parser.add_argument("-o","--outpath",default=PATH_OUT,help="[optionnal] provide outpath")
+
+    
+    # Read arguments
+    # ----------------------------------------------------------
+    args = parser.parse_args()
+
+    # Open pikle file
+    #-----------------------------------------------------------
+    inputfolder = args.inputfolder +'/'
+    inputfilepattern = PATH_INPUT + inputfolder + 'data_dict.pkl'
+    filename = glob.glob(inputfilepattern)
+    if len(filename)==0: sys.exit("\n%s: No found" %(inputfilepattern))
+
+    pkl_file = open(filename[0], 'rb')
+    data_dict = pickle.load(pkl_file)
+    
+    # Open info params file
+    #-----------------------------------------------------------
+    inputfilepattern = PATH_INPUT + inputfolder + 'info_params.pkl'
+    filename = glob.glob(inputfilepattern)
+    if len(filename)==0: sys.exit("\n%s: Not found" %(inputfilepattern))
+    pkl_file = open(filename[0], 'rb')
+    info_params = pickle.load(pkl_file)
+            
+    # Get required dates
+    #-----------------------------------------------------------
+    date = [d for d in args.date.split(',')]
+    if len(date) != 2: print('Provide date -d as YYYYMMDD,YYYYMMDD in arguments');sys.exit()
+
+    start_date = datetime.strptime(date[0], '%Y%m%d')
+    end_date = datetime.strptime(date[1], '%Y%m%d')
+
+    requested_dates =  [start_date + timedelta(n) for n in range(int((end_date - start_date).days)+1)]
+    available_dates = data_dict['dates']
+
+    found_dates = [d for d in requested_dates if d in available_dates]
+    if len(found_dates)==0: print('Unavailable dates',date,'\nAvailable dates are:',[d.strftime("%Y%m%d") for d in available_dates]);sys.exit()
+    ndates = len(found_dates)
+    idx_dates = np.array([available_dates.index(date) for date in found_dates])
+
+    # Unwrap GDRs:
+    #-----------------------------------------------------------
+    gdrs = [gdr for gdr in args.gdr.items()]
+    if len(gdrs)>2: print("To many GDR provided: please provide -g IS2-gdr ... -g CS2-gdr");sys.exit()
+    # find indexes of IS2 and CS2
+    idx_is2 = int(np.argwhere(['ATL' in gdr[0] for gdr in gdrs]))
+    idx_cs2 = int(np.argwhere(['ATL' not in gdr[0] for gdr in gdrs]))
+    
+    # Find CS2 L2P product
+    #-----------------------------------------------------------
+    gdrs_cs2 = [g for g in gdrs[idx_cs2][0].split(',')]
+
+    global avail_gdrs_cs2
+    avail_gdrs_cs2 = data_dict['CS2'].keys()
+
+    gdrs_cs2_checking = gdrs_cs2.copy()
+    for gdr in gdrs_cs2:
+        if gdr not in avail_gdrs_cs2:
+            print("%s not found in:" %(gdr),avail_gdrs_cs2)
+            sys.exit("Add %s in %s" %(gdr,pkl_file))
+
+    #Get parameter: XXX one for the moment
+    pname_cs2 = gdrs[idx_cs2][1].parameters
+
+   
+    # Test if param is available:
+    print("\nChecking %s for CS2 \n#----------------" %(pname_cs2))
+    for gdr in gdrs_cs2:
+        print("\n %s:" %(gdr))
+        for d in found_dates:
+            d_cs2 = is2date_2_cs2date(d,'ATL10')
+            date_str_cs2 = d_cs2.strftime('%Y%m%d')
+            print("%s:" %(date_str_cs2),end='')
+            if pname_cs2 in info_params[gdr][date_str_cs2].keys():
+                print(info_params[gdr][date_str_cs2][pname_cs2]["status"])
+                units_cs2=info_params[gdr][date_str_cs2][pname_cs2]["units"]
+            else:
+                print("%s not available in data dict, chose param in" %(pname_cs2),[p for p in info_params[gdr][date_str_cs2].keys()])
+
+    # Find IS2 data
+    #------------------------------------------------------------
+    gdr_is2 = [g for g in gdrs[idx_is2][0].split(',')]
+    if len(gdr_is2)>1: print("To many GDR provided for IS2 please choose between ATL07 & ATL10");sys.exit()
+    else: gdr_is2=gdr_is2[0]
+
+    #Get parameter: XXX one for the moment
+    pname_is2 = gdrs[idx_is2][1].parameters
+    
+    print("\nChecking %s for IS2 \n#----------------" %(pname_is2))
+    
+    # Get requested beams
+    if 'beamN' not in vars(gdrs[idx_is2][1]).keys():
+        beam_is2 =  beamList
+    else:
+        beam_is2 = [b for b in gdrs[idx_is2][1].beamN.split(',')]
+
+    flag_beam = [b in info_params[gdr_is2][d.strftime("%Y%m%d")].keys() for b in beam_is2]
+
+    found_beams = list(np.array(beam_is2)[np.array(flag_beam)])
+    if np.all(flag_beam): print("\nAll beams %s were found" %(beam_is2))
+    else: print("\nOnly",found_beams,"were found")
+    beam_is2 = found_beams.copy()
+   
+    # Test if param is available:
+    print("\n %s:" %(gdr_is2))
+    for d in found_dates:
+        print("%s:" %(d.strftime("%Y%m%d")))
+        for b in found_beams:
+            print("%s:" %(b),end='')
+            if pname_is2 in info_params[gdr_is2][d.strftime("%Y%m%d")][b].keys():
+                print(info_params[gdr_is2][d.strftime("%Y%m%d")][b][pname_is2]["status"])
+                units_is2=info_params[gdr_is2][d.strftime("%Y%m%d")][b][pname_is2]["units"]
+            else:
+                print("%s not available in data dict, chose param in" %(pname_is2),[p for p in info_params[gdr_is2][d.strftime("%Y%m%d")][b].keys()])
+                sys.exit()
+    
+
+   
+    # Check units
+    #----------------------------------------------
+    units = units_is2
+    """
+    if units_cs2 == units_is2:
+        units=units_cs2
+        print("\n Parameters have same units: %s" %(units))
+    else:
+        print("\n ERROR: Parameters have different units: %s" %(units))
+        sys.exit()
+    """
+
+
+
+
+    
+        
+    ################################################################
+    #
+    #
+    #                      ANIMATION
+    #
+    #
+    ###############################################################
+
+
+    
+    #--------------------------------------------------
+    #
+    #               get ICESAT-2 data
+    #
+    #---------------------------------------------------
+
+
+    #--------------------------------------------------
+    #
+    #               get CRYOSAT-2 data
+    #
+    #---------------------------------------------------
+
+    
+    #--------------------------------------------------
+    #
+    #         Define common interpolated track
+    #
+    #---------------------------------------------------
+
+    
+    #--------------------------------------------------
+    #
+    #               get OSISAF data
+    #
+    #---------------------------------------------------

@@ -16,14 +16,16 @@ DESCRIPTION:
      Programm to compare along-track data from IS2/CS2 collocated tracks from Cryo2Ice project plus cross-over with other missions
 
 USAGE:
+     1/ Sort monthly collocated tracks files in specific folder for CS2 and IS2
 
-     1/ Add non corresponding dates btw CS2/IS2 in list_midnight_dates
+     2/ Add non corresponding dates btw CS2/IS2 in list_midnight_dates for each IS2 GDR [see spreadsheet: CRYO2ICE_tracks.xlsx] 
+     3/ Modify path_dict.py with correct path repertories 
 
-     2/ Provide IS2 product to be studies in is2_gdrs and add in file_pattern function if not added
+     4/ If new product: add sat+gdr info in file_pattern function
 
-     3/ Add non existing sat+gdr in file_pattern function
+     5/ Check global attributs
 
-     4/ ..
+     6/ Check parameters to be aligned in cs2_dict.py and is2_dict.py
 
      sortnsave_cryo2ice.py [options]
 
@@ -95,14 +97,15 @@ list_midnight_dates = {
     }
 
 # True only for ESA_BD
-flag_1hz = False # should 1Hz data converted to 20hz
-flag_IS2_mean = True
+flag_1hz = False # alignement in 1Hz or in 20Hz
+flag_IS2_mean = True # compute mean weighted value for each IS2 parameter (to get a same size 1D arrays between CS2 and IS2); if False: provide a matrix that contain each individual IS2 granules sorted by order of closest to beam centre
 
-MAX_DIST_OF_COLLOC_DATA= 5.5 #
+MAX_DIST_OF_COLLOC_DATA= 5.5 # km
 LAT_MIN = 55 # deg North
-N_IS2PTS_IN_CS2BEAMS = 200 #1500 #80
 
-N_MAX_IS2PTS_IN_CS2BEAMS = 1000 #4000 #300 for 20hz data
+# relevant if flag_IS2_mean is False
+N_IS2PTS_IN_CS2BEAMS = 200 # number of rows in IS2 data matrix
+N_MAX_IS2PTS_IN_CS2BEAMS = 1000 # max number of rows informing that there is an issue
 
 # xings points
 ref_date={
@@ -115,7 +118,7 @@ ref_date={
 
 N_MAX_CROSSPTS_IN_CS2BEAMS = 50 #50
 delay_xings = 4 #h
-xing_delay = 7 # days to find files before and after first data
+xing_delay = 2 # days to find files before and after first data
 MAX_DIST_INTER = 40 # km security to find out if intersections found by algo are correct
 TRACK_REDUCTION_IS2 = 80 # only consider 100th of track to look at interp (avoid memory issues)
 TRACK_REDUCTION_SAR = 20 
@@ -137,7 +140,9 @@ beam_dict={
 #--------------------------------
 
 def get_weighted_stats(weight1,weight2,val):
-
+    """
+    Get double weigted mean and std for an array of data [val]
+    """
     val = ma.masked_invalid(val)
     weight1 = ma.masked_where(val.mask,weight1,copy=True)
     weight2 = ma.masked_where(val.mask,weight2,copy=True)
@@ -157,7 +162,7 @@ def get_weighted_stats(weight1,weight2,val):
 def is2date_2_cs2date(date,is2gdr):
     """
     this function deals with cases when IS2/CS2 collocated tracks are one day apart
-    the function simplys add one day to CS2 date for these specific cases
+    the function simply adds one day to CS2 date for these specific cases
     """
     
     #if date in [datetime.strptime(d,'%Y%m%d') for d in list_midnight_dates]:
@@ -176,6 +181,10 @@ def is2date_2_cs2date(date,is2gdr):
 #---------------------------------
 
 def get_sat_filepattern(satName,prodName,date_str,d_str_folder):
+    
+    """
+    provides file pattern and path for each SAT + GDR
+    """
 
     path = '%s/%s/%s/' %(satName,prodName,d_str_folder)
 
@@ -226,6 +235,15 @@ def get_sat_filepattern(satName,prodName,date_str,d_str_folder):
 
 
 def align_sla_swath_seg(date_list,file_dict,common_data_list,cs2_gdr,is2_gdr,is2_b,LAT_MIN):
+
+    """
+    function to align CS2 SLA on IS2 SLA over SWATH segments (10Km along-track segments)
+    20Hz and 1Hz CS2 data are averaged over these SWATH segments to match the correct size
+
+    Comments:
+    Only works for 1 icesat-2 beam at a time
+
+    """
 
     # parameters to align
     plist_cs2_20hz = ['sla']
@@ -482,6 +500,10 @@ def get_avail_files(satName,prod_list,date_list,flag_colloc):
 
 def get_strong_beams(filename,is2Beams):
 
+    """
+    IceSAT-2 strong beams depend on the satellite orientation. This function checks the orientation in the filename to then provide the right beam name.
+
+    """
     f=h5py.File(filename,'r')
     flag_orientation = np.array(f.get('orbit_info/sc_orient'))
     if flag_orientation==0: #backward
@@ -899,8 +921,8 @@ def concatenate_cs2_data(date_list,file_dict,common_data_list):
             # Adding new track data to list
             #cs2_data_dict[gdr]['latfull'].append(lat)
             #cs2_data_dict[gdr]['lonfull'].append(lon)
-            cs2_data_dict[gdr]['lat'].append(data_lat)
-            cs2_data_dict[gdr]['lon'].append(data_lon)
+            #cs2_data_dict[gdr]['lat'].append(data_lat)
+            #cs2_data_dict[gdr]['lon'].append(data_lon)
             cs2_data_dict[gdr]['time'].append(data_time)
             cs2_data_dict[gdr]['id'].append(data_id)
             cs2_data_dict[gdr]['ref_idx'].append(data_ref_idx)
@@ -922,8 +944,9 @@ def concatenate_cs2_data(date_list,file_dict,common_data_list):
             
                 for pname,prodname in data_desc_cs2.items():
                     
-                    # initiating params info list
-                    if pname in ['lat','lon','time','hour','minute','second']: continue
+                    # Not recording time/coordinate variables in hf
+                    if pname=='time': continue
+                    if pname in ['lat','lon','hour','minute','second'] and freq=='hf': continue
                     print("%s" %(pname))
                     
                     flag_data_dict[gdr][date_str_cs2][pname] = dict()                
@@ -1079,11 +1102,11 @@ def find_xings2_sat(satName,date_list,file_dict,common_data_list):
                     else:
                         print("No dictionnary for %s" %(satName))
 
-                    if nfile==1:
+                    if nfile==1 and n==0:
                         list_p = [p for p in data_desc.keys()] + param_list
                         for p in data_desc.keys():
                             if p not in param_list:
-                                data_list[p] = np.frompyfunc(list, 0, 1)(np.empty((ref_size,), dtype=object))
+                                data_list[p] = np.frompyfunc(list, 0, 1)(np.empty((ndates,), dtype=object))
                     
                     lat,lon,time,x_dist,valid_idx = cf.get_coord_from_netcdf(filename,data_desc,'01',LAT_MIN)
                     if lat is None: continue
@@ -1129,6 +1152,7 @@ def find_xings2_sat(satName,date_list,file_dict,common_data_list):
                         else:
                             mean_p = np.ma.mean(param[idx_sub])
                             std_p = np.ma.std(param[idx_sub])
+                            
                         data_list[pname][n].append(mean_p)
                         #data_list[pname]['std'].append(mean_p)
                         
@@ -1157,7 +1181,7 @@ def find_xings_sat(satName,date_list,file_dict,common_data_list):
 
         print("%s:\n---------" %(gdr))
         data_dict[gdr] = dict()
-       
+        
         data_list = dict()
 
         # For each collocated tracks - dates (every 1.5 days)
@@ -1731,9 +1755,9 @@ def concatenate_is2_data(date_list,file_dict,common_data_list,is2Beams):
 
             # get beam names
             beamName = get_strong_beams(filename,is2Beams)
-            if beamName is None: continue
-            else:
-                is2_data_dict[gdr]['beamName'] = beamName
+            #if beamName is None: continue
+            #else:
+            #    is2_data_dict[gdr]['beamName'] = beamName
             
             # + ['swath'] if swath added
             for b in beamName.keys():
@@ -1827,7 +1851,7 @@ def concatenate_is2_data(date_list,file_dict,common_data_list,is2Beams):
 
 
 
-def get_beamwise_mean(date_list,ref_data_dict,is2_data_dict,is2_info_dict): #,common_data_list):
+def get_beamwise_mean(date_list,ref_data_dict,is2_data_dict,is2_info_dict,is2Beams): #,common_data_list):
 
 
     print("\n\nComputing mean IS2 values for each CS2 beams \n----------------------------")
@@ -1843,7 +1867,8 @@ def get_beamwise_mean(date_list,ref_data_dict,is2_data_dict,is2_info_dict): #,co
         print("%s \n----------" %(gdr))
         is2_data[gdr] = dict()
         data_desc_is2 = is2_dict.init_dict(gdr,'gt1r','granules')
-        is2_list_param[gdr] =  [pname for pname in data_desc_is2.keys() if pname not in list_params_coords] + list_params_all
+        #is2_list_param[gdr] =  [pname for pname in data_desc_is2.keys() if pname not in list_params_coords] + list_params_all
+        is2_list_param[gdr] =  [pname for pname in data_desc_is2.keys()] + list_params_all
 
         # check if all parameters are available
         if not all(pname in is2_list_param[gdr] for pname in ['surface_type','flag_leads','gaussian_w']):
@@ -1859,7 +1884,7 @@ def get_beamwise_mean(date_list,ref_data_dict,is2_data_dict,is2_info_dict): #,co
         for gdr in is2_gdrs:
             is2_data_dict[gdr]['ndata'] = list()
             is2_data[gdr]['ndata'] = list()
-            for p in [pname for pname in data_desc_is2.keys() if pname not in list_params_coords]+list_param_add:
+            for p in [pname for pname in data_desc_is2.keys()]+list_param_add+list_params_all:
 
                 if p=='flag_leads':
                     is2_data_dict[gdr][p] = list()
@@ -1900,8 +1925,8 @@ def get_beamwise_mean(date_list,ref_data_dict,is2_data_dict,is2_info_dict): #,co
                 #-------------------------------------------------------------
                 for p in is2_list_param[gdr]: is2_data_list[p] = list();
                 # For each beam
-                beamName = is2_data_dict[gdr]['beamName']
-                for b in beamName.keys():
+                #beamName = is2_data_dict[gdr]['beamName']
+                for b in is2Beams:
 
                     idx, = np.where(is2_data_dict[gdr][b]['ref_idx'][n]==ref_idx)
                     #if idx.size==0: continue
@@ -1933,9 +1958,10 @@ def get_beamwise_mean(date_list,ref_data_dict,is2_data_dict,is2_info_dict): #,co
                 
                 # compute parameters for each IS2 beams
                 #------------------------------------------------------------
-                for nparam,p in enumerate(list_param+list_param_add):
+                for nparam,p in enumerate(list_param+list_param_add+list_params_coords):
 
-                    if p in list_params_all: continue
+                    #if p in list_params_all: continue
+                    if p=='weight': continue
                     
                     elif p=='flag_leads':
                         idx_leads = np.argwhere(is2_data_list[p]==2)
@@ -2184,8 +2210,7 @@ def print_status_params(cs2_info_dict,is2_info_dict,outpath,filename):
 
 
 
-def sort_CS2_in_swath(cs2_data_dict,is2_data_dict):
-    return "plus tard"
+
 
 def daterange(date1, date2):
     for n in range(int ((date2 - date1).days)+1):
@@ -2229,6 +2254,8 @@ if __name__ == '__main__':
     parser.add_argument("-ofn","--outFolderName",default=None,help="[optionnal] provide outpath")
 
     parser.add_argument("-x","--xings",action="store_true",help="option to add data at crossovers")
+
+    parser.add_argument("-sw","--swath",action="store_true",help="option to add swath aligned data")
 
     # Read arguments
     # ----------------------------------------------------------
@@ -2279,7 +2306,12 @@ if __name__ == '__main__':
             other_missions[sat[0]]= gdr_list
         print("XINGS:",other_missions,"\n#----------------\n")
     else:
-        print("NO XINGS: add option -x \n#----------------\n") 
+        print("NO XINGS: add option -x \n#----------------\n")
+
+
+    # SWATH option
+    #----------------------------------------------------
+    flag_swath = args.swath
 
     # Get required dates
     # ---------------------------------------------------------
@@ -2321,8 +2353,6 @@ if __name__ == '__main__':
         file_dict_all[sat] = avail_file_dict
 
     
-   
-
     # Find corresponding dates for IS2/CS2 colocated tracks
     print("\nKeeping available dates")
     avail_date_list = avail_date_list_is2.copy()
@@ -2352,34 +2382,53 @@ if __name__ == '__main__':
     # Select collocated section of each track
     # Concatanate data
 
-    data_dict = dict()
-
-
-   
-    # find xings points with collocated tracks
     
+    data_dict = dict()
+    
+    
+    # Align find xings points with collocated tracks
     data_dict['CS2'],cs2_info_dict = concatenate_cs2_data(date_list,file_dict_colloc['CS2'],common_data_list)
     data_dict['IS2'],is2_info_dict = concatenate_is2_data(date_list,file_dict_colloc['IS2'],common_data_list,is2Beams)
 
+    # get swath data
+    if flag_swath:
+        REF_GDR_IS2 = is2_gdrs[0]
+        data_dict['CS2']['swath'] = dict()
+        data_dict['IS2']['swath'] = dict()
+        
+        for b in is2Beams:
+            data_dict['CS2']['swath'][b] = dict()
+            data_dict['IS2']['swath'][b] = dict()
+            swath_data_array = align_sla_swath_seg(date_list,file_dict_colloc,common_data_list,REF_GDR,REF_GDR_IS2,b,LAT_MIN)
+        
+            data_dict['CS2']['swath'][b] = swath_data_array['CS2']
+            data_dict['IS2']['swath'][b] = swath_data_array['IS2']
+    
+
     # Get only mean values or full matrices
     if flag_IS2_mean:
-        data_dict['IS2'] = get_beamwise_mean(date_list,data_dict['CS2'][REF_GDR],data_dict['IS2'],is2_info_dict)
+        data_dict['IS2'] = get_beamwise_mean(date_list,data_dict['CS2'][REF_GDR],data_dict['IS2'],is2_info_dict,is2Beams)
+
+        # OPTION to eliminate granule data [to reduce size]
+        for ngdr,gdr in enumerate(is2_gdrs):
+            for b in is2Beams:
+                data_dict['IS2'][gdr][b] = {}
     else:
         data_dict['IS2'] = sort_IS2_in_CS2_beam(date_list,data_dict['CS2'][REF_GDR],data_dict['IS2'],is2_info_dict,common_data_list)
-
 
     
     # find crossing for IS2 with function for each beam
     #for beam in beamName: # add beam
     #    data_dict['IS2'] = find_xings_data(satName,date_list,file_dict,common_data_list)
     for sat in other_missions.keys():
-        data_dict[sat]= {}
+        #data_dict[sat]= {}
         data_dict[sat]['xings'] = {}
         if sat=='IS2':
             data_dict['IS2']['xings'] = find_xings2_is2(date_list,file_dict_all['IS2'],file_dict_colloc['IS2'],common_data_list,is2Beams)
         else:
             data_dict[sat]['xings'] = find_xings2_sat(sat,date_list,file_dict_all[sat],common_data_list)
-    
+
+    print("stop")
     """
     # apply weighting coefficients
     print("Applying weighting coefficients to xings params")
