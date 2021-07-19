@@ -529,6 +529,8 @@ def get_coord_from_uob(filename,data_desc,hemispherecode,LAT_BOUND):
     lon =lon[select_zone]
     if any(np.abs(np.diff(lon)) > 300) or any(lon < 0): lon[lon < 0] = lon[lon < 0] + 360
     time= time[select_zone]
+
+    
     
     # Calculate distance from first point
     x_dist = distance_from_first_trk_pts(lat,lon,0)
@@ -601,6 +603,9 @@ def get_param_from_cpom(filename,data_desc,pname,hemispherecode,LAT_BOUND):
     param = data[:,data_desc[pname]]
     param = param[select_zone]
 
+    if 'lon' in pname:
+        if any(np.abs(np.diff(param)) > 300): param[param < 0] = param[param < 0] + 360
+
     units = ''
 
     param_is_flag=False
@@ -664,6 +669,9 @@ def get_param_from_uob(filename,data_desc,pname,hemispherecode,LAT_BOUND):
     if np.all(param.mask):
         print("No data in %s" %(pname))
         return param,units,False
+
+    if 'lon' in pname:
+        if any(np.abs(np.diff(param)) > 300): param[param < 0] = param[param < 0] + 360
     
     param_is_flag=False
     unique, counts = np.unique(param, return_counts=True)
@@ -799,6 +807,10 @@ def get_param_from_netcdf(filename,data_desc,p_name,hemispherecode,LAT_BOUND):
     if param.size - np.sum(param.mask) <= 3 or np.sum(param.mask)==param.size:
         print("No data in %s" %(p_name))
         return None,None,False
+
+    if 'lon' in p_name:
+        if any(np.abs(np.diff(param)) > 300): param[param < 0] = param[param < 0] + 360
+        #if any(np.abs(np.diff(param)) > 20): param[param < 0] = param[param < 0] + 360
     
     param_is_flag=False 
     if 'flag_values' in f.variables[data_desc[p_name]].ncattrs(): param_is_flag=True
@@ -875,7 +887,7 @@ def get_param_from_hf5(filename,data_desc,p_name,hemispherecode,LAT_BOUND):
     try:
         f=h5py.File(filename,'r')
     except:
-        return None,None,None,None
+        return None,None,None
         sys.exit("Cannot open file %s" % filename)
 
     # get lattitude
@@ -894,7 +906,7 @@ def get_param_from_hf5(filename,data_desc,p_name,hemispherecode,LAT_BOUND):
 
     if select_zone.size==0:
         print("\n\nNo data over %i N for file: %s\n" %(LAT_BOUND,filename))
-        return None,None,None,None,None
+        return None,None,None
         
     param = np.array(f.get(data_desc[p_name]))
     param = param[select_zone]
@@ -902,7 +914,7 @@ def get_param_from_hf5(filename,data_desc,p_name,hemispherecode,LAT_BOUND):
 
     if '_FillValue' in f.get(data_desc[p_name]).attrs.keys():  
         fill_value = f.get(data_desc[p_name]).attrs['_FillValue']
-        param[param== fill_value] = np.nan
+        param[param==fill_value] = np.nan
 
     param_is_flag=False 
     if 'flag_values' in f.get(data_desc[p_name]).attrs.keys(): param_is_flag=True

@@ -98,10 +98,10 @@ list_midnight_dates = {
 
 #list_midnight_dates = ['20201018','20201108'] 
 
-dist_frame = 100#km
+dist_frame = 10#km
 interval = 10 #ms
 show_plot = False
-outfilename= 'colloc_nov_jan20_full_esa'
+outfilename= 'animation_NovMar_ESA'
 
 # mean density to show data
 MIN_IS2_DATA_DENSITY = 1 #00 # pts/km
@@ -425,18 +425,25 @@ if __name__ == '__main__':
         sys.exit()
 
     # Get full coordinates
-    cs2_full_lats = list(np.array(data_dict['CS2'][REF_GDR]['latref_full'],dtype=object)[idx_dates])
-    cs2_full_lons = list(np.array(data_dict['CS2'][REF_GDR]['lonref_full'],dtype=object)[idx_dates])
+    #cs2_full_lats = list(np.array(data_dict['CS2'][REF_GDR]['latref_full'],dtype=object)[idx_dates])
+    #cs2_full_lons = list(np.array(data_dict['CS2'][REF_GDR]['lonref_full'],dtype=object)[idx_dates])
+    cs2_full_lats = list(np.array(data_dict['CS2'][REF_GDR]['lat'],dtype=object)[idx_dates])
+    cs2_full_lons = list(np.array(data_dict['CS2'][REF_GDR]['lon'],dtype=object)[idx_dates])
+    
+    
     # Get ref lat/lon
     ref_seg_lats = list(np.array(data_dict['CS2'][REF_GDR]['lat'],dtype=object)[idx_dates])
     ref_seg_lons = list(np.array(data_dict['CS2'][REF_GDR]['lon'],dtype=object)[idx_dates])
-
+    
+    data_cs2_list = dict()
     data_cs2 = dict()
-    for cs2_prod in gdrs_cs2: data_cs2[cs2_prod]= list()
+    for cs2_prod in gdrs_cs2: data_cs2_list[cs2_prod]= list()
 
     for cs2_prod in gdrs_cs2:
-        data_array_cs2 = list(np.array(data_dict['CS2'][cs2_prod][pname_cs2],dtype=object)[idx_dates])
-        data_cs2[cs2_prod].append(data_array_cs2)
+        #data_array_cs2 = list(np.array(data_dict['CS2'][cs2_prod][pname_cs2],dtype=object)[idx_dates])
+        data_cs2_list[cs2_prod] = list(np.array(data_dict['CS2'][cs2_prod][pname_cs2],dtype=object)[idx_dates])
+        data_cs2[cs2_prod] = np.ma.concatenate(data_cs2_list[cs2_prod],axis=0)
+        
 
     #--------------------------------------------------
     #
@@ -444,10 +451,24 @@ if __name__ == '__main__':
     #
     #---------------------------------------------------
     
-    data_array_is2 = list(np.array(data_dict['IS2'][gdr_is2][pname_is2+'_mean'],dtype=object)[idx_dates])
-    data_array_is2_std = list(np.array(data_dict['IS2'][gdr_is2][pname_is2+'_std'],dtype=object)[idx_dates])
+    data_is2 = list(np.array(data_dict['IS2'][gdr_is2][pname_is2+'_mean'],dtype=object)[idx_dates])
+    data_array_is2 = np.ma.concatenate(data_is2,axis=0)
+    data_is2_std = list(np.array(data_dict['IS2'][gdr_is2][pname_is2+'_std'],dtype=object)[idx_dates])
 
-        
+    lat_is2 = ref_seg_lats
+    lon_is2 = ref_seg_lons
+
+    # compute mean distance
+    dist = list(np.array(data_dict['IS2'][gdr_is2]['dist_mean'],dtype=object)[idx_dates])
+    mean_delta_dist = [np.mean(d) for d in dist]
+    
+
+    # Compute mean delay
+    delay = list(np.array(data_dict['IS2'][gdr_is2]['delay_mean'],dtype=object)[idx_dates])
+    mean_delay = [np.mean(d) for d in delay]
+    mean_delay_sign = [np.sign(md) for md in mean_delay]
+    mean_delay_str = [str(timedelta(minutes=np.abs(mins)))[:7] for mins in mean_delay]
+    
     #--------------------------------------------------
     #
     #         Define common interpolated track
@@ -459,15 +480,27 @@ if __name__ == '__main__':
     # Rq: Track used to plot the data
 
      # Get ref lat/lon
-    ref_lats_interp = list()
-    ref_lons_interp = list()
-    x_dist = list()
+    ref_seg_lats_interp = list()
+    ref_seg_lons_interp = list()
+    x_dist_list = list()
     
     for n in range(ndates):
+        
         lat_ref_interp,lon_ref_interp = interp_coordinates(ref_seg_lats[n],ref_seg_lons[n],dist_frame,2)
-        ref_lats_interp.append(lat_ref_interp)
-        ref_lons_interp.append(lon_ref_interp)
-        x_dist.append(cf.distance_from_first_trk_pts(ref_lats_interp[n],ref_lons_interp[n],0))
+        ref_seg_lats_interp.append(lat_ref_interp)
+        ref_seg_lons_interp.append(lon_ref_interp)
+        x_dist_list.append(cf.distance_from_first_trk_pts(ref_seg_lats_interp[n],ref_seg_lons_interp[n],0))
+
+    x_dist = np.ma.concatenate(x_dist_list,axis=0)
+
+    # interpolate to get missing data (over the land)
+    cs2_full_lats_interp = list()
+    cs2_full_lons_interp = list()
+    x_dist_cs2 = list()
+    for n in range(ndates):
+        lat_interp,lon_interp = interp_coordinates(cs2_full_lats[n],cs2_full_lons[n],dist_frame,arr_step_cs2)
+        cs2_full_lats_interp.append(lat_interp)
+        cs2_full_lons_interp.append(lon_interp)
     
     #--------------------------------------------------
     #
@@ -494,9 +527,9 @@ if __name__ == '__main__':
         icetype.append(OSISAF_ice_type)
         
         #icetype_alongtrack = cf.grid_to_track(OSISAF_ice_type,lons,lats,lon_cs2[n],lat_cs2[n])
-        lon = ref_lons_interp[n]
+        lon = ref_seg_lons_interp[n]
         if any(np.abs(np.diff(lon)) > 20): lon[lon > 180] = lon[lon > 180] - 360   
-        icetype_alongtrack = cf.grid_to_track(OSISAF_ice_type,lons,lats,lon,ref_lats_interp[n])
+        icetype_alongtrack = cf.grid_to_track(OSISAF_ice_type,lons,lats,lon,ref_seg_lats_interp[n])
         icetype_al.append(icetype_alongtrack)
 
     icetype_al_full = np.ma.concatenate(icetype_al,axis=0)
@@ -525,13 +558,9 @@ if __name__ == '__main__':
     # seg lists
     is2_idx_common_data_seg = list()
     cs2_idx_common_data_seg = list()
+    is2_frame_seg_list = list()
+    is2_frame_seg_uniq_list = list()
     
-    is2_frame_seg_b = dict()
-    is2_frame_seg_uniq_b = dict()
-    for b in beam_is2:
-        is2_frame_seg_b[b] = list()
-        is2_frame_seg_uniq_b[b] = list()
-
     # CS2 params
     cs2_start_index = list()
     cs2_interval =list()
@@ -552,79 +581,49 @@ if __name__ == '__main__':
         # Create KDTree for reference track
         # In order to associate data points to this reference track
         
-        x_interp,y_interp,z_interp = cf.lon_lat_to_cartesian(ref_lons_interp[ntrack],ref_lats_interp[ntrack])
+        x_interp,y_interp,z_interp = cf.lon_lat_to_cartesian(ref_seg_lons_interp[ntrack],ref_seg_lats_interp[ntrack])
         coord_interp = np.vstack((x_interp,y_interp,z_interp)).T
         tree_seg = scipy.spatial.cKDTree(coord_interp)
         coord_start = np.array([x_interp[0],y_interp[0],z_interp[0]])
 
-        ##########################
-        # IS2 time frame
-        ############################
+        # Get segments coordinates
+        is2_lats = lat_is2[ntrack]
+        is2_lons = lon_is2[ntrack]
+        x_b,y_b,z_b = cf.lon_lat_to_cartesian(is2_lons, is2_lats)
 
-        # Create KDTree from interpolated tracks
-        
-        
-        x_interp_i,y_interp_i,z_interp_i = cf.lon_lat_to_cartesian(is2_full_lons_interp[ntrack],is2_full_lats_interp[ntrack])
-        coord_interp_is2 = np.vstack((x_interp_i,y_interp_i,z_interp_i)).T
-        
-        tree_display_is2 = scipy.spatial.cKDTree(coord_interp_is2)
+        # Find indexes of seg in frame
+        coord_seg_is2 = np.vstack((x_b,y_b,z_b)).T
+        distance,is2_frame_seg = tree_seg.query(coord_seg_is2,1)
+        is2_frame_seg_uniq = np.unique(is2_frame_seg) #,return_index=True)
 
-        # find indexes conversion from CS2 ref track interp to IS2 ref track interp
-        distance,ref_cs2_into_ref_is2 = tree_display_is2.query(coord_interp,1)
+        # indexes associated to each data frame points w.r.t CS2 ref track
+        is2_frame_seg_list.append(is2_frame_seg)
+        is2_frame_seg_uniq_list.append(is2_frame_seg_uniq)
         
-        
-        for nb,b in enumerate(beam_is2):
+        # find starting points of segment
+        distance,is2_frame_seg_start = tree_seg.query(coord_start,1)
             
-            # Get segments coordinates
-            is2_lats_b = lat_is2[b][ntrack]
-            is2_lons_b = lon_is2[b][ntrack]
-            x_b,y_b,z_b = cf.lon_lat_to_cartesian(is2_lons_b, is2_lats_b)
+        # get longest common section of all beams
+        min_val = is2_frame_seg[0]; max_val = is2_frame_seg[-1]
 
-            # Find indexes of seg in frame
-            coord_seg_is2 = np.vstack((x_b,y_b,z_b)).T
-            distance,is2_frame_seg = tree_seg.query(coord_seg_is2,1)
-            is2_frame_seg_uniq = np.unique(is2_frame_seg) #,return_index=True)
-
-            # indexes associated to each data frame points w.r.t CS2 ref track
-            is2_frame_seg_b[b].append(is2_frame_seg)
-            is2_frame_seg_uniq_b[b].append(is2_frame_seg_uniq)
-
-            
-            # find starting points of segment
-            distance,is2_frame_seg_start = tree_display_is2.query(coord_start,1)
-            
-            # get longest common section of all beams
-            if nb==0: min_val = is2_frame_seg[0]; max_val = is2_frame_seg[-1]
-            min_val = min(is2_frame_seg[0],min_val)
-            max_val = max(is2_frame_seg[-1]+1,max_val)
-
-
-        # indexes where data are found for each beams wrt to CS2 ref track
-        idx_in_ref_cs2 = np.arange(min_val,max_val)
+         # indexes where data are found for each beams wrt to CS2 ref track
+        idx_in_ref_cs2 = np.arange(min_val,max_val+1)
         is2_idx_common_data_seg.append(idx_in_ref_cs2)
 
         # indexes where data are found converted wrt to IS2 ref track
         # usefull to display the data at the right frame
-        idx_in_ref_is2 = ref_cs2_into_ref_is2[idx_in_ref_cs2]
+        #idx_in_ref_is2 = ref_cs2_into_ref_is2[idx_in_ref_cs2]
         
+
+        ##########################
+        # IS2 time frame
+        ############################
         
-        
-        # create sequence IS2
-        #uncomment this section if IS2 track is better defined
-        """
-        # when using IS2 interp: need enough data
-        is2_start_index.append(last_frame)
-        full_frame.extend(last_frame+np.arange(1,is2_full_lons_interp[ntrack].shape[0]))
-        is2_interval.extend(last_frame+np.arange(1,is2_full_lons_interp[ntrack].shape[0]))
-        is2_interval_seg.extend(last_frame+is2_frame_seg_start+idx_in_ref_is2)
-        ntrack_idx.extend(ntrack*np.ones(is2_full_lons_interp[ntrack].shape[0]-1,dtype=int))
-        """
         is2_start_index.append(last_frame+1)
-        full_frame.extend(last_frame+np.arange(ref_lons_interp[ntrack].shape[0])+1)
-        is2_interval.extend(last_frame+np.arange(ref_lons_interp[ntrack].shape[0])+1)
-        is2_interval_seg.extend(last_frame+np.arange(ref_lons_interp[ntrack].shape[0])+1)
-        ntrack_idx.extend(ntrack*np.ones(ref_lons_interp[ntrack].shape[0],dtype=int))
-        
+        full_frame.extend(last_frame+np.arange(ref_seg_lons_interp[ntrack].shape[0])+1)
+        is2_interval.extend(last_frame+np.arange(ref_seg_lons_interp[ntrack].shape[0])+1)
+        is2_interval_seg.extend(last_frame+np.arange(ref_seg_lons_interp[ntrack].shape[0])+1)
+        ntrack_idx.extend(ntrack*np.ones(ref_seg_lons_interp[ntrack].shape[0],dtype=int))
         
         last_frame = is2_interval[-1]
         
@@ -679,10 +678,122 @@ if __name__ == '__main__':
     #
     #               Retreive data
     #
-    #---------------------------------------------------
+    #--------------------------------------------------     
+
+    is2_mean_data_line = list()
+    is2_mean_dist_line = list()
+    is2_mean_data_pts = list()
+    idx_pts_is2 = list()
+    is2_data_pts = list()
+    is2_mean_dist = list()
+    is2_ndata_pts = list()
+    dist_save = list()
+
+    cs2_data_pts = dict()
+    cs2_mean_dist = dict()
+    cs2_ndata_pts = dict()
+    idx_pts_cs2 = dict()
+    cs2_mean_data_pts = list()
+    for gdr in gdrs_cs2:
+        idx_pts_cs2[gdr] = list()
+        cs2_data_pts[gdr] = list()
+        cs2_mean_dist[gdr] = list()
+        cs2_ndata_pts[gdr] = list()
+
+    for ntrack in range(ndates):
+        
+        ##########################
+        # define IS2 data array
+        ##########################
+        #dist_start_seg = x_dist_is2[ntrack][is2_idx_common_data_seg[ntrack][0]]
+        #for b in beam_is2:
+
+        for idx_frame in is2_idx_common_data_seg[ntrack]:
+
+            # Case data found around this point
+            idx_pts_is2.append(idx_frame)
+            if idx_frame in is2_frame_seg_uniq_list[ntrack]:
+
+                idx = is2_frame_seg_list[ntrack]==idx_frame
+                ndata = np.sum(~np.isnan(data_is2[ntrack][idx]))
+                data_density = ndata/dist_frame
+                is2_ndata_pts.append(ndata)
+
+                # if data density sufficient
+                if data_density > MIN_IS2_DATA_DENSITY:
+                    is2_mean_dist.append(x_dist[idx_frame])
+                    is2_data_pts.append(np.nanmean(data_is2[ntrack][idx]))
+
+                else:
+                    is2_data_pts.append(np.nan)
+                    is2_mean_dist.append(np.nan)
+            else:
+                is2_data_pts.append(np.nan)
+                is2_mean_dist.append(np.nan)
+                is2_ndata_pts.append(0)
+                
+        
+        ##########################
+        # define CS2 data array
+        ##########################
+        for ngdr,gdr in enumerate(gdrs_cs2):
+
+            for idx_frame in cs2_idx_common_data_seg[ntrack]:
+
+                # Case data found around this point
+                if idx_frame in cs2_frame_seg_uniq[ntrack]:
+
+                    idx = cs2_frame_seg[ntrack]==idx_frame
+                    
+                    ndata = np.ma.sum(~np.isnan(data_cs2_list[gdr][ntrack][idx]))
+                    if np.ma.is_masked(ndata): ndata=np.sum(~data_cs2_list[gdr][ntrack][idx].mask)
+                    data_density = ndata/dist_frame
+                    cs2_ndata_pts[gdr].append(ndata)
+
+                    # if data density sufficient
+                    if data_density > MIN_CS2_DATA_DENSITY:
+                        cs2_data_pts[gdr].append(np.ma.mean(data_cs2_list[gdr][ntrack][idx]))
+                        cs2_mean_dist[gdr].append(x_dist[idx_frame])
+                        
+                        #Save mean data for IS2 sorted in the CS2 beams
+                        #if ngdr==0:
+                        #is2_mean_data_pts.append(np.nanmean(data_is2_2d[ntrack][idx]))
+                        #is2_mean_data_pts.append(np.nanmean(data_is2_2d[ntrack][:,idx]))
+                       
+                    else:
+                        cs2_data_pts[gdr].append(np.nan)
+                        cs2_mean_dist[gdr].append(np.nan)
+                        if ngdr==0: is2_mean_data_pts.append(np.nan)
+                    #print("%s: density: %s, ndata: %s, dist: %s, data: %s" %(gdr,data_density,ndata,np.ma.mean(data_cs2[gdr][ntrack][idx]),x_dist[ntrack][idx_frame]))
+
+                # case no data found around this point
+                else:
+                    cs2_data_pts[gdr].append(np.nan)
+                    cs2_mean_dist[gdr].append(np.nan)
+                    cs2_ndata_pts[gdr].append(0)
+                    if ngdr==0: is2_mean_data_pts.append(np.nan)
 
 
-                     
+    # define mean values CS2 & IS2
+    #-------------------------------------
+    #data_list = list()
+    #data_dist_list = list()
+    #for b in beam_is2:
+    data_list = is2_data_pts
+    data_dist_list = is2_mean_dist
+    is2_data_matrix = np.array(data_list)
+    is2_data_dist_matrix = np.array(data_dist_list)
+    is2_mean_data_line = is2_data_matrix
+    is2_mean_dist_line = is2_data_dist_matrix
+
+    # define rolling median of CS2
+    data_array = np.ma.masked_invalid(np.array(cs2_data_pts[gdr]),copy=True)
+    cs2_mean_data = stats.rolling_stats(data_array, 4, stats=['mean'])[0]
+    # temporary XXX
+    cs2_mean_data[np.isnan(cs2_data_pts[gdr])] = ma.masked
+    cs2_mean_data_pts.extend(cs2_mean_data)
+
+    
     #--------------------------------------------------
     #
     #               Define figures
@@ -766,25 +877,27 @@ if __name__ == '__main__':
    
     # IS2 track
     #-----------------------------------------------------------
-    x,y = m(is2_full_lons[0],is2_full_lats[0])
+    x,y = m(cs2_full_lons[0],cs2_full_lats[0])
     is2_full = list()
     is2_seg = list()
-    for n in range(ndates):
-        is2_full.append(m.plot(0, 0, linewidth=2,color=is2_color,zorder=3)[0])
-        is2_seg.append(m.plot(0, 0, linewidth=2,color=is2_color,zorder=3)[0])
-    is2_sat = m.plot(x[0], y[0], markersize=4,marker='8',color=is2_color,zorder=5)[0]
+    #for n in range(ndates):
+    #    is2_full.append(m.plot(0, 0, linewidth=2,color=is2_color,zorder=3)[0])
+    #    is2_seg.append(m.plot(0, 0, linewidth=2,color=is2_color,zorder=3)[0])
+    is2_full = m.plot(0, 0, linewidth=2,color=is2_color,zorder=3)
+    is2_seg = m.plot(0, 0, linewidth=2,color=is2_color,zorder=3)
+    is2_sat = m.plot(x[0], y[0], markersize=4,marker='8',color=is2_color,zorder=5)
 
     
     # CS2 track
     #------------------------------------------------------------
     x,y = m(cs2_full_lons[0],cs2_full_lats[0])
-    cs2_full = list()
-    cs2_seg = list()
-    for n in range(ndates):
-        cs2_full.append(m.plot(0, 0, linewidth=2,color=cs2_color,zorder=3)[0])
-        cs2_seg.append(m.plot(0, 0, linewidth=2 ,color=common_color,zorder=3)[0])
-    cs2_sat = m.plot(0, 0, markersize=4,marker='8',color=cs2_color,zorder=5)[0]
-
+    #cs2_full = list()
+    #cs2_seg = list()
+    #for n in range(ndates):
+    cs2_full = m.plot(0, 0, linewidth=2,color=cs2_color,zorder=3)
+    cs2_seg = m.plot(0, 0, linewidth=2 ,color=common_color,zorder=3)
+    cs2_sat = m.plot(x[0], y[0], markersize=4,marker='8',color=cs2_color,zorder=5)
+    
     ax2.legend([is2_full[0],cs2_full[0]], ["", ""],
                handler_map={ is2_full[0]: HandlerLineImage('../images/icesat21.png'), cs2_full[0]: HandlerLineImage('../images/cryosat21.png')}, 
                handlelength=2, labelspacing=0.1, fontsize=30, borderpad=0.2, loc="lower right", 
@@ -800,31 +913,20 @@ if __name__ == '__main__':
     cb.set_label(r'$\Delta$fb(La-Ku) [m]',fontsize=12)
     
     
-
-    # set label:
-    #m.plot(0, 0, linewidth=2,color=is2_color,label='IceSat-2 tracks')
-    #m.plot(0, 0, linewidth=2,color=cs2_color,label='CryoSat-2 tracks')
-    #m.plot(0, 0, linewidth=2,color='black',label='Collocated section')
-    
-    
-    
-
     # add plots
     # ---------------------------------------------------------
     
     ax3 = fig.add_subplot(spec_STplot)
     ax3.title.set_text('Measured freeboard between IceSat-2 and CryoSat-2')
     
-    is2_data_plot = list()
-    for nb,b in enumerate(beam_is2):
-        is2_data_plot.append(ax3.plot(-1,0,marker='*',linestyle = 'None',markersize=4,color=colors_plot_is2[nb])[0])
-    is2_data_plot_line = ax3.plot(is2_mean_dist_line[0],is2_mean_data_line[0],linestyle = '-',color=is2_color,label="IS2: laser freeboard")
+    #is2_data_plot = [ax3.plot(-1,0,marker='*',linestyle = 'None',markersize=4,color=colors_plot_is2[0])[0]]
+    is2_data_plot_line = ax3.plot(-1,data_is2[0][0],linestyle = '-',marker='*',color=is2_color,label="IS2: laser freeboard")
     
 
     cs2_data_plot = list()
     for ng,cs2_prod in enumerate(gdrs_cs2):
         cs2_data_plot.append(ax3.plot(-1,0,marker='*',linestyle = 'None', markersize=4,color=colors_plot_cs2[ng])[0])
-    cs2_data_plot_line = ax3.plot(cs2_mean_dist[cs2_prod][0],cs2_mean_data_pts[0],linestyle = '-',color=cs2_color,label="CS2: radar freeboard")
+    cs2_data_plot_line = ax3.plot(-1,data_cs2_list[cs2_prod][0][0],linestyle = '-',marker='+',color=cs2_color,label="CS2: radar freeboard")
 
     #radius_str = "Aver radius= %i km" %(dist_frame) 
     #ax3.annotate(radius_str, xy=(0.02, 0.95), xycoords='axes fraction', fontsize=12)
@@ -833,7 +935,7 @@ if __name__ == '__main__':
     
     #ax3.legend()
     ax3.grid()
-    ax3.set_xlim([x_dist[0][0],x_dist[0][-1]]) #limites x_dist
+    ax3.set_xlim([x_dist[0],x_dist[-1]]) #limites x_dist
     ax3.set_ylim(xylim) # limite param
     #ax3.set_ylim([min_y-1, max_y-1]) # limite param
     ax3.set_xlabel("Along-track distance (km)",fontsize=10)
@@ -897,12 +999,9 @@ if __name__ == '__main__':
     yseg_data_is2 = list()
     x_dist_data_is2_line = list()
     is2_data_line = list()
-    x_dist_data_is2 = dict()
-    is2_data = dict()
-    for b in beam_is2:
-        is2_data[b] = list()
-        x_dist_data_is2[b] = list()
-
+    x_dist_data_is2 = list()
+    is2_data = list()
+    
     # CS2 data lists
     x_data_cs2 = list()
     y_data_cs2 = list()
@@ -977,38 +1076,54 @@ if __name__ == '__main__':
             x_data_cs2.clear()
             y_data_cs2.clear()
             snow_depth.clear()
-            #an_is2.set_text('')
-            #an_cs2.set_text('')
+            an_is2.set_text('')
+            an_cs2.set_text('')
 
             # clear curves CS2
             for ng,gdr in enumerate(gdrs_cs2):
                 x_dist_data_cs2[gdr].clear()
                 cs2_data[gdr].clear()
-                cs2_data_plot[ng].set_data(x_dist_data_cs2[gdr],cs2_data[gdr])
+                cs2_data_plot[ng].set_data(-1,-1)
             # full line
             x_dist_data_cs2_line.clear()
             cs2_data_line.clear()
-            cs2_data_plot_line[0].set_data(x_dist_data_cs2[gdr],cs2_data[gdr])
+            cs2_data_plot_line[0].set_data(-1,-1)
 
             # clear curves IS2
-            for nb,b in enumerate(beam_is2):
-                is2_data[b].clear()
-                x_dist_data_is2[b].clear()
-                is2_data_plot[nb].set_data(x_dist_data_is2[b],is2_data[b])
+            is2_data.clear()
+            x_dist_data_is2.clear()
+            #is2_data_plot[0].set_data(0,0)
+            
             # full line
             x_dist_data_is2_line.clear()
             is2_data_line.clear()
             is2_data_plot_line[0].set_data(x_dist_data_is2,is2_data)
+
+            # clear tracks
+            #is2_full = m.plot(0, 0, linewidth=2,color=is2_color,zorder=3)
+            #is2_seg = m.plot(0, 0, linewidth=2,color=is2_color,zorder=3)
+            #is2_sat = m.plot(0, 0, markersize=4,marker='8',color=is2_color,zorder=5)
+            #cs2_full = m.plot(0, 0, linewidth=2,color=cs2_color,zorder=3)
+            #cs2_seg = m.plot(0, 0, linewidth=2 ,color=common_color,zorder=3)
+            #cs2_sat = m.plot(0, 0, markersize=4,marker='8',color=cs2_color,zorder=5)
+            
+            cs2_full[0].set_data(0,0)
+            cs2_seg[0].set_data(0,0)
+            cs2_sat[0].set_data(0,0)
+            
+            is2_full[0].set_data(0,0)
+            is2_seg[0].set_data(0,0)
+            is2_sat[0].set_data(0,0)
 
             ax2 = fig.add_subplot(spec_map)
             xptsT, yptsT = m(lons_icetype[ntrack], lats_icetype[ntrack])
             im = m.contourf(xptsT , yptsT, icetype[ntrack],cmap=cmap, alpha=1,zorder=2)
 
             ax3.collections.clear()
-            ax3.set_xlim([x_dist[ntrack][0],x_dist[ntrack][-1]])
-            ax3.fill_between(x_dist[ntrack], 0, 1, where=icetype_al[ntrack] == 4, facecolor='lightgrey', alpha=0.5, transform=ax3.get_xaxis_transform())
-            ax3.fill_between(x_dist[ntrack], 0, 1, where=icetype_al[ntrack] < 2, facecolor='white', alpha=0.5, transform=ax3.get_xaxis_transform())
-            ax3.fill_between(x_dist[ntrack], 0, 1, where=icetype_al[ntrack].mask,facecolor='white',hatch='//' , alpha=0.5, transform=ax3.get_xaxis_transform())
+            ax3.set_xlim([x_dist_list[0][0],x_dist_list[0][-1]])
+            ax3.fill_between(x_dist_list[ntrack], 0, 1, where=icetype_al[ntrack] == 4, facecolor='lightgrey', alpha=0.5, transform=ax3.get_xaxis_transform())
+            ax3.fill_between(x_dist_list[ntrack], 0, 1, where=icetype_al[ntrack] < 2, facecolor='white', alpha=0.5, transform=ax3.get_xaxis_transform())
+            ax3.fill_between(x_dist_list[ntrack], 0, 1, where=icetype_al[ntrack].mask,facecolor='white',hatch='//' , alpha=0.5, transform=ax3.get_xaxis_transform())
 
 
         # IS2 track animation
@@ -1017,15 +1132,16 @@ if __name__ == '__main__':
 
             print('IS2',ntrack,i)
             n_is2 = i -  is2_start_index[ntrack]
-            x,y = m(ref_lons_interp[ntrack][n_is2],ref_lats_interp[ntrack][n_is2])
+            x,y = m(ref_seg_lons_interp[ntrack][n_is2],ref_seg_lats_interp[ntrack][n_is2])
             #x, y = m(is2_full_lons_interp[ntrack][n_is2],is2_full_lats_interp[ntrack][n_is2])
             x,y = round(x, 0),round(y, 0)
             x_data_is2.append(x)
             y_data_is2.append(y)
 
             # Full track data
-            is2_full[ntrack].set_data(x_data_is2,y_data_is2)
-            is2_sat.set_data(x, y)
+            # is2_full[ntrack].set_data(x_data_is2,y_data_is2)
+            is2_full[0].set_data(x_data_is2,y_data_is2)
+            is2_sat[0].set_data(x, y)
 
             an_is2.set_position((x, y))
             an_is2.set_text('IS2')
@@ -1039,23 +1155,32 @@ if __name__ == '__main__':
                 #print('IS2 seg',ntrack,i)
                 xseg_data_is2.append(x)
                 yseg_data_is2.append(y)
-                is2_seg[ntrack].set_data(xseg_data_is2,yseg_data_is2)
+                is2_seg[0].set_data(xseg_data_is2,yseg_data_is2)
+                #is2_seg[ntrack].set_data(xseg_data_is2,yseg_data_is2)
 
-                for nb,b in enumerate(beam_is2):
+                
+
+                #for nb,b in enumerate(beam_is2):
 
                     # index of data
-                    N= is2_interval_seg.index(i)
+                #N= is2_idx_common_data_seg.
+                N= is2_interval_seg.index(i)
 
-                    # data points
-                    #---------------
+                # data points
+                #---------------
 
-                    # get data
-                    x_dist_data_is2[b].append(is2_mean_dist[b][N])
-                    is2_data[b].append(is2_data_pts[b][N])
 
-                    # plot data
-                    is2_data_plot[nb].set_data(x_dist_data_is2[b],is2_data[b])
-                    #print("%s: dist: %.1f ndata: %i" %(b,is2_mean_dist[b][N],is2_ndata_pts[b][N]))
+                # associate mean data on interp coordinates !!
+
+                # get data
+                x_dist_data_is2.append(x_dist[N])
+                is2_data.append(x_dist[N])
+
+                # plot data
+                #is2_data_plot[0].set_data(x_dist[N],data_array_is2[N])
+                #print("%s: dist: %.1f ndata: %i" %(b,is2_mean_dist[b][N],is2_ndata_pts[b][N]))
+
+                
                 # data curve
                 #---------------
 
@@ -1084,8 +1209,9 @@ if __name__ == '__main__':
             y_data_cs2.append(y)
 
             # Full track data
-            cs2_full[ntrack].set_data(x_data_cs2,y_data_cs2)
-            cs2_sat.set_data(x, y)
+            #cs2_full[ntrack].set_data(x_data_cs2,y_data_cs2)
+            cs2_full[0].set_data(x_data_cs2,y_data_cs2)
+            cs2_sat[0].set_data(x, y)
 
             an_cs2.set_position((x,y))
             an_cs2.set_text("CS2")
@@ -1099,7 +1225,8 @@ if __name__ == '__main__':
 
                 xseg_data_cs2.append(x)
                 yseg_data_cs2.append(y)
-                cs2_seg[ntrack].set_data(xseg_data_cs2,yseg_data_cs2)
+                cs2_seg[0].set_data(xseg_data_cs2,yseg_data_cs2)
+                #cs2_seg[ntrack].set_data(xseg_data_cs2,yseg_data_cs2)
 
                 # indexof data
                 N= cs2_interval_seg.index(i)
@@ -1115,7 +1242,7 @@ if __name__ == '__main__':
                     cs2_data[cs2_prod].append(cs2_data_pts[cs2_prod][N])
 
                     # plot data
-                    cs2_data_plot[ng].set_data(x_dist_data_cs2[cs2_prod],cs2_data[cs2_prod])
+                    cs2_data_plot[ng].set_data(x_dist[N],data_cs2[cs2_prod][N])
 
 
                     # update common data
@@ -1212,28 +1339,31 @@ if __name__ == '__main__':
             an_cs2.set_text('')
 
             # warning if ends in cs2_seg
-            for n in range(len(cs2_seg)):
-                cs2_seg[n].set_data(0,0)
-                cs2_full[n].set_data(0,0)
-                is2_seg[n].set_data(0,0)
-                is2_full[n].set_data(0,0)
+            #for n in range(len(cs2_seg)):
+            cs2_seg[0].set_data(0,0)
+            cs2_full[0].set_data(0,0)
+            is2_seg[0].set_data(0,0)
+            is2_full[0].set_data(0,0)
 
-            cs2_seg.clear()
-            cs2_full.clear()
-            is2_seg.clear()
-            is2_full.clear()
-            cs2_sat.set_data(0,0)
-            is2_sat.set_data(0,0)
+            #is2_full.clear()
+            cs2_sat[0].set_data(0,0)
+            is2_sat[0].set_data(0,0)
             fig.canvas.draw()
 
             
             #def init_sat_track(ndates):
-            
+            """
             for n in range(ndates):
                 is2_full.append(m.plot(0, 0, linewidth=2,color=is2_color,zorder=3)[0])
                 is2_seg.append(m.plot(0, 0, linewidth=2,color=is2_color,zorder=3)[0])
                 cs2_full.append(m.plot(0, 0, linewidth=2,color=cs2_color,zorder=3)[0])
                 cs2_seg.append(m.plot(0, 0, linewidth=2 ,color=common_color,zorder=3)[0])
+            """
+            #is2_full = m.plot(0, 0, linewidth=2,color=is2_color,zorder=3)
+            #is2_seg = m.plot(0, 0, linewidth=2,color=is2_color,zorder=3)
+            #cs2_full = m.plot(0, 0, linewidth=2,color=cs2_color,zorder=3)
+            #cs2_seg =m.plot(0, 0, linewidth=2 ,color=common_color,zorder=3)
+            
             #is2_sat = m.plot(0, 0, markersize=4,marker='8',color=is2_color)[0]
             #cs2_sat = m.plot(0, 0, markersize=4,marker='8',color=cs2_color)[0]
             #return is2_full,is2_seg,cs2_full,cs2_seg,is2_sat,cs2_sat

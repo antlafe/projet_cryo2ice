@@ -282,12 +282,14 @@ def plot_track_map(fig,axm,lon,lat,data,label,xylim,date_icetype,units,flag_comp
     # show coordinates
     #for data in data:
     ndata = data.size - np.sum(data.mask)
+    
     scat= m.scatter(x,y,c=data,s=size,cmap=cmap,vmin=xylim[0],vmax=xylim[1],zorder=3,alpha=alpha)
     cbaxes = fig.add_axes([0.85, 0.28, 0.02, 0.5]) 
-    cb = fig.colorbar(scat, ax=axm,cax = cbaxes,extend='both',fraction=0.046, pad=0.04,shrink=0.80)
+    #cb = fig.colorbar(scat, ax=axm,cax = cbaxes,extend='both',fraction=0.046, pad=0.04,shrink=0.80)
+    
 
-    #loc = mdates.AutoDateLocator()
-    #cb = fig.colorbar(scat, ticks=loc,format=mdates.AutoDateFormatter(loc),ax=axm,cax = cbaxes,extend='both',fraction=0.046, pad=0.04,shrink=0.80)
+    loc = mdates.AutoDateLocator()
+    cb = fig.colorbar(scat, ticks=loc,format=mdates.AutoDateFormatter(loc),ax=axm,cax = cbaxes,extend='both',fraction=0.046, pad=0.04,shrink=0.80)
     cb.set_label("%s [%s]" %(label,units),fontsize=12)
 
     

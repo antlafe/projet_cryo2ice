@@ -1063,8 +1063,9 @@ if __name__ == '__main__':
         max_dist=30 #km
 
         # get SIMBA cross-overs
-        idx_colloc,lon_colloc,lat_colloc,delay_colloc,day_colloc,lon_simba,lat_simba,sit_colloc,sd_colloc = cf.get_xings_SIMBA('607',lat,lon,time,delay,max_dist)
+        idx_colloc,lon_colloc,lat_colloc,delay_colloc,day_colloc,lon_simba,lat_simba,sit_colloc7,sd_colloc7 = cf.get_xings_SIMBA('607',lat,lon,time,delay,max_dist)
         idx_colloc8,lon_colloc8,lat_colloc8,delay_colloc8,day_colloc8,lon_simba8,lat_simba8,sit_colloc8,sd_colloc8 = cf.get_xings_SIMBA('608',lat,lon,time,delay,max_dist)
+
 
         """
         month0 = day_colloc[0]
@@ -1073,7 +1074,7 @@ if __name__ == '__main__':
             factor = ((days.year - month0.year) * 12 + days.month - month0.month)
             id_month.append(factor)
         id_month = np.ma.array(id_month)
-        """
+        
         
         
         # show map
@@ -1087,7 +1088,7 @@ if __name__ == '__main__':
         x,y = bmap(lon_simba,lat_simba)
         bmap.plot(x,y, linewidth=1.5, color='red',linestyle='-',zorder=2)
         plt.show()
-        
+        """
 
 
         # Get snow depth:idx_dates
@@ -1148,13 +1149,13 @@ if __name__ == '__main__':
         sit_laser_w99m_std = list()
         sit_cryo2ice_mean = list()
         sit_cryo2ice_std = list()
-        sit_simba_mean = list()
-        sit_simba_std = list()
+        sit_simba7_mean = list()
+        sit_simba7_std = list()
         
         sd_cryo2ice_mean = list()
         sd_cryo2ice_std = list()
-        sd_simba_mean = list()
-        sd_simba_std = list()
+        sd_simba7_mean = list()
+        sd_simba7_std = list()
         sd_simba8_mean = list()
         sd_simba8_std = list()
         sd_w99m_mean = list()
@@ -1169,13 +1170,13 @@ if __name__ == '__main__':
             sit_laser_w99m_std.append(np.ma.std(sit_laser_w99m[idx]))
             sit_cryo2ice_mean.append(np.ma.mean(sit_cryo2ice[idx]))
             sit_cryo2ice_std.append(np.ma.std(sit_cryo2ice[idx]))
-            sit_simba_mean.append(np.ma.mean(np.ma.array(sit_colloc)[idx])/100)
-            sit_simba_std.append(np.ma.std(np.ma.array(sit_colloc)[idx])/100)
+            sit_simba7_mean.append(np.ma.mean(np.ma.array(sit_colloc7)[idx])/100)
+            sit_simba7_std.append(np.ma.std(np.ma.array(sit_colloc7)[idx])/100)
             
             sd_cryo2ice_mean.append(np.ma.mean(sd_laku_sim[idx]))
             sd_cryo2ice_std.append(np.ma.std(sd_laku_sim[idx]))
-            sd_simba_mean.append(np.ma.mean(np.ma.array(sd_colloc)[idx])/100)
-            sd_simba_std.append(np.ma.std(np.ma.array(sd_colloc)[idx])/100)
+            sd_simba7_mean.append(np.ma.mean(np.ma.array(sd_colloc7)[idx])/100)
+            sd_simba7_std.append(np.ma.std(np.ma.array(sd_colloc7)[idx])/100)
             sd_w99m_mean.append(np.ma.mean(SD_W99_sim[idx]))
             sd_w99m_std.append(np.ma.std(SD_W99_sim[idx]))
 
@@ -1197,26 +1198,26 @@ if __name__ == '__main__':
 
         # sea-ice thickness
         #-------------------------
-        """
+        f1, ax = plt.subplots(1, 1,figsize=(12,5))
         palette = plt.get_cmap('Set1')
-        plt.plot(list_days,sit_radar_w99m_mean,label='sit_radar_w99m',color=palette(0))
-        plt.fill_between(list_days,np.array(sit_radar_w99m_mean)-np.array(sit_radar_w99m_std),np.array(sit_radar_w99m_mean)+np.array(sit_radar_w99m_std),color=palette(0),alpha=0.1)
+        plt.plot(list_days,sit_radar_w99m_mean,label='sit_radar_w99m',color=palette(1))
+        plt.fill_between(list_days,np.array(sit_radar_w99m_mean)-np.array(sit_radar_w99m_std),np.array(sit_radar_w99m_mean)+np.array(sit_radar_w99m_std),color=palette(1),alpha=0.1)
         
-        plt.plot(list_days,sit_laser_w99m_mean,label='sit_laser_w99m',color=palette(1))
-        plt.fill_between(list_days,np.array(sit_laser_w99m_mean)-np.array(sit_laser_w99m_std),np.array(sit_laser_w99m_mean)+np.array(sit_laser_w99m_std),color=palette(1),alpha=0.1)
+        plt.plot(list_days,sit_laser_w99m_mean,label='sit_laser_w99m',color=palette(2))
+        plt.fill_between(list_days,np.array(sit_laser_w99m_mean)-np.array(sit_laser_w99m_std),np.array(sit_laser_w99m_mean)+np.array(sit_laser_w99m_std),color=palette(2),alpha=0.1)
 
-        plt.plot(list_days,sit_cryo2ice_mean,label='sit_cryo2ice',color=palette(2))
-        plt.fill_between(list_days,np.array(sit_cryo2ice_mean)-np.array(sit_cryo2ice_std),np.array(sit_cryo2ice_mean)+np.array(sit_cryo2ice_std),color=palette(2),alpha=0.1)
+        plt.plot(list_days,sit_cryo2ice_mean,label='sit_cryo2ice',color=palette(0))
+        plt.fill_between(list_days,np.array(sit_cryo2ice_mean)-np.array(sit_cryo2ice_std),np.array(sit_cryo2ice_mean)+np.array(sit_cryo2ice_std),color=palette(0),alpha=0.1)
 
-        plt.plot(list_days,sit_simba_mean,label='sit_simba',color=palette(3))
-        plt.fill_between(list_days,np.array(sit_simba_mean)-np.array(sit_simba_std),np.array(sit_simba_mean)+np.array(sit_simba_std),color=palette(3),alpha=0.1)
+        plt.plot(list_days,sit_simba7_mean,label='sit_simba #607',color=palette(3))
+        plt.fill_between(list_days,np.array(sit_simba7_mean)-np.array(sit_simba7_std),np.array(sit_simba7_mean)+np.array(sit_simba7_std),color=palette(3),alpha=0.1)
         
         #plt.plot(list_days,np.array(sit_colloc)/100,label='sit_colloc',marker='.',color=palette(3))
         plt.legend()
         plt.xlabel("date")
         plt.ylabel("sea-ice thickness [m]")
         plt.show()
-        """
+        
 
         
         """
@@ -1233,17 +1234,18 @@ if __name__ == '__main__':
 
         # snow depth
         #-------------------------
+        f2, ax = plt.subplots(1, 1,figsize=(12,5))
         plt.plot(list_days,sd_cryo2ice_mean,label='sd_cryo2ice',color=palette(0))
         plt.fill_between(list_days,np.array(sd_cryo2ice_mean)-np.array(sd_cryo2ice_std),np.array(sd_cryo2ice_mean)+np.array(sd_cryo2ice_std),color=palette(0),alpha=0.1)
         
         plt.plot(list_days,sd_w99m_mean,label='sd_w99m',color=palette(1))
         plt.fill_between(list_days,np.array(sd_w99m_mean)-np.array(sd_w99m_std),np.array(sd_w99m_mean)+np.array(sd_w99m_std),color=palette(1),alpha=0.1)
         
-        plt.plot(list_days,sd_simba_mean,label='sd_simba #607',color=palette(2))
-        plt.fill_between(list_days,np.array(sd_simba_mean)-np.array(sd_simba_std),np.array(sd_simba_mean)+np.array(sd_simba_std),color=palette(2),alpha=0.1)
+        plt.plot(list_days,sd_simba7_mean,label='sd_simba #607',color=palette(3))
+        plt.fill_between(list_days,np.array(sd_simba7_mean)-np.array(sd_simba7_std),np.array(sd_simba7_mean)+np.array(sd_simba7_std),color=palette(3),alpha=0.1)
 
-        plt.plot(np.ma.array(list_days8),sd_simba8_mean,label='sd_simba #608',color=palette(3),marker='*')
-        plt.fill_between(list_days,np.array(sd_simba8_mean)-np.array(sd_simba8_std),np.array(sd_simba8_mean)+np.array(sd_simba8_std),color=palette(3),alpha=0.1)
+        plt.plot(np.ma.array(list_days8),sd_simba8_mean,label='sd_simba #608',color=palette(4))
+        plt.fill_between(list_days,np.array(sd_simba8_mean)-np.array(sd_simba8_std),np.array(sd_simba8_mean)+np.array(sd_simba8_std),color=palette(4),alpha=0.1)
        
         plt.legend()
         plt.xlabel("date")
