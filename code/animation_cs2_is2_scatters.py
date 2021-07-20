@@ -269,6 +269,8 @@ if __name__ == '__main__':
 
     parser.add_argument("-o","--outpath",default=PATH_OUT,help="[optionnal] provide outpath")
 
+    parser.add_argument("-sw","--swath",action="store_true",help="option to add swath aligned data") 
+
     
     # Read arguments
     # ----------------------------------------------------------
@@ -370,6 +372,14 @@ if __name__ == '__main__':
     if np.all(flag_beam): print("\nAll beams %s were found" %(beam_is2))
     else: print("\nOnly",found_beams,"were found")
     beam_is2 = found_beams.copy()
+
+     
+    # SWATH option
+    #----------------------------------------------------
+    flag_swath = args.swath
+    if flag_swath and not 'swath' in data_dict['IS2'].keys():
+            print("No SWATH data in data_dict: %s \n" %(inputfolder))
+            sys.exit()
    
     # Test if param is available:
     print("\n %s:" %(gdr_is2))
@@ -377,31 +387,25 @@ if __name__ == '__main__':
         print("%s:" %(d.strftime("%Y%m%d")))
         for b in found_beams:
             print("%s:" %(b),end='')
-            if pname_is2 in info_params[gdr_is2][d.strftime("%Y%m%d")][b].keys():
-                print(info_params[gdr_is2][d.strftime("%Y%m%d")][b][pname_is2]["status"])
-                units_is2=info_params[gdr_is2][d.strftime("%Y%m%d")][b][pname_is2]["units"]
-            else:
-                print("%s not available in data dict, chose param in" %(pname_is2),[p for p in info_params[gdr_is2][d.strftime("%Y%m%d")][b].keys()])
-                sys.exit()
-    
-
+            # check params for SWATH DATA
+            if flag_swath:
+                if pname_is2 in data_dict['IS2']['swath'][b].keys():
+                    units_is2='m' # to be changed
+                else:
+                    print("%s not available in data dict, chose param in" %(pname_is2),[p for p in data_dict['IS2']['swath'][b].keys()])
+                    sys.exit() 
+            else:        
+                if pname_is2 in info_params[gdr_is2][d.strftime("%Y%m%d")][b].keys():
+                    print(info_params[gdr_is2][d.strftime("%Y%m%d")][b][pname_is2]["status"])
+                    units_is2=info_params[gdr_is2][d.strftime("%Y%m%d")][b][pname_is2]["units"]
+                else:
+                    print("%s not available in data dict, chose param in" %(pname_is2),[p for p in info_params[gdr_is2][d.strftime("%Y%m%d")][b].keys()])
+                    sys.exit()
+                
    
     # Check units
     #----------------------------------------------
     units = units_is2
-    """
-    if units_cs2 == units_is2:
-        units=units_cs2
-        print("\n Parameters have same units: %s" %(units))
-    else:
-        print("\n ERROR: Parameters have different units: %s" %(units))
-        sys.exit()
-    """
-
-
-
-
-    
         
     ################################################################
     #
@@ -411,7 +415,36 @@ if __name__ == '__main__':
     #
     ###############################################################
 
+    #--------------------------------------------------
+    #
+    #               get trajectory data
+    #
+    #---------------------------------------------------
+    beam_to_show = found_beams[0] # warning if not required !
 
+    if flag_swath:
+        
+        REF_GDR = gdr_is2='swath'
+        is2_full_lats = list(np.array(data_dict['IS2']['swath'][beam_to_show]['lat'],dtype=object)[idx_dates])                    
+        is2_full_lons = list(np.array(data_dict['IS2']['swath'][beam_to_show]['lon'],dtype=object)[idx_dates])
+
+        # Get full coordinates
+        ref_seg_lats =cs2_full_lats = list(np.array(data_dict['CS2']['swath']['lat'],dtype=object)[idx_dates])
+        ref_seg_lons = cs2_full_lons = list(np.array(data_dict['CS2']['swath']['lon'],dtype=object)[idx_dates])
+        
+    else:
+        # Get full lat/lon
+        is2_full_lats = list(np.array(data_dict['IS2'][gdr_is2][beam_to_show]['latfull'],dtype=object)[idx_dates])                    
+        is2_full_lons = list(np.array(data_dict['IS2'][gdr_is2][beam_to_show]['lonfull'],dtype=object)[idx_dates])
+
+        # Get full coordinates
+        cs2_full_lats = list(np.array(data_dict['CS2'][REF_GDR]['latref_full'],dtype=object)[idx_dates])
+        cs2_full_lons = list(np.array(data_dict['CS2'][REF_GDR]['lonref_full'],dtype=object)[idx_dates])
+        # Get ref lat/lon
+        ref_seg_lats = list(np.array(data_dict['CS2'][REF_GDR]['latref'],dtype=object)[idx_dates])
+        ref_seg_lons = list(np.array(data_dict['CS2'][REF_GDR]['lonref'],dtype=object)[idx_dates])
+   
+    
     
     #--------------------------------------------------
     #
@@ -419,21 +452,25 @@ if __name__ == '__main__':
     #
     #---------------------------------------------------
 
-    
-    # We consider the longest IS2 beam to display
-    """
-    longest_beam = list()
-    size_beams = list()
+    # get data to display
+    delay = dict()
+    dist = dict()
+    data_is2 = dict()
+    x_dist_seg_is2 = dict()
+    lat_is2 = dict()
+    lon_is2 = dict()
+    #for b in beam_is2: x_dist_seg_is2[b]=list() 
+
+    # Retreive data
     for b in beam_is2:
-        size_beams.append(np.concatenate(data_dict['IS2'][gdr_is2][b]['latfull'],axis=0).size)
-    beam_to_show = beam_is2[size_beams.index(max(size_beams))]
-    """
-    beam_to_show = 'b2' # warning if not required !
-    
-    # Get full lat/lon
-    is2_full_lats = list(np.array(data_dict['IS2'][gdr_is2][beam_to_show]['latfull'],dtype=object)[idx_dates])                    
-    is2_full_lons = list(np.array(data_dict['IS2'][gdr_is2][beam_to_show]['lonfull'],dtype=object)[idx_dates])
-    
+        lat_is2[b] = list(np.array(data_dict['IS2'][gdr_is2][b]['lat'],dtype=object)[idx_dates]) 
+        lon_is2[b] = list(np.array(data_dict['IS2'][gdr_is2][b]['lon'],dtype=object)[idx_dates])
+        data_is2[b] = list(np.array(data_dict['IS2'][gdr_is2][b][pname_is2],dtype=object)[idx_dates])       
+        delay[b] = list(np.array(data_dict['IS2'][gdr_is2][b]['delay'],dtype=object)[idx_dates])
+        dist[b] = list(np.array(data_dict['IS2'][gdr_is2][b]['dist'],dtype=object)[idx_dates])
+
+
+            
     # interpolate to get missing data (over the land)
     is2_full_lats_interp = list() # coordinates to display
     is2_full_lons_interp = list()
@@ -447,25 +484,6 @@ if __name__ == '__main__':
         lat_interp,lon_interp = interp_coordinates(is2_full_lats[n],is2_full_lons[n],dist_frame,arr_step_is2)
         is2_full_lats_interp.append(lat_interp)
         is2_full_lons_interp.append(lon_interp)
-
-   
-    
-    # get data to display
-    delay = dict()
-    dist = dict()
-    data_is2 = dict()
-    x_dist_seg_is2 = dict()
-    lat_is2 = dict()
-    lon_is2 = dict()
-    #for b in beam_is2: x_dist_seg_is2[b]=list() 
-    
-    # Retreive data
-    for b in beam_is2:
-        lat_is2[b] = list(np.array(data_dict['IS2'][gdr_is2][b]['lat'],dtype=object)[idx_dates]) 
-        lon_is2[b] = list(np.array(data_dict['IS2'][gdr_is2][b]['lon'],dtype=object)[idx_dates])
-        data_is2[b] = list(np.array(data_dict['IS2'][gdr_is2][b][pname_is2],dtype=object)[idx_dates])       
-        delay[b] = list(np.array(data_dict['IS2'][gdr_is2][b]['delay'],dtype=object)[idx_dates])
-        dist[b] = list(np.array(data_dict['IS2'][gdr_is2][b]['dist'],dtype=object)[idx_dates])
     
     # compute mean distance
     mean_delta_dist = [np.mean(d) for d in dist[b]]
@@ -488,24 +506,7 @@ if __name__ == '__main__':
         print("Relaunch sortnsave algorithm with REF_GDR")
         sys.exit()
 
-    # Get full coordinates
-    cs2_full_lats = list(np.array(data_dict['CS2'][REF_GDR]['latref_full'],dtype=object)[idx_dates])
-    cs2_full_lons = list(np.array(data_dict['CS2'][REF_GDR]['lonref_full'],dtype=object)[idx_dates])
-    
-    # Get ref lat/lon
-    ref_seg_lats = list(np.array(data_dict['CS2'][REF_GDR]['latref'],dtype=object)[idx_dates])
-    ref_seg_lons = list(np.array(data_dict['CS2'][REF_GDR]['lonref'],dtype=object)[idx_dates])
    
-    # interpolate to get missing data (over the land)
-    cs2_full_lats_interp = list()
-    cs2_full_lons_interp = list()
-    x_dist_cs2 = list()
-    for n in range(ndates):
-        lat_interp,lon_interp = interp_coordinates(cs2_full_lats[n],cs2_full_lons[n],dist_frame,arr_step_cs2)
-        cs2_full_lats_interp.append(lat_interp)
-        cs2_full_lons_interp.append(lon_interp)
-        
-    
     # get data to display
     data_is2_2d = list()
     data_cs2 = dict()
@@ -524,7 +525,16 @@ if __name__ == '__main__':
             #data_cs2[cs2_prod].append(np.mean(data_dict['IS2']['ATL10']['laser_fb'][n],axis=0))
             
 
-
+   
+    # interpolate to get missing data (over the land)
+    cs2_full_lats_interp = list()
+    cs2_full_lons_interp = list()
+    x_dist_cs2 = list()
+    for n in range(ndates):
+        lat_interp,lon_interp = interp_coordinates(cs2_full_lats[n],cs2_full_lons[n],dist_frame,arr_step_cs2)
+        cs2_full_lats_interp.append(lat_interp)
+        cs2_full_lons_interp.append(lon_interp)
+         
     
     #--------------------------------------------------
     #

@@ -249,7 +249,7 @@ def align_sla_swath_seg(date_list,file_dict,common_data_list,cs2_gdr,is2_gdr,is2
     plist_cs2_20hz = ['sla']
     plist_cs2_1hz = ['mss','dac','earth','pole','lpe','ocean','load']
     plist_is2_granules = ['mss','dac','earth','pole','lpe','ocean','load']
-    plist_is2_swath = ['slasw']
+    plist_is2_swath = ['sla']
 
     cs2_pDict = {}
     is2_pDict = {}
@@ -261,11 +261,11 @@ def align_sla_swath_seg(date_list,file_dict,common_data_list,cs2_gdr,is2_gdr,is2
         # initiate lists
         if n==0:
             
-            for p in plist_cs2_20hz + plist_cs2_1hz + ['lat','lon']:
+            for p in plist_cs2_20hz + plist_cs2_1hz + ['lat','lon','dist','delay']:
                 cs2_pDict[p] = list()
                 swath_data_array['CS2'][p] = list()
                 
-            for p in plist_is2_granules + plist_is2_swath + ['lat','lon']:
+            for p in plist_is2_granules + plist_is2_swath + ['lat','lon','dist','delay']:
                 is2_pDict[p] = list()
                 swath_data_array['IS2'][p] = list()
 
@@ -350,16 +350,18 @@ def align_sla_swath_seg(date_list,file_dict,common_data_list,cs2_gdr,is2_gdr,is2
         flag_colloc = distance < 1 #km
 
         # ref SWATH collocs
-        lat_swath = lat_i_sw[flag_colloc]; lon_swath = lon_i_sw[flag_colloc]
-        ref_size = lat_swath.shape[0]
-        coord_sw = np.vstack((lon_swath,lat_swath)).T
+        lat_sw = lat_i_sw[flag_colloc]; lon_sw = lon_i_sw[flag_colloc]
+        ref_size = lat_sw.shape[0]
+        
+        x_sw,y_sw,z_sw = cf.lon_lat_to_cartesian(lon_sw, lat_sw)
+        coord_sw = np.vstack((x_sw,y_sw,z_sw)).T
         tree = scipy.spatial.cKDTree(coord_sw)
 
 
         # Associate CS2 20hz data association to 10km SWATH-SEG coordinate
-        coord_cs2 = np.vstack((lon_c_20,lat_c_20)).T
+        x_cs2,y_cs2,z_cs2 = cf.lon_lat_to_cartesian(lon_c_20,lat_c_20)
+        coord_cs2 = np.vstack((x_cs2,y_cs2,z_cs2)).T
         distance,closest_ind = tree.query(coord_cs2,1)
-
         
         flag_colloc = distance < 1
         selected_idx = closest_ind[flag_colloc]
@@ -371,11 +373,20 @@ def align_sla_swath_seg(date_list,file_dict,common_data_list,cs2_gdr,is2_gdr,is2
         for idx in np.unique(selected_idx):
             argidx = np.argwhere(closest_ind==idx)
             for p in cs2_pDict.keys():
-                data_array_cs2[p][idx] = np.ma.mean(cs2_pDict[p][n][argidx]) 
+                if p=='dist':
+                    data_array_cs2[p][idx] = np.ma.mean(distance[argidx])
+                elif p=='delay':
+                    time_c =  np.ma.mean(time_c_20[argidx])
+                    delta_ref_time = (ref_date['IS2'] - ref_date['CS2']).total_seconds()
+                    delta_t_min = (time_i_sw[idx] + delta_ref_time - time_c)/60
+                    data_array_cs2[p][idx] = delta_t_min
+                else:
+                    data_array_cs2[p][idx] = np.ma.mean(cs2_pDict[p][n][argidx]) 
             
             
         # Associate IS2 granule data to 10km SWATH-SEG coordinates
-        coord_is2 = np.vstack((lon_i_gran,lat_i_gran)).T
+        x_is2,y_is2,z_is2 = cf.lon_lat_to_cartesian(lon_i_gran,lat_i_gran)
+        coord_is2 = np.vstack((x_is2,y_is2,z_is2)).T
         distance,closest_ind = tree.query(coord_is2,1)
 
         flag_colloc = distance < 1
@@ -386,9 +397,9 @@ def align_sla_swath_seg(date_list,file_dict,common_data_list,cs2_gdr,is2_gdr,is2
         for p in is2_pDict.keys():
             data_array_is2[p] = ma.masked_array(np.zeros((ref_size,)),mask=np.ones((ref_size,)))
 
-        data_array_is2['lat'] = lat_swath #[flag_colloc]
-        data_array_is2['lon'] = lon_swath #[flag_colloc]
-        #data_array_is2['slasw'] = is2_pDict['slasw'][n][idx_swath]
+        data_array_is2['lat'] = lat_sw #[flag_colloc]
+        data_array_is2['lon'] = lon_sw #[flag_colloc]
+        #data_array_is2['sla'] = is2_pDict['sla'][n][idx_swath]
             
         for idx in idx_swath:
             argidx = np.argwhere(closest_ind==idx)
@@ -396,6 +407,10 @@ def align_sla_swath_seg(date_list,file_dict,common_data_list,cs2_gdr,is2_gdr,is2
                 if p in ['lat','lon']: continue
                 if 'sla' in p:
                     data_array_is2[p][idx] = is2_pDict[p][n][idx]
+                elif p=='dist':
+                    data_array_is2[p][idx] = data_array_cs2[p][idx]
+                elif p=='delay':
+                    data_array_is2[p][idx] = -data_array_cs2[p][idx]
                 else:
                     data_array_is2[p][idx] = np.ma.mean(is2_pDict[p][n][argidx])
 
@@ -642,7 +657,7 @@ def get_collocated_data(date_list,file_dict,is2Beams):
                 
                 # time delay of CryoSat-2
                 time_cs2 = time_c
-                delta_ref_time = (datetime(2018, 1, 1) - datetime(2000, 1, 1)).total_seconds()
+                delta_ref_time = (ref_date['IS2'] - ref_date['CS2']).total_seconds()
                 delta_t_sec = (time_i + delta_ref_time - time_c[closest_ind])
                 delta_t_min = delta_t_sec/60
 

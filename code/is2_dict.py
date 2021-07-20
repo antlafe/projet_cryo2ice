@@ -84,7 +84,7 @@ def init_dict(dataproduct,BeamN,segment):
             # swath param
             'lat': '/'+BeamN+'/freeboard_beam_segment/latitude',
             'lon': '/'+BeamN+'/freeboard_beam_segment/longitude',
-            'slasw': '/'+BeamN+'/freeboard_beam_segment/beam_refsurf_height',
+            'sla': '/'+BeamN+'/freeboard_beam_segment/beam_refsurf_height',
             'time': '/'+ BeamN+'/freeboard_beam_segment/delta_time',
 
             # For each 10Km swath segments
