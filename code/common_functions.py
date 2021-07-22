@@ -116,6 +116,12 @@ def grid_to_track(data_grid,lon_grid,lat_grid,lon,lat):
 
     """
     # Dist computed in cartesien diff with dist in lat,lon
+    if np.any(lon_grid<0) and not np.any(lon<0):
+        lon[lon>180] = lon[lon>180] - 360
+    elif np.any(lon_grid>180) and not np.any(lon>180):
+        lon[lon<0] = lon[lon<0] + 360
+    else:
+        lon = lon
 
     x,y,z = lon_lat_to_cartesian(lon, lat)
     points = list(np.vstack((x,y,z)).T)

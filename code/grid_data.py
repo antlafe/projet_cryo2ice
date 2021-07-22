@@ -85,7 +85,7 @@ show_figure = False
 # 
 # init_grid
 # 
-def init_grid(lon, lat, all_data_in, map_frame, 
+def init_grid(lon, lat, all_data_in, map_frame,weight=None,
               pixel_size=10000,verbose=0):
 
     # in case in old fashion uniq data
@@ -112,6 +112,7 @@ def init_grid(lon, lat, all_data_in, map_frame,
         all_data[p_name] = all_data[p_name][~nan_data_flag]
     lon = lon[~nan_data_flag]
     lat = lat[~nan_data_flag]
+    if weight is not None: weight = weight[~nan_data_flag]
 
     # Projections of the longitudes and latitudes of the satellite ground-track that will be filtered to fit the grid 
     x_track,y_track = map_frame(lon,lat)
@@ -151,7 +152,7 @@ def init_grid(lon, lat, all_data_in, map_frame,
     pixels_track[0,:] = np.around((y_max_grid- y_track)/pixel_size).astype(int)
     pixels_track[1,:] = np.around((x_track-x_min_grid)/pixel_size).astype(int)
 
-    return lon, lat, all_data, x_grid, y_grid, x_track, y_track, lon_grid_mesh, lat_grid_mesh,  x_grid_mesh, y_grid_mesh, pixels_track, nb_pixels_1D
+    return lon, lat, all_data, x_grid, y_grid, x_track, y_track, lon_grid_mesh, lat_grid_mesh,  x_grid_mesh, y_grid_mesh, pixels_track, nb_pixels_1D, weight
 
 
 
@@ -159,13 +160,17 @@ def init_grid(lon, lat, all_data_in, map_frame,
 # 
 # grid_and_filter_wrt_distance
 # 
-def grid_and_filter_wrt_distance(lon, lat, all_data_in, map_frame, pixel_size=10000,mode='filter_gauss',range_filter=50000, verbose=0):
+def grid_and_filter_wrt_distance(lon, lat, all_data_in, map_frame, pixel_size=10000,mode='filter_gauss',range_filter=50000,weight=None, verbose=0):
     
     print('\n\tGrid and filter with a filter range greater than the pixel size')
     start_time = time.time()
 
     # init grid
-    lon, lat, all_data, x_grid, y_grid, x_track, y_track, lon_grid_mesh, lat_grid_mesh,  x_grid_mesh, y_grid_mesh, pixels_track, nb_pixels_1D  = init_grid(lon, lat, all_data_in, map_frame, pixel_size, verbose)
+    lon, lat, all_data, x_grid, y_grid, x_track, y_track, lon_grid_mesh, lat_grid_mesh,  x_grid_mesh, y_grid_mesh, pixels_track, nb_pixels_1D, weight  = init_grid(lon, lat, all_data_in, map_frame,weight,pixel_size, verbose)
+
+    # init weight factor
+    if weight is None:
+        weight_data = np.ones(lon.shape)
 
  
     # SORT TRACK POINTS    
@@ -286,22 +291,27 @@ def grid_and_filter_wrt_distance(lon, lat, all_data_in, map_frame, pixel_size=10
 
             # Compute the spatial filter on the current pixel i,j
             #mode = 'gaussian_radius'
+            #weighting = weight
             if mode=='filter_gauss':
-                weighting = np.exp(-squared_dist/squared_range_filter)
+                weighting = np.exp(-squared_dist/squared_range_filter)*weight[numbers_of_data_used]
                 
                 for p_name,data in all_data.items():
                     data_results[p_name][i,j] = np.nansum(data[numbers_of_data_used]*weighting)/np.sum(weighting)
-                    data_results[rms_p_name][i,j] = np.std(data[numbers_of_data_used])
-
+                    data_results[rms_p_name][i,j] = np.ma.sqrt(np.ma.sum(weighting**(data[numbers_of_data_used]-data_results[p_name][i,j])**2) / np.ma.sum(weighting) )
+                    #data_results[rms_p_name][i,j] = np.std(data[numbers_of_data_used])
+            
+            """
             elif mode=='filter_median':
+                
                 for p_name,data in all_data.items():
-                    data_results[p_name][i,j] = np.nanmedian(data[numbers_of_data_used])
+                    data_results[p_name][i,j] = np.nanmedian(data[numbers_of_data_used]*weighting)/np.sum(weighting)
                     data_results[rms_p_name][i,j] =  np.std(data[numbers_of_data_used])
 
             elif mode=='filter_mean':
                 for p_name,data in all_data.items():
-                    data_results[p_name][i,j] = np.nanmean(data[numbers_of_data_used])
+                    data_results[p_name][i,j] = np.nanmean(data[numbers_of_data_used]*weighting)/np.sum(weighting)
                     data_results[rms_p_name][i,j] = np.std(data[numbers_of_data_used])
+            """
 
         
     print("grid_and_filter_wrt_distance mode %s range %f pixel %f" % (mode, range_filter, pixel_size))
@@ -449,7 +459,14 @@ if __name__ == '__main__':
     data_track_list = dict()
     for pname in plist:
         data_track_list[pname] = list()
-        
+
+    # add segment length as weighting factor for gridding
+    if sat=='IS2':
+        weight = list()
+    else:
+        weight = None  
+
+    
     # read data
     for filename in filelist:
 
@@ -479,6 +496,7 @@ if __name__ == '__main__':
 
         elif sat=='IS2':
             beamName = get_strong_beams(filename,is2Beams)
+            
             for beam in beamName.keys():
                 data_desc_is2 = is2_dict.init_dict(gdr,beamName[beam],'granules')
 
@@ -488,7 +506,9 @@ if __name__ == '__main__':
                 lat_list.append(lat)
                 lon_list.append(lon)
 
-                #Lseg,units,param_is_flag = cf.get_param_from_hf5(filename,data_desc_is2,'Lseg',hemispherecode,LAT_BOUND)
+                Lseg,units,param_is_flag = cf.get_param_from_hf5(filename,data_desc_is2,'Lseg',hemispherecode,LAT_BOUND)
+                weight.append(Lseg)
+                
 
                 for pname in plist:
                     param,units,param_is_flag = cf.get_param_from_hf5(filename,data_desc_is2,pname,hemispherecode,LAT_BOUND)
@@ -496,13 +516,16 @@ if __name__ == '__main__':
                     data_track_list[pname].append(param)
         else:
             print("Unknown satname: %s" %(sat))
-            
+
+    
     # Creating data array
     data_array = dict()
     data2grid = dict()
 
     lat_array = np.ma.concatenate(lat_list,axis=0)
     lon_array = np.ma.concatenate(lon_list,axis=0)
+
+    if sat=='IS2': weight = np.ma.concatenate(weight,axis=0)
     
     data_results = dict()
     lat_grid = dict()
@@ -519,13 +542,13 @@ if __name__ == '__main__':
     if hemispherecode=='01':
         llcrnrlat=0; urcrnrlat=90
     else:
-         llcrnrlat=-90; urcrnrlat=0
+        llcrnrlat=-90; urcrnrlat=0
          
         
     # Gridding the data
     f2, ax = plt.subplots(1, 1,figsize=(9,8)) #'nplaea'
     m = Basemap(projection='nplaea', llcrnrlat=llcrnrlat,urcrnrlat=urcrnrlat,llcrnrlon=-180,urcrnrlon=180,boundinglat=LAT_BOUND,lon_0=0, resolution='l',round=True,ax=ax)
-    x_grid, y_grid, lat_grid_mesh, lon_grid_mesh, x_grid_mesh, y_grid_mesh, data_grid = grid_and_filter_wrt_distance(lon_array, lat_array, data2grid, m, pixel_size=12500,mode='filter_mean',range_filter=50000,verbose=0)
+    x_grid, y_grid, lat_grid_mesh, lon_grid_mesh, x_grid_mesh, y_grid_mesh,data_grid = grid_and_filter_wrt_distance(lon_array, lat_array, data2grid, m, pixel_size=12500,mode='filter_gauss',range_filter=25000,weight=weight,verbose=0)
     
     
     if show_figure:
@@ -538,13 +561,12 @@ if __name__ == '__main__':
     # Saving data in NETCDF
     #-----------------------------------------------
     
-    if outfolder: outf = outfolder
+    if outfolder: pathout = outfolder
     else:
-        outf = PATH_INPUT
+        pathout = PATH_INPUT+ "grid/%s/%s/" %(sat,gdr)
 
 
     size_grid = lon_grid_mesh.shape[0]
-    pathout = outf + "grid/%s/%s/" %(sat,gdr)
     fileoutname = '%s_%s_%s.nc' %(sat,gdr,date)
 
     if not os.path.exists(pathout):

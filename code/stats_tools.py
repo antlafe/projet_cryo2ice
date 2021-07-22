@@ -30,8 +30,8 @@ import scipy.spatial
 from scipy.stats import pearsonr, gaussian_kde,linregress
 import matplotlib as mpl
 import time
-from matplotlib.patches import Polygon
 import matplotlib.dates as mdates
+from matplotlib.patches import Circle, Wedge, Polygon
 
 # Global attributs
 ###########################################
@@ -231,6 +231,7 @@ def plot_track_map(fig,axm,lon,lat,data,label,xylim,date_icetype,units,flag_comp
     m.drawparallels(np.arange(90,-90,-5),  labels=[1,1,1,1],linewidth = 0.25, zorder=1)
     m.drawmeridians(np.arange(-180.,180.,30.),labels=[1,1,1,1],latmax=85, linewidth = 0.25, zorder=1)
     m.fillcontinents(color='dimgray',lake_color='grey', zorder=1)
+    draw_round_frame(m,axm)
     #m.bluemarble(scale=1, zorder=-1)
 
     # defining color map
@@ -394,6 +395,26 @@ def signif_psd(probability,dof):
    c = v/c
    return c
 
+
+def draw_round_frame(m,ax, width_percent=0.05, degree=45):
+    centre_x = (ax.get_xlim()[0] + ax.get_xlim()[1]) / 2
+    centre_y = (ax.get_ylim()[0] + ax.get_ylim()[1]) / 2
+    width = abs(centre_x) * width_percent
+
+    inner_radius = abs(centre_x) - width/2
+    outer_radius = inner_radius + width
+
+    angle_breaks = list(range(0, 361, degree))
+
+    for i, (from_angle, to_angle) in enumerate(list(zip(angle_breaks[:-1], angle_breaks[1:]))):
+        color='white' if i%2 == 0 else 'black'
+        wedge = Wedge((centre_x, centre_y), outer_radius, from_angle, to_angle, width=outer_radius - inner_radius,
+                      facecolor=color,
+                      edgecolor='black',
+                      clip_on=False,
+                      ls='solid',
+                      lw=1)
+        ax.add_patch(wedge)
 
 
 

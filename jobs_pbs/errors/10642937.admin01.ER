@@ -1,8 +1,0 @@
-load python/3.7.2  : OK 
-load ct_tools/2.18  : OK 
-unload python/3.7.2  : OK 
-load python/3.7.2  : OK 
-unload ct_tools/2.18  : OK 
-load ct_tools/2.18  : OK 
-/var/spool/PBS/mom_priv/jobs/10642937.admin01.SC: line 15: 25472 Killed                  python grid_data.py -s IS2 -g ATL10 -d ${d} -p laser_fb,gaussian_w -hp 01
-Cgroup memsw limit exceeded: Task in /pbspro.service/jobid/10642937.admin01 killed as a result of limit of /pbspro.service/jobid/10642937.admin01

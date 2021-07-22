@@ -25,6 +25,8 @@ EXAMPLES:
 
     python -m ipdb animation_cs2_is2.py -g ESA_BD,AWI -p radar_fb -g ATL07 -b gt1r,gt2r,gt3r -p surface_h -d20200301,20200303 -f 202003
 
+    python -m pdb animation_cs2_is2_scatters.py -g ESA_BD_GDR -p sla -g ATL10 -b b1,b2,b3 -p sla -sw -d20201101,20201103 -f NovJan_ESA
+
 PRINCIPLE:
 
 - interpolating a reference track
@@ -53,7 +55,7 @@ import argparse
 import cs2_dict
 import is2_dict
 import common_functions as cf
-import statistics_cryo2ice as stats
+import stats_tools as stats
 import warnings
 import scipy.spatial
 from scipy.stats import gaussian_kde
@@ -100,7 +102,7 @@ list_midnight_dates = {
 
 dist_frame = 100#km
 interval = 10 #ms
-show_plot = False
+show_plot = True
 outfilename= 'colloc_nov_jan20_full_esa'
 
 # mean density to show data
@@ -267,8 +269,8 @@ if __name__ == '__main__':
 
     #parser.add_argument("-p","--parameters",required=True,help="provide CS2 parameter to plot")
 
-    parser.add_argument("-o","--outpath",default=PATH_OUT,help="[optionnal] provide outpath")
-
+    parser.add_argument("-o","--outfilename",default=outfilename,help="[optionnal] provide outpath")
+    
     parser.add_argument("-sw","--swath",action="store_true",help="option to add swath aligned data") 
 
     
@@ -285,6 +287,10 @@ if __name__ == '__main__':
 
     pkl_file = open(filename[0], 'rb')
     data_dict = pickle.load(pkl_file)
+
+    # Outpath
+    #----------------------------------------------------------
+    outfilename = args.outfilename
     
     # Open info params file
     #-----------------------------------------------------------
@@ -429,8 +435,8 @@ if __name__ == '__main__':
         is2_full_lons = list(np.array(data_dict['IS2']['swath'][beam_to_show]['lon'],dtype=object)[idx_dates])
 
         # Get full coordinates
-        ref_seg_lats =cs2_full_lats = list(np.array(data_dict['CS2']['swath']['lat'],dtype=object)[idx_dates])
-        ref_seg_lons = cs2_full_lons = list(np.array(data_dict['CS2']['swath']['lon'],dtype=object)[idx_dates])
+        ref_seg_lats =cs2_full_lats = list(np.array(data_dict['CS2']['swath'][beam_to_show]['lat'],dtype=object)[idx_dates])
+        ref_seg_lons = cs2_full_lons = list(np.array(data_dict['CS2']['swath'][beam_to_show]['lon'],dtype=object)[idx_dates])
         
     else:
         # Get full lat/lon
@@ -456,6 +462,7 @@ if __name__ == '__main__':
     delay = dict()
     dist = dict()
     data_is2 = dict()
+    data_cs2_b = dict()
     x_dist_seg_is2 = dict()
     lat_is2 = dict()
     lon_is2 = dict()
@@ -469,27 +476,36 @@ if __name__ == '__main__':
         delay[b] = list(np.array(data_dict['IS2'][gdr_is2][b]['delay'],dtype=object)[idx_dates])
         dist[b] = list(np.array(data_dict['IS2'][gdr_is2][b]['dist'],dtype=object)[idx_dates])
 
+        if flag_swath:
+            data_cs2_b[b] = list(np.array(data_dict['CS2']['swath'][b][pname_cs2],dtype=object)[idx_dates])
 
             
     # interpolate to get missing data (over the land)
     is2_full_lats_interp = list() # coordinates to display
     is2_full_lons_interp = list()
     x_dist_is2 = list()
-    for n in range(ndates):
-        # eliminates duplicates (To do)
-        #lat = is2_full_lats[n]
-        #lon = is2_full_lons[n]
-        #unique,idx,num_occ = np.unique(lat,return_index=True,return_counts=True) 
-        #flag_occurence = num_occ>1
-        lat_interp,lon_interp = interp_coordinates(is2_full_lats[n],is2_full_lons[n],dist_frame,arr_step_is2)
-        is2_full_lats_interp.append(lat_interp)
-        is2_full_lons_interp.append(lon_interp)
+    if not flag_swath:
+        for n in range(ndates):
+            # eliminates duplicates (To do)
+            #lat = is2_full_lats[n]
+            #lon = is2_full_lons[n]
+            #unique,idx,num_occ = np.unique(lat,return_index=True,return_counts=True) 
+            #flag_occurence = num_occ>1
+            lat_interp,lon_interp = interp_coordinates(is2_full_lats[n],is2_full_lons[n],dist_frame,arr_step_is2)
+            is2_full_lats_interp.append(lat_interp)
+            is2_full_lons_interp.append(lon_interp)
+    else:
+        is2_full_lats_interp = ref_seg_lats
+        is2_full_lons_interp =ref_seg_lons
     
     # compute mean distance
-    mean_delta_dist = [np.mean(d) for d in dist[b]]
+    #mean_delta_dist = [np.mean(d) for d in dist[b]]
 
     # Compute mean delay
-    mean_delay = [np.mean(d) for d in delay[b]]
+    mean_delay = list()
+    for n in range(ndates):
+        mean_delay.append(np.ma.mean(np.ma.array([np.mean(delay[b][n]) for b in beam_is2])))
+                          
     mean_delay_sign = [np.sign(md) for md in mean_delay]
     mean_delay_str = [str(timedelta(minutes=np.abs(mins)))[:7] for mins in mean_delay]
     
@@ -511,29 +527,54 @@ if __name__ == '__main__':
     data_is2_2d = list()
     data_cs2 = dict()
     for cs2_prod in gdrs_cs2: data_cs2[cs2_prod]= list()
+
+    # XXXX prboleme
     
     for n in idx_dates:
 
         # get 2-D data from IS2
-        data_mat = data_dict['IS2'][gdr_is2][pname_is2+'_mean'][n]
+        data_mat = data_dict['IS2'][gdr_is2][beam_to_show][pname_is2][n]
+        data_mat[data_mat.mask] = np.nan
+        data_is2_2d.append(data_mat.data)
+
+        for cs2_prod in gdrs_cs2:
+            if flag_swath:
+                data_cs2[cs2_prod].append(data_cs2_b[beam_to_show])
+            else:
+               data_array_cs2 = ma.masked_invalid(data_dict['CS2'][cs2_prod][pname_cs2][n])
+               data_cs2[cs2_prod].append(data_array_cs2) # [valid_idx]) 
+               
+
+    """
+    for n in idx_dates:
+        
+        # get 2-D data from IS2
+        data_mat = data_is2[n]
         data_mat[data_mat.mask] = np.nan
         data_is2_2d.append(data_mat.data)
         for cs2_prod in gdrs_cs2:
             # convert to masked array
-            data_array_cs2 = ma.masked_invalid(data_dict['CS2'][cs2_prod][pname_cs2][n])
+            if flag_swath:
+                data_array_cs2 = data_cs2[n]
+            else:
+                data_array_cs2 = ma.masked_invalid(data_dict['CS2'][cs2_prod][pname_cs2][n])
             data_cs2[cs2_prod].append(data_array_cs2) # [valid_idx])
             #data_cs2[cs2_prod].append(np.mean(data_dict['IS2']['ATL10']['laser_fb'][n],axis=0))
+     """   
             
-
    
     # interpolate to get missing data (over the land)
     cs2_full_lats_interp = list()
     cs2_full_lons_interp = list()
     x_dist_cs2 = list()
-    for n in range(ndates):
-        lat_interp,lon_interp = interp_coordinates(cs2_full_lats[n],cs2_full_lons[n],dist_frame,arr_step_cs2)
-        cs2_full_lats_interp.append(lat_interp)
-        cs2_full_lons_interp.append(lon_interp)
+    if not flag_swath:
+        for n in range(ndates):
+            lat_interp,lon_interp = interp_coordinates(cs2_full_lats[n],cs2_full_lons[n],dist_frame,arr_step_cs2)
+            cs2_full_lats_interp.append(lat_interp)
+            cs2_full_lons_interp.append(lon_interp)
+    else:
+        cs2_full_lats_interp = ref_seg_lats
+        cs2_full_lons_interp =ref_seg_lons
          
     
     #--------------------------------------------------
@@ -551,13 +592,16 @@ if __name__ == '__main__':
     ref_lats_interp = list()
     ref_lons_interp = list()
     x_dist = list()
-    
     for n in range(ndates):
-        lat_ref_interp,lon_ref_interp = interp_coordinates(ref_seg_lats[n],ref_seg_lons[n],dist_frame,2)
-        ref_lats_interp.append(lat_ref_interp)
-        ref_lons_interp.append(lon_ref_interp)
-        x_dist.append(cf.distance_from_first_trk_pts(ref_lats_interp[n],ref_lons_interp[n],0))
-
+        if not flag_swath:
+            lat_ref_interp,lon_ref_interp = interp_coordinates(ref_seg_lats[n],ref_seg_lons[n],dist_frame,2)
+            ref_lats_interp.append(lat_ref_interp)
+            ref_lons_interp.append(lon_ref_interp)
+            x_dist.append(cf.distance_from_first_trk_pts(ref_lats_interp[n],ref_lons_interp[n],0))
+        else:
+            ref_lats_interp.append(ref_seg_lats[n])
+            ref_lons_interp.append(ref_seg_lons[n])
+            x_dist.append(cf.distance_from_first_trk_pts(ref_lats_interp[n],ref_lons_interp[n],0))
     #ref_lons_interp[0]
     #from scipy.signal import savgol_filter
     #yhat = savgol_filter(ref_lons_interp[0],11, 2) # window size 51, polynomial order 3
@@ -1021,10 +1065,12 @@ if __name__ == '__main__':
     m = Basemap(projection='ortho',lat_0=70,lon_0=0,resolution='l',ax=ax2) #,llcrnrx=llrx,llcrnry=llry,urcrnrx=urrx,urcrnry=urry)
     #m = Basemap(projection='npstere',boundinglat=min_lat,lon_0=0, resolution='l' , round=False)
     m.drawcoastlines(linewidth=0.25, zorder=1)
-    m.drawparallels(np.arange(90,-90,-5), linewidth = 0.25, zorder=1)
-    m.drawmeridians(np.arange(-180.,180.,30.), latmax=85, linewidth = 0.25, zorder=1)
+    m.drawparallels(np.arange(90,-90,-5), linewidth = 0.25, zorder=3)
+    #m.drawmeridians(np.arange(-180.,180.,30.), latmax=85, linewidth = 0.25, zorder=1)
+    m.drawmeridians(np.arange(0,360,45),labels=[1,1,1,1],linewidth=0.5, fontsize=14, dashes=[1,5],zorder=3)
     m.fillcontinents(color='0.9',lake_color='grey', zorder=1)
     m.bluemarble(scale=1, zorder=1)
+    stats.draw_round_frame(m,ax2)
 
     
     xptsT, yptsT = m(lons_icetype[0], lats_icetype[0])

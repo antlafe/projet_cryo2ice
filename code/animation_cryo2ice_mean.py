@@ -53,7 +53,7 @@ import argparse
 import cs2_dict
 import is2_dict
 import common_functions as cf
-import statistics_cryo2ice as stats
+import stats_tools as stats
 import warnings
 import scipy.spatial
 from scipy.stats import gaussian_kde
@@ -98,9 +98,9 @@ list_midnight_dates = {
 
 #list_midnight_dates = ['20201018','20201108'] 
 
-dist_frame = 10#km
-interval = 10 #ms
-show_plot = False
+dist_frame = 40#km
+interval = 20 #ms
+show_plot = True #False
 outfilename= 'animation_NovMar_ESA'
 
 # mean density to show data
@@ -267,7 +267,7 @@ if __name__ == '__main__':
 
     #parser.add_argument("-p","--parameters",required=True,help="provide CS2 parameter to plot")
 
-    parser.add_argument("-o","--outpath",default=PATH_OUT,help="[optionnal] provide outpath")
+    parser.add_argument("-o","--outfilename",default=outfilename,help="[optionnal] provide outpath")
 
     
     # Read arguments
@@ -283,6 +283,10 @@ if __name__ == '__main__':
 
     pkl_file = open(filename[0], 'rb')
     data_dict = pickle.load(pkl_file)
+
+    # Outpath
+    #----------------------------------------------------------
+    outfilename = args.outfilename
     
     # Open info params file
     #-----------------------------------------------------------
@@ -455,8 +459,8 @@ if __name__ == '__main__':
     data_array_is2 = np.ma.concatenate(data_is2,axis=0)
     data_is2_std = list(np.array(data_dict['IS2'][gdr_is2][pname_is2+'_std'],dtype=object)[idx_dates])
 
-    lat_is2 = ref_seg_lats
-    lon_is2 = ref_seg_lons
+    lat_is2 = cs2_full_lats
+    lon_is2 = cs2_full_lons
 
     # compute mean distance
     dist = list(np.array(data_dict['IS2'][gdr_is2]['dist_mean'],dtype=object)[idx_dates])
@@ -475,7 +479,8 @@ if __name__ == '__main__':
     #
     #---------------------------------------------------
     # Min lat to show in basemap (depends on MIN_LAT chosen in sortnsave algo)
-    min_lat = np.min(np.concatenate(cs2_full_lats,axis=0))
+    #min_lat = np.min(np.concatenate(cs2_full_lats,axis=0))
+    min_lat = 55
 
     # Rq: Track used to plot the data
 
@@ -520,12 +525,12 @@ if __name__ == '__main__':
         lons,lats,OSISAF_ice_type = cf.get_osisaf_ice_type(date.year,date.month,date.day,'01')
         OSISAF_ice_type[OSISAF_ice_type==1] = ma.masked # masked ocean
         OSISAF_ice_type[OSISAF_ice_type==3] = 4 # ambigous becomes multi-year ice
-        OSISAF_ice_type[560,380] = 2 # to keep colorbar 
+        OSISAF_ice_type[560,380] = 2 # to keep colorbar
     
         lons_icetype.append(lons)
         lats_icetype.append(lats)
         icetype.append(OSISAF_ice_type)
-        
+
         #icetype_alongtrack = cf.grid_to_track(OSISAF_ice_type,lons,lats,lon_cs2[n],lat_cs2[n])
         lon = ref_seg_lons_interp[n]
         if any(np.abs(np.diff(lon)) > 20): lon[lon > 180] = lon[lon > 180] - 360   
@@ -681,11 +686,11 @@ if __name__ == '__main__':
     #--------------------------------------------------     
 
     is2_mean_data_line = list()
-    is2_mean_dist_line = list()
+    #is2_mean_dist_line = list()
     is2_mean_data_pts = list()
     idx_pts_is2 = list()
     is2_data_pts = list()
-    is2_mean_dist = list()
+    #is2_mean_dist = list()
     is2_ndata_pts = list()
     dist_save = list()
 
@@ -721,15 +726,15 @@ if __name__ == '__main__':
 
                 # if data density sufficient
                 if data_density > MIN_IS2_DATA_DENSITY:
-                    is2_mean_dist.append(x_dist[idx_frame])
+                    #is2_mean_dist.append(x_dist[idx_frame])
                     is2_data_pts.append(np.nanmean(data_is2[ntrack][idx]))
 
                 else:
                     is2_data_pts.append(np.nan)
-                    is2_mean_dist.append(np.nan)
+                    #is2_mean_dist.append(np.nan)
             else:
                 is2_data_pts.append(np.nan)
-                is2_mean_dist.append(np.nan)
+                #is2_mean_dist.append(np.nan)
                 is2_ndata_pts.append(0)
                 
         
@@ -779,12 +784,12 @@ if __name__ == '__main__':
     #data_list = list()
     #data_dist_list = list()
     #for b in beam_is2:
-    data_list = is2_data_pts
-    data_dist_list = is2_mean_dist
-    is2_data_matrix = np.array(data_list)
-    is2_data_dist_matrix = np.array(data_dist_list)
-    is2_mean_data_line = is2_data_matrix
-    is2_mean_dist_line = is2_data_dist_matrix
+    #data_list = is2_data_pts
+    #data_dist_list = is2_mean_dist
+    #is2_data_matrix = np.array(data_list)
+    #is2_data_dist_matrix = np.array(data_dist_list)
+    is2_mean_data_line = np.array(is2_data_pts)
+    #is2_mean_dist_line = is2_data_dist_matrix
 
     # define rolling median of CS2
     data_array = np.ma.masked_invalid(np.array(cs2_data_pts[gdr]),copy=True)
@@ -823,13 +828,13 @@ if __name__ == '__main__':
     fig = plt.figure(1,figsize=(20,7)) #,constrained_layout=True)
     #fig = plt.figure(1,figsize=(14,5))
     #gs = fig.add_gridspec(3, 3)
-    spec = gridspec.GridSpec(ncols=11, nrows=10) #,width_ratios=[1.2, 2])
+    spec = gridspec.GridSpec(ncols=13, nrows=10) #,width_ratios=[1.2, 2])
     
     spec_ESAlogo = spec[:,0]
-    spec_map = spec[:,1:5]
-    spec_STplot = spec[:4,6:11]
-    spec_myiscat = spec[6:10,6:8]
-    spec_fyiscat = spec[6:10,9:11]
+    spec_map = spec[:,1:6]
+    spec_STplot = spec[:4,8:13]
+    spec_myiscat = spec[6:10,8:10]
+    spec_fyiscat = spec[6:10,11:13]
 
     # Add ESA logo
     #----------------------------------------------------------
@@ -849,19 +854,27 @@ if __name__ == '__main__':
     # ---------------------------------------------------------
     ax2 = fig.add_subplot(spec_map)
     
-    #m = Basemap(projection='npstere',boundinglat=min_lat,lon_0=0, resolution='l' , round=False)
+    m = Basemap(projection='npstere',boundinglat=min_lat,lon_0=0, resolution='l' , round=True)
+
+    
+    """
     llrx = 2.47e+06
     llry = 6.0e+06
     urrx = 9.26e+06
     urry = 1.17e+07
+    
     m = Basemap(projection='ortho',lat_0=70,lon_0=0,resolution='l',ax=ax2) #,llcrnrx=llrx,llcrnry=llry,urcrnrx=urrx,urcrnry=urry)
+    """
+    
     #m = Basemap(projection='npstere',boundinglat=min_lat,lon_0=0, resolution='l' , round=False)
+    m.drawmapboundary(color='k', linewidth=1.0, fill_color=None)
     m.drawcoastlines(linewidth=0.25, zorder=1)
-    m.drawparallels(np.arange(90,-90,-5), linewidth = 0.25, zorder=1)
-    m.drawmeridians(np.arange(-180.,180.,30.), latmax=85, linewidth = 0.25, zorder=1)
+    m.drawparallels(np.arange(90,-90,-5), linewidth = 0.25, zorder=3)
+    #m.drawmeridians(np.arange(-180.,180.,30.), labels=[True,False,False,True],latmax=85, linewidth = 0.25, zorder=3)
+    m.drawmeridians(np.arange(0,360,45),labels=[1,1,1,1],linewidth=0.5, fontsize=10, dashes=[1,5],zorder=3)
     m.fillcontinents(color='0.9',lake_color='grey', zorder=1)
     m.bluemarble(scale=1, zorder=1)
-
+    stats.draw_round_frame(m,ax2)
     
     xptsT, yptsT = m(lons_icetype[0], lats_icetype[0])
     
@@ -898,9 +911,13 @@ if __name__ == '__main__':
     cs2_seg = m.plot(0, 0, linewidth=2 ,color=common_color,zorder=3)
     cs2_sat = m.plot(x[0], y[0], markersize=4,marker='8',color=cs2_color,zorder=5)
     
+    #ax2.legend([is2_full[0],cs2_full[0]], ["", ""],
+    #           handler_map={ is2_full[0]: HandlerLineImage('../images/icesat21.png'), cs2_full[0]: HandlerLineImage('../images/cryosat21.png')}, 
+    #           handlelength=2, labelspacing=0.1, fontsize=30, borderpad=0.2, loc="lower right", 
+    #           handletextpad=1.2, borderaxespad=0.15) #,loc="lower right")
     ax2.legend([is2_full[0],cs2_full[0]], ["", ""],
                handler_map={ is2_full[0]: HandlerLineImage('../images/icesat21.png'), cs2_full[0]: HandlerLineImage('../images/cryosat21.png')}, 
-               handlelength=2, labelspacing=0.1, fontsize=30, borderpad=0.2, loc="lower right", 
+               handlelength=2, labelspacing=0.1, fontsize=30, borderpad=0.2, loc="lower center", 
                handletextpad=1.2, borderaxespad=0.15) #,loc="lower right")
     #ax2.legend(loc="lower right")
 
@@ -908,10 +925,12 @@ if __name__ == '__main__':
     #-----------------------------------------------------------
     data_seg = list()
     for n in range(ndates):
-        data_seg.append(m.scatter(0,0,c=0,s=3,cmap='magma',vmin=snowlim[0],vmax=snowlim[1],zorder=4,alpha=0.8))
-    cb = fig.colorbar(data_seg[0], ax=ax2,extend='both',fraction=0.046, pad=0.04,shrink=0.80)
+        data_seg.append(m.scatter(0,0,c=0,s=8,cmap='magma',vmin=snowlim[0],vmax=snowlim[1],zorder=4,alpha=0.8))
+        
+    cbaxes = fig.add_axes([0.508, 0.28, 0.012, 0.5]) #[left,bottom,width,height]
+    cb = fig.colorbar(data_seg[0], ax=ax2,extend='both',fraction=0.046, pad=0.04,shrink=0.80,cax=cbaxes)
     cb.set_label(r'$\Delta$fb(La-Ku) [m]',fontsize=12)
-    
+    #cbaxes = fig.add_axes([0.85, 0.28, 0.02, 0.5]) 
     
     # add plots
     # ---------------------------------------------------------
@@ -938,8 +957,8 @@ if __name__ == '__main__':
     ax3.set_xlim([x_dist[0],x_dist[-1]]) #limites x_dist
     ax3.set_ylim(xylim) # limite param
     #ax3.set_ylim([min_y-1, max_y-1]) # limite param
-    ax3.set_xlabel("Along-track distance (km)",fontsize=10)
-    ax3.set_ylabel("Freeboard (m)",fontsize=10)
+    ax3.set_xlabel("Along-track distance [km]",fontsize=10)
+    ax3.set_ylabel("Freeboard [m]",fontsize=10)
     ax3.legend(loc="lower right")
     #ax3.set_ylabel("Freeboard (%s)" %(units),fontsize=10)
     #ax3.set_title("CS2:%s / IS2:%s (%s)" %(pname_cs2,pname_is2,units),fontsize=12)
@@ -953,9 +972,9 @@ if __name__ == '__main__':
     # annotations
     an_is2 = ax2.annotate('', xy=(0, 0), xycoords='data', xytext=(-500, -500), textcoords='data',fontsize=14,color='black',zorder=4,bbox=bbox_props)
     an_cs2 = ax2.annotate('', xy=(0, 0), xycoords='data', xytext=(-500, -500), textcoords='data',fontsize=14,color='black',zorder=4,bbox=bbox_props)
-    an_delay = ax2.annotate("", xy=(0.02, 0.90), xycoords='axes fraction', fontsize=11,bbox=bbox_props)
-    an_dist = ax2.annotate("", xy=(0.02, 0.85), xycoords='axes fraction', fontsize=11,bbox=bbox_props)
-    an_date = ax2.annotate("", xy=(0.02, 0.95), xycoords='axes fraction', fontsize=11,bbox=bbox_props)
+    an_delay = ax2.annotate("", xy=(0.4, 0.90), xycoords='axes fraction', fontsize=11,bbox=bbox_props)
+    an_dist = ax2.annotate("", xy=(0.4, 0.85), xycoords='axes fraction', fontsize=11,bbox=bbox_props)
+    an_date = ax2.annotate("", xy=(0.4, 0.95), xycoords='axes fraction', fontsize=11,bbox=bbox_props)
 
 
     # add scatter plots
@@ -999,8 +1018,8 @@ if __name__ == '__main__':
     yseg_data_is2 = list()
     x_dist_data_is2_line = list()
     is2_data_line = list()
-    x_dist_data_is2 = list()
-    is2_data = list()
+    #x_dist_data_is2 = list()
+    #is2_data = list()
     
     # CS2 data lists
     x_data_cs2 = list()
@@ -1090,14 +1109,14 @@ if __name__ == '__main__':
             cs2_data_plot_line[0].set_data(-1,-1)
 
             # clear curves IS2
-            is2_data.clear()
-            x_dist_data_is2.clear()
+            #is2_data.clear()
+            #x_dist_data_is2.clear()
             #is2_data_plot[0].set_data(0,0)
             
             # full line
             x_dist_data_is2_line.clear()
             is2_data_line.clear()
-            is2_data_plot_line[0].set_data(x_dist_data_is2,is2_data)
+            is2_data_plot_line[0].set_data(x_dist_data_is2_line,is2_data_line)
 
             # clear tracks
             #is2_full = m.plot(0, 0, linewidth=2,color=is2_color,zorder=3)
@@ -1173,8 +1192,8 @@ if __name__ == '__main__':
                 # associate mean data on interp coordinates !!
 
                 # get data
-                x_dist_data_is2.append(x_dist[N])
-                is2_data.append(x_dist[N])
+                #x_dist_data_is2.append(x_dist[N])
+                #is2_data.append(x_dist[N])
 
                 # plot data
                 #is2_data_plot[0].set_data(x_dist[N],data_array_is2[N])
@@ -1185,7 +1204,7 @@ if __name__ == '__main__':
                 #---------------
 
                 # get data
-                x_dist_data_is2_line.append(is2_mean_dist_line[N])
+                x_dist_data_is2_line.append(x_dist[N])
                 is2_data_line.append(is2_mean_data_line[N])
 
                 # plot data
@@ -1238,11 +1257,12 @@ if __name__ == '__main__':
                     # data points
                     #---------------
                     # get data
-                    x_dist_data_cs2[cs2_prod].append(cs2_mean_dist[cs2_prod][N])
+                    #x_dist_data_cs2[cs2_prod].append(cs2_mean_dist[cs2_prod][N])
+                    x_dist_data_cs2[cs2_prod].append(x_dist[N])
                     cs2_data[cs2_prod].append(cs2_data_pts[cs2_prod][N])
 
                     # plot data
-                    cs2_data_plot[ng].set_data(x_dist[N],data_cs2[cs2_prod][N])
+                    #cs2_data_plot[ng].set_data(x_dist_data_cs2[cs2_prod],data_cs2[cs2_prod][N])
 
 
                     # update common data
@@ -1272,7 +1292,7 @@ if __name__ == '__main__':
                 #---------------
 
                 # get data
-                x_dist_data_cs2_line.append(cs2_mean_dist[cs2_prod][N])
+                x_dist_data_cs2_line.append(x_dist[N])
                 cs2_data_line.append(cs2_mean_data_pts[N])
 
                 # plot data

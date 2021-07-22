@@ -100,7 +100,7 @@ list_midnight_dates = {
 flag_1hz = False # alignement in 1Hz or in 20Hz
 flag_IS2_mean = True # compute mean weighted value for each IS2 parameter (to get a same size 1D arrays between CS2 and IS2); if False: provide a matrix that contain each individual IS2 granules sorted by order of closest to beam centre
 
-MAX_DIST_OF_COLLOC_DATA= 5.5 # km
+MAX_DIST_OF_COLLOC_DATA= 5.5 #5.5 # km
 LAT_MIN = 55 # deg North
 
 # relevant if flag_IS2_mean is False
@@ -586,9 +586,23 @@ def get_collocated_data(date_list,file_dict,is2Beams):
         filename = file_dict['CS2'][cs2_gdr][date_str_cs2]
 
         # get coordinates
-        lat_c,lon_c,time_c,x_dist,valid_idx = cf.get_coord_from_netcdf(filename,data_desc_cs2,'01',LAT_MIN)
+        lat_c_full,lon_c_full,time_c,x_dist,valid_idx = cf.get_coord_from_netcdf(filename,data_desc_cs2,'01',LAT_MIN)
         #lat_c,lon_c = cf.interp_coord_1hz_to_20hz(lon_c_01,lat_c_01,time_c_01,time_c_20)
-            
+        
+        # Eliminating land and ocean from collocated tracks
+        #---------------------------
+        lons,lats,OSISAF_ice_type = cf.get_osisaf_ice_type(date.year,date.month,date.day,'01')
+        OSISAF_ice_type[OSISAF_ice_type.mask] = 1
+        icetype_alongtrack = cf.grid_to_track(OSISAF_ice_type,lons,lats,lon_c_full,lat_c_full)
+        flag_change_value = (icetype_alongtrack[:-1] != icetype_alongtrack[1:])
+
+        first_idx = np.argmax(flag_change_value) if icetype_alongtrack[0]==1 else 0
+        last_idx  = flag_change_value.size - np.argmax(flag_change_value[::-1]) if icetype_alongtrack[0]==1 else flag_change_value.size
+        
+        lat_c,lon_c = lat_c_full[np.arange(first_idx,last_idx)],lon_c_full[np.arange(first_idx,last_idx)]
+
+        #--------------------------
+
         dist_btw_coord = cf.dist_btw_two_coords(lat_c[:-1],lat_c[1:],lon_c[:-1],lon_c[1:])
         idx_gaps = np.argwhere(dist_btw_coord > 2*np.mean(dist_btw_coord))
        
@@ -599,6 +613,7 @@ def get_collocated_data(date_list,file_dict,is2Beams):
 
         first_coord = list()
         last_coord = list()
+        
 
         print("Associating tracks\n-----------------------")
         for ngdr,is2_gdr in enumerate(is2_gdrs):
@@ -637,16 +652,11 @@ def get_collocated_data(date_list,file_dict,is2Beams):
                 coord_cart_cs2 = np.vstack((x_c,y_c,z_c)).T
                 coord_cart_is2 = np.vstack((x_i,y_i,z_i)).T
                 
+                    
+                # Find closest match of IS2 in CS2 track
+                tree = scipy.spatial.cKDTree(coord_cart_cs2)
+                distance,closest_ind = tree.query(coord_cart_is2,1)
                 
-                if beam != 'swath':
-                    # Find closest match of IS2 in CS2 track
-                    tree = scipy.spatial.cKDTree(coord_cart_cs2)
-                    distance,closest_ind = tree.query(coord_cart_is2,1)
-                else:
-                    # Find closest match of CS2 in IS2 swath
-                    tree = scipy.spatial.cKDTree(coord_cart_is2)
-                    distance,closest_ind = tree.query(coord_cart_cs2,1)
-
                 # Test if closest match algo work properly
                 increase_ind = all(i <= j for i, j in zip(closest_ind, closest_ind[1:]))
                 if not increase_ind:
@@ -660,14 +670,6 @@ def get_collocated_data(date_list,file_dict,is2Beams):
                 delta_ref_time = (ref_date['IS2'] - ref_date['CS2']).total_seconds()
                 delta_t_sec = (time_i + delta_ref_time - time_c[closest_ind])
                 delta_t_min = delta_t_sec/60
-
-                # show data on map
-                #---------------------------------
-                #delta_t_str = np.array([str(timedelta(seconds=s)) for s in delta_t_sec.reshape((delta_t_sec.shape[0],))])
-                #print(beam)
-                #coord_list = [coord_polar_cs2.T,coord_polar_is2.T]
-                #name_list = ['CS2','IS2']
-                #cf.plot_tracks_map(coord_list,name_list)
                 
                 # Select collocated data
                 flag_colloc = distance < MAX_DIST_OF_COLLOC_DATA
@@ -692,34 +694,14 @@ def get_collocated_data(date_list,file_dict,is2Beams):
 
                 print("Writing data in dict_common_data")
                 
-                # alignement of IS2 tracks: VERY LONG DO IT ON HAL OR COMMENT
-                """
-                if ngdr==0:
-                    coord_ref = np.vstack((lat_i,lon_i)).T
-                    tree = scipy.spatial.KDTree(coord_ref)
-                    dict_common_data[is2_gdr][beam]['tree'] = tree
-                else:
-                    coord_i = np.vstack((lat_i,lon_i)).T
-                    distance,idx_in_ref_is2 = dict_common_data[is2_gdrs[0]][beam]['tree'].query(coord_i,1)
-                   
-                    selected_idx = np.argwhere(distance < 0.01)
-                    dict_common_data[is2_gdr][beam]['selected_idx'] = selected_idx
-                    dict_common_data[is2_gdr][beam]['ref_idx'] = idx_in_ref_is2[selected_idx]
-                """
-                    
 
-                # Store datax
+                # Store data
                 dict_common_data[is2_gdr][beam]['idx_is2'] = idx_is2
                 dict_common_data[is2_gdr][beam]['idx_cs2'] = np.arange(idx_first_pt_cs2,idx_last_pt_cs2+1)
                 dict_common_data[is2_gdr][beam]['dist'] = distance[flag_colloc]
                 dict_common_data[is2_gdr][beam]['delay'] = delta_t_min[flag_colloc]
-
-                # XXX to test when swath data evalable
-                if beam != 'swath':
-                    dict_common_data[is2_gdr][beam]['cs2_idx_in_is2'] = closest_ind[flag_colloc]
-                else:
-                    dict_common_data[is2_gdr][beam]['swath_idx_in_cs2'] = closest_ind[flag_colloc]
-
+                dict_common_data[is2_gdr][beam]['cs2_idx_in_is2'] = closest_ind[flag_colloc]
+                
 
                 print("Mean time difference: %i min" %(np.mean(delta_t_min[flag_colloc])))
                 print("Mean distance: %i km" %(np.mean(distance[flag_colloc])))
@@ -787,8 +769,8 @@ def get_collocated_data(date_list,file_dict,is2Beams):
 
           
         # Save first and last coordinates
-        dict_common_data['ref_lon_full'] = lon_c
-        dict_common_data['ref_lat_full'] = lat_c
+        dict_common_data['ref_lon_full'] = lon_c_full
+        dict_common_data['ref_lat_full'] = lat_c_full
         #dict_common_data['coord_first_pt_cs2'] = first_coord[0]
         #dict_common_data['coord_last_pt_cs2'] = last_coord[0]
                 
