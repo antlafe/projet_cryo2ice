@@ -114,7 +114,7 @@ xylim = [-0.3, 0.6] # scatter limits
 snowlim = [0,0.4]
 
 
-arr_step_is2 = 15
+arr_step_is2 = 1 # for swath # 15
 arr_step_cs2 = 1
 
 ###########################################
@@ -184,10 +184,33 @@ def interp_coordinates(lat,lon,delta_d,arr_step):
     lon = lon[::arr_step] # if bug increase that value
     #lon[lon <0] = lon[lon <0] + 360
     distance = np.nancumsum(cf.dist_btw_two_coords(lat[1:],lat[:-1],lon[1:],lon[:-1]))
-    max_distance = distance[-1]
+    
+    max_distance = distance[-1]   
     distance = np.insert(distance, 0, 0)/max_distance
     alpha = np.linspace(0, 1, int(max_distance/delta_d))
     points =  np.array([lat.tolist(),lon.tolist()]).T
+    points[points==None] = np.nan
+    interpolator =  interp1d(distance, points, kind='quadratic', axis=0)
+    interp_pts = interpolator(alpha)
+    lat = interp_pts[:,0]; lon = interp_pts[:,1]
+    if any(np.abs(np.diff(lon)) > 300) or any(lon < 0): lon[lon < 0] = lon[lon < 0] + 360
+    return lat,lon
+
+
+def interp_coordinate_swath(lat,lon):
+
+    distbtwpts= 10 #km
+    if any(np.abs(np.diff(lon)) > 20): lon[lon > 180] = lon[lon > 180] - 360   
+    distance=np.nancumsum(np.ones(lat.shape)[:-1]*distbtwpts)
+
+
+    mask_coords = lat.mask
+    
+    max_distance = distance[-1]   
+    distance = np.insert(distance, 0, 0)/max_distance
+    alpha = np.linspace(0, 1, int(max_distance/delta_d))
+    points =  np.array([lat.tolist(),lon.tolist()]).T
+    points[points==None] = np.nan
     interpolator =  interp1d(distance, points, kind='quadratic', axis=0)
     interp_pts = interpolator(alpha)
     lat = interp_pts[:,0]; lon = interp_pts[:,1]
@@ -435,8 +458,20 @@ if __name__ == '__main__':
         is2_full_lons = list(np.array(data_dict['IS2']['swath'][beam_to_show]['lon'],dtype=object)[idx_dates])
 
         # Get full coordinates
-        ref_seg_lats =cs2_full_lats = list(np.array(data_dict['CS2']['swath'][beam_to_show]['lat'],dtype=object)[idx_dates])
-        ref_seg_lons = cs2_full_lons = list(np.array(data_dict['CS2']['swath'][beam_to_show]['lon'],dtype=object)[idx_dates])
+        lat_swath = list(np.array(data_dict['CS2']['swath'][beam_to_show]['lat'],dtype=object)[idx_dates])
+        lon_swath = list(np.array(data_dict['CS2']['swath'][beam_to_show]['lat'],dtype=object)[idx_dates])
+        
+        ref_seg_lats = list()
+        ref_seg_lons = list()
+        mask_list = list()
+        for n in range(ndates):
+            ref_seg_lats.append(lat_swath[n][~lat_swath[n].mask])
+            ref_seg_lons.append(lon_swath[n][~lat_swath[n].mask])
+            mask_list.append(~lat_swath[n].mask)
+            
+        cs2_full_lats = ref_seg_lats
+        cs2_full_lons = ref_seg_lons
+        print("str")
         
     else:
         # Get full lat/lon
@@ -484,8 +519,7 @@ if __name__ == '__main__':
     is2_full_lats_interp = list() # coordinates to display
     is2_full_lons_interp = list()
     x_dist_is2 = list()
-    if not flag_swath:
-        for n in range(ndates):
+    for n in range(ndates):
             # eliminates duplicates (To do)
             #lat = is2_full_lats[n]
             #lon = is2_full_lons[n]
@@ -494,9 +528,6 @@ if __name__ == '__main__':
             lat_interp,lon_interp = interp_coordinates(is2_full_lats[n],is2_full_lons[n],dist_frame,arr_step_is2)
             is2_full_lats_interp.append(lat_interp)
             is2_full_lons_interp.append(lon_interp)
-    else:
-        is2_full_lats_interp = ref_seg_lats
-        is2_full_lons_interp =ref_seg_lons
     
     # compute mean distance
     #mean_delta_dist = [np.mean(d) for d in dist[b]]
@@ -539,7 +570,7 @@ if __name__ == '__main__':
 
         for cs2_prod in gdrs_cs2:
             if flag_swath:
-                data_cs2[cs2_prod].append(data_cs2_b[beam_to_show])
+                data_cs2[cs2_prod] = data_cs2_b[beam_to_show]
             else:
                data_array_cs2 = ma.masked_invalid(data_dict['CS2'][cs2_prod][pname_cs2][n])
                data_cs2[cs2_prod].append(data_array_cs2) # [valid_idx]) 
@@ -567,14 +598,15 @@ if __name__ == '__main__':
     cs2_full_lats_interp = list()
     cs2_full_lons_interp = list()
     x_dist_cs2 = list()
-    if not flag_swath:
-        for n in range(ndates):
-            lat_interp,lon_interp = interp_coordinates(cs2_full_lats[n],cs2_full_lons[n],dist_frame,arr_step_cs2)
-            cs2_full_lats_interp.append(lat_interp)
-            cs2_full_lons_interp.append(lon_interp)
-    else:
-        cs2_full_lats_interp = ref_seg_lats
-        cs2_full_lons_interp =ref_seg_lons
+    #if flag_swath:
+        #if not flag_swath:
+    for n in range(ndates):
+        lat_interp,lon_interp = interp_coordinates(is2_full_lats[n],is2_full_lons[n],dist_frame,arr_step_cs2)
+        cs2_full_lats_interp.append(lat_interp)
+        cs2_full_lons_interp.append(lon_interp)
+    #else:
+    #    cs2_full_lats_interp = cs2_full_lats
+    #    cs2_full_lons_interp = cs2_full_lons
          
     
     #--------------------------------------------------
@@ -1338,8 +1370,8 @@ if __name__ == '__main__':
 
             print('IS2',ntrack,i)
             n_is2 = i -  is2_start_index[ntrack]
-            x,y = m(ref_lons_interp[ntrack][n_is2],ref_lats_interp[ntrack][n_is2])
-            #x, y = m(is2_full_lons_interp[ntrack][n_is2],is2_full_lats_interp[ntrack][n_is2])
+            #x,y = m(ref_lons_interp[ntrack][n_is2],ref_lats_interp[ntrack][n_is2])
+            x, y = m(is2_full_lons_interp[ntrack][n_is2],is2_full_lats_interp[ntrack][n_is2])
             x,y = round(x, 0),round(y, 0)
             x_data_is2.append(x)
             y_data_is2.append(y)
