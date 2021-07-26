@@ -587,19 +587,27 @@ def get_collocated_data(date_list,file_dict,is2Beams):
 
         # get coordinates
         lat_c_full,lon_c_full,time_c,x_dist,valid_idx = cf.get_coord_from_netcdf(filename,data_desc_cs2,'01',LAT_MIN)
+        
+        
         #lat_c,lon_c = cf.interp_coord_1hz_to_20hz(lon_c_01,lat_c_01,time_c_01,time_c_20)
         
         # Eliminating land and ocean from collocated tracks
         #---------------------------
         lons,lats,OSISAF_ice_type = cf.get_osisaf_ice_type(date.year,date.month,date.day,'01')
         OSISAF_ice_type[OSISAF_ice_type.mask] = 1
+        
         icetype_alongtrack = cf.grid_to_track(OSISAF_ice_type,lons,lats,lon_c_full,lat_c_full)
         flag_change_value = (icetype_alongtrack[:-1] != icetype_alongtrack[1:])
-
+        
         first_idx = np.argmax(flag_change_value) if icetype_alongtrack[0]==1 else 0
         last_idx  = flag_change_value.size - np.argmax(flag_change_value[::-1]) if icetype_alongtrack[0]==1 else flag_change_value.size
         
         lat_c,lon_c = lat_c_full[np.arange(first_idx,last_idx)],lon_c_full[np.arange(first_idx,last_idx)]
+
+        plt.plot(lat_c_full,lon_c_full,'o')
+        plt.plot(lat_c,lon_c,'*')
+        plt.show()
+        
 
         #--------------------------
 
@@ -636,10 +644,10 @@ def get_collocated_data(date_list,file_dict,is2Beams):
                 lat_i,lon_i,time_i,x_dist,valid_idx = cf.get_coord_from_hf5(filename,data_desc_is2,'01',LAT_MIN)
 
                 # check collocation
-                #plt.plot(lat_i,lon_i,'*')
-                #plt.plot(lat_c_20,lon_c_20,'o')
+                plt.plot(lat_i,lon_i,'*')
+                plt.plot(lat_c,lon_c,'o')
                 #plt.plot(lat_c_01,lon_c_01,'.')
-                #plt.show()
+                plt.show()
                 
                 # to avoid killing process for wrong files
                 if lat_i is None: continue
@@ -1455,11 +1463,12 @@ def find_xings2_is2(date_list,file_dict,file_dict_colloc,common_data_list,is2Bea
                         data_desc = is2_dict.init_dict(gdr,beamName[beam],'granules')
 
                         # initiation array of lists for specific params
-                        if nfile==1:
+                        if nfile==1 and n==0:
                             list_p = [p for p in data_desc.keys()] + param_list
                             for p in data_desc.keys():
                                 if p not in param_list:
-                                    data_list[p] = np.frompyfunc(list, 0, 1)(np.empty((ref_size,), dtype=object))
+                                    data_list[p] = np.frompyfunc(list, 0, 1)(np.empty((ndates,), dtype=object))
+                                    #data_list[p] = np.frompyfunc(list, 0, 1)(np.empty((ref_size,), dtype=object))
                     
 
                         lat,lon,time,x_dist,valid_idx = cf.get_coord_from_hf5(filename,data_desc,'01',LAT_MIN)

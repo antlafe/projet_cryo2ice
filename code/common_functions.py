@@ -134,6 +134,8 @@ def grid_to_track(data_grid,lon_grid,lat_grid,lon,lat):
     dist, indexes = mytree.query(points)
 
     data_al = data_flat[indexes]
+
+    if any(np.abs(np.diff(lon)) > 300) or any(lon < 0): lon[lon < 0] = lon[lon < 0] + 360
     
     return data_al
 

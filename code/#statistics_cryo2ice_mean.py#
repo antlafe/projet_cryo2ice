@@ -309,6 +309,8 @@ if __name__ == '__main__':
 
         print("stop")
         radar_fb = data_dict['CS2']['xings']['ESA_BD_GDR']['radar_fb']
+
+        laser_fb = data_dict['IS2']['xings']['ATL10']['laser_fb']
         
 
         
