@@ -184,6 +184,7 @@ def get_sat_filepattern(satName,prodName,date_str,d_str_folder):
     
     """
     provides file pattern and path for each SAT + GDR
+    Rq: could be done using a dictionnary
     """
 
     path = '%s/%s/%s/' %(satName,prodName,d_str_folder)
@@ -558,7 +559,7 @@ def get_collocated_data(date_list,file_dict,is2Beams):
     Args:
     date_list list(datetime) : list of required datetime objects
     file_dict dict()         : dictionnary of found files
-    
+    is2Beams                 : list of required IS2 beams from ['b1','b2','b3']
     """
 
 
@@ -604,10 +605,11 @@ def get_collocated_data(date_list,file_dict,is2Beams):
         
         lat_c,lon_c = lat_c_full[np.arange(first_idx,last_idx)],lon_c_full[np.arange(first_idx,last_idx)]
 
+        """
         plt.plot(lat_c_full,lon_c_full,'o')
         plt.plot(lat_c,lon_c,'*')
         plt.show()
-        
+        """
 
         #--------------------------
 
@@ -644,10 +646,10 @@ def get_collocated_data(date_list,file_dict,is2Beams):
                 lat_i,lon_i,time_i,x_dist,valid_idx = cf.get_coord_from_hf5(filename,data_desc_is2,'01',LAT_MIN)
 
                 # check collocation
-                plt.plot(lat_i,lon_i,'*')
-                plt.plot(lat_c,lon_c,'o')
+                #plt.plot(lat_i,lon_i,'*')
+                #plt.plot(lat_c,lon_c,'o')
                 #plt.plot(lat_c_01,lon_c_01,'.')
-                plt.show()
+                #plt.show()
                 
                 # to avoid killing process for wrong files
                 if lat_i is None: continue
@@ -751,24 +753,7 @@ def get_collocated_data(date_list,file_dict,is2Beams):
             
             # For each beam apply selection
             for beam in beamName.keys():
-                #flag_common_track = np.logical_and(dict_common_data[is2_gdr][beam]['cs2_idx_in_is2']>=cs2_inter[0],dict_common_data[is2_gdr][beam]['cs2_idx_in_is2']<=cs2_inter[-1])
-                #dict_common_data[is2_gdr][beam]['cs2_idx_in_is2'] = dict_common_data[is2_gdr][beam]['cs2_idx_in_is2'] #[flag_common_track]
-                dict_common_data[is2_gdr][beam]['ref_idx'] = dict_common_data[is2_gdr][beam]['cs2_idx_in_is2'] - cs2_union[0]# - cs2_inter[0]
-                #print(beam,dict_common_data[is2_gdr][beam]['ref_idx'][0])
-                #dict_common_data[is2_gdr][beam]['idx_is2'] = dict_common_data[is2_gdr][beam]['idx_is2']#[flag_common_track]
-                #dict_common_data[is2_gdr][beam]['idx_cs2'] = np.array(cs2_inter)
-                #dict_common_data[is2_gdr][beam]['idx_cs2'] = np.array(cs2_union)
-                #dict_common_data[is2_gdr][beam]['dist'] = dict_common_data[is2_gdr][beam]['dist'] #[flag_common_track]
-                #dict_common_data[is2_gdr][beam]['delay'] = dict_common_data[is2_gdr][beam]['delay'] #[flag_common_track]
-
-                
-        # check if ATL07 and ATL10 have same first coordinates for collocation section
-        """
-        if any(first_coord[0] != first_coord[-1]) or any(last_coord[0] != last_coord[-1]):
-            print("\n\nWARNING: ATL07 and ATL10 tracks from %s don't have the same bounding coordinates for the collocated section with CS2" %(date_str))
-            print("Check (lat,lon) differences between ATL07 and ATL10")
-            sys.exit()
-        """
+                dict_common_data[is2_gdr][beam]['ref_idx'] = dict_common_data[is2_gdr][beam]['cs2_idx_in_is2'] - cs2_union[0]
 
         print("\nShowing tracks on map")
         coord_list = [coord_polar_cs2.T,coord_polar_is2[:,flag_colloc].T]
@@ -778,13 +763,9 @@ def get_collocated_data(date_list,file_dict,is2Beams):
           
         # Save first and last coordinates
         dict_common_data['ref_lon_full'] = lon_c_full
-        dict_common_data['ref_lat_full'] = lat_c_full
-        #dict_common_data['coord_first_pt_cs2'] = first_coord[0]
-        #dict_common_data['coord_last_pt_cs2'] = last_coord[0]
-                
+        dict_common_data['ref_lat_full'] = lat_c_full     
        
         common_data_list.append(dict_common_data)
-        
 
             
     return common_data_list
@@ -796,6 +777,16 @@ def get_collocated_data(date_list,file_dict,is2Beams):
 
 
 def concatenate_cs2_data(date_list,file_dict,common_data_list):
+
+    """
+    Align various CRYOSAT-2 products (AWI,GPOD...etc) on reference track (usually ESA BASELINE-D official product) defined in function get_collocated_data 
+
+
+    Args:
+    date_list list(datetime) : list of required datetime objects
+    file_dict dict()         : dictionnary of found files
+    common_data_list         : daily list of common_track information (output of common_data_list)
+    """
 
     # Init CS2 data dictionnary
     cs2_data_dict = dict()
@@ -924,10 +915,6 @@ def concatenate_cs2_data(date_list,file_dict,common_data_list):
                 for p in list_param: cs2_data_dict[gdr][p] = list()
 
             # Adding new track data to list
-            #cs2_data_dict[gdr]['latfull'].append(lat)
-            #cs2_data_dict[gdr]['lonfull'].append(lon)
-            #cs2_data_dict[gdr]['lat'].append(data_lat)
-            #cs2_data_dict[gdr]['lon'].append(data_lon)
             cs2_data_dict[gdr]['time'].append(data_time)
             cs2_data_dict[gdr]['id'].append(data_id)
             cs2_data_dict[gdr]['ref_idx'].append(data_ref_idx)
@@ -1003,16 +990,10 @@ def concatenate_cs2_data(date_list,file_dict,common_data_list):
                     elif not flag_1hz and freq=='lf':
                         
                         data_lr_list = [param]
-                        #from ct_interpol_hr import ctoh_interpol_hr
-                        #data_hr_list,time_hr =  ctoh_interpol_hr(time_lf,data_lr_list,time_hr=time_hf)
+                        # interpolate
                         param_hf = cf.interp_1hz_to_20hz(param,time_lf,time_hf)
                         
                         data_param[ref_idx] = param_hf[selected_idx]
-
-                        #plt.plot(param_hf)
-                        #plt.plot(param)
-                        #plt.show()
-                        # interpolate
                         
                     # Other cases: 20hz in 20hz/ 1hz in 1hz
                     else:
@@ -1027,6 +1008,7 @@ def concatenate_cs2_data(date_list,file_dict,common_data_list):
     
     return cs2_data_dict,flag_data_dict
 
+
 #---------------------------------
 # Find crossings with other missions
 #---------------------------------
@@ -1034,7 +1016,20 @@ def concatenate_cs2_data(date_list,file_dict,common_data_list):
 
 # Finding crossings and collocated data of other sats
 def find_xings2_sat(satName,date_list,file_dict,common_data_list):
+
+    """
+    Find cross-overs between required satellite and collocated tracks trajectories. It takes mean value arround cross-over point.
+
+
+    Args:
+    satName                  : Name of the satellite [CS2, SARAL, S3]
+    date_list list(datetime) : list of required datetime objects
+    file_dict dict()         : dictionnary of found files
+    common_data_list         : daily list of common_track information (output of common_data_list)
+    """
+
     
+
     # Init CS2 data dictionnary
     data_dict = dict()
     data_param = dict()
@@ -1173,6 +1168,17 @@ def find_xings2_sat(satName,date_list,file_dict,common_data_list):
 
 # Finding crossings and collocated data of other sats
 def find_xings_sat(satName,date_list,file_dict,common_data_list):
+    
+    """
+    Find cross-overs between required satellite and collocated tracks trajectories. It associates one by one measurements arround cross-over point using kdtree algorithm.
+
+
+    Args:
+    satName                  : Name of the satellite [CS2, SARAL, S3]
+    date_list list(datetime) : list of required datetime objects
+    file_dict dict()         : dictionnary of found files
+    common_data_list         : daily list of common_track information (output of common_data_list)
+    """
     
     # Init CS2 data dictionnary
     data_dict = dict()
@@ -1384,6 +1390,17 @@ def find_xings_sat(satName,date_list,file_dict,common_data_list):
 
 # Finding crossings and collocated data of IS2
 def find_xings2_is2(date_list,file_dict,file_dict_colloc,common_data_list,is2Beams):
+
+    """
+    Find cross-overs between IS2 and collocated tracks trajectories. It takes mean value arround cross-over point.
+
+
+    Args:
+    date_list list(datetime) : list of required datetime objects
+    file_dict dict()         : dictionnary of found files
+    common_data_list         : daily list of common_track information (output of common_data_list)
+    is2Beams                 : list of required IS2 beams from ['b1','b2','b3'] 
+    """
     
     # Init CS2 data dictionnary
     data_dict = dict()
@@ -1526,6 +1543,17 @@ def find_xings2_is2(date_list,file_dict,file_dict_colloc,common_data_list,is2Bea
         
 # Finding crossings and collocated data of IS2
 def find_xings_is2(date_list,file_dict,file_dict_colloc,common_data_list,is2Beams):
+
+    """
+    Finds cross-overs between IS2 collocated tracks trajectories. It associates one by one measurements arround cross-over point using kdtree algorithm.
+
+
+    Args:
+    date_list list(datetime) : list of required datetime objects
+    file_dict dict()         : dictionnary of found files
+    common_data_list         : daily list of common_track information (output of common_data_list)
+    is2Beams                 : list of required IS2 beams from ['b1','b2','b3'] 
+    """
     
     # Init CS2 data dictionnary
     data_dict = dict()
@@ -1628,15 +1656,6 @@ def find_xings_is2(date_list,file_dict,file_dict_colloc,common_data_list,is2Beam
                             print("No intersection found for this track")
                             continue
 
-                        # test
-                         
-                        #plt.plot(lat,lon,'.')
-                        #plt.plot(lat_ref,lon_ref,'*')
-                        #plt.plot(lat_inter, lon_inter,'*')
-                        #plt.plot(lat_sub[idx_is2].flatten(),lon_sub[idx_is2].flatten(),'.')
-                        #plt.plot(new_lat, new_lon,'*')
-                        #plt.show()
-                         
                         
                         # check if intersection is correct
                         dist1 = cf.dist_btw_two_coords(lat_inter,lat_sub[idx_is2],lon_inter,lon_sub[idx_is2])
@@ -1739,6 +1758,19 @@ def find_xings_is2(date_list,file_dict,file_dict_colloc,common_data_list,is2Beam
 
 
 def concatenate_is2_data(date_list,file_dict,common_data_list,is2Beams):
+
+    """
+    Align IceSat-2 data products (ATL10,ATL07 ...etc) on reference track (usually ESA BASELINE-D official product) defined in function get_collocated_data 
+
+
+    Args:
+    date_list list(datetime) : list of required datetime objects
+    file_dict dict()         : dictionnary of found files
+    common_data_list         : daily list of common_track information (output of common_data_list)
+    is2Beams                 : list of required IS2 beams from ['b1','b2','b3']
+    """
+
+   
 
     # Init IS2 data dictionnary
     is2_data_dict = dict()
@@ -1858,6 +1890,19 @@ def concatenate_is2_data(date_list,file_dict,common_data_list,is2Beams):
 
 
 def get_beamwise_mean(date_list,ref_data_dict,is2_data_dict,is2_info_dict,is2Beams): #,common_data_list):
+
+    """
+    Compute weighted mean and std of IS2 data points sorted in each CS2 reference beams. The weighted coefficients are (1) the granules size (IS2 150 photons aggregates) and (2) the gaussian weight based on the distance of the IS2 granule from the CS2 beam center.
+
+    The output is a array of IS2 data the same size as CS2 reference track.
+
+    Args:
+    date_list list(datetime) : list of required datetime objects
+    file_dict dict()         : dictionnary of found files
+    common_data_list         : daily list of common_track information (output of common_data_list)
+    is2Beams                 : list of required IS2 beams from ['b1','b2','b3'] 
+
+    """
 
 
     print("\n\nComputing mean IS2 values for each CS2 beams \n----------------------------")
@@ -2031,27 +2076,26 @@ def get_beamwise_mean(date_list,ref_data_dict,is2_data_dict,is2_info_dict,is2Bea
 
 def sort_IS2_in_CS2_beam(date_list,ref_data_dict,is2_data_dict,is2_info_dict,common_data_list):
 
-    #n_cs2_beam = np.concatenate(ref_data_dict['lat'], axis=0 ).size
-    #data_desc_ATL07 = is2_dict.init_dict('ATL07','gt1r') # same for all beams
-    #data_desc_ATL10 = is2_dict.init_dict('ATL10','gt1r')
+    """
+    sort IS2 granule points associated with each CS2 beam in matrix where each columns correspond to the beams of CS2 reference track. The rows of the matrix are sorted by order of smallest distance to CS2 beam center.
 
+     Args:
+    date_list list(datetime) : list of required datetime objects
+    file_dict dict()         : dictionnary of found files
+    ref_data_dict            : dictionnary of reference data (outpout of concatenate_cs2 function)
+    common_data_list         : daily list of common_track information (output of common_data_list)
+    is2Beams                 : list of required IS2 beams from ['b1','b2','b3'] 
+
+    """
     is2_data_list = dict()
     is2_list_param = dict()
-    # Should I had parameters to ATL10
-    #list_param_all = ['beam','id','ref_idx','dist','delay'] + [pname for pname in data_desc_ATL07.keys()]
-    #list_param_ATL07 = list_params_all + [pname for pname in data_desc_ATL07.keys()] 
-    #list_param_ATL07 = [pname for pname in data_desc_ATL07.keys() if pname not in ['time','lat','lon']] 
-    #list_param_ATL10 = list_params_all +[pname for pname in data_desc_ATL10.keys()]
-
+    
     list_params_coords = ['lat','lon','time']
     list_params_all = ['beam','ref_idx','dist','delay','weight'] #id
     for gdr in is2_gdrs:
         data_desc_is2 = is2_dict.init_dict(gdr,'gt1r','granules')
         is2_list_param[gdr] = list_params_all + [pname for pname in data_desc_is2.keys()]
-    
-    #is2_list_param['ATL07'] = list_params_all + [pname for pname in data_desc_ATL07.keys()]
-    #is2_list_param['ATL10'] =  ['dist','delay'] + [pname for pname in data_desc_ATL10.keys()] #list_params_all
-     #is2_data_dict = dict()
+        
 
     # initiate matrix lists
     for n,date in enumerate(date_list):
@@ -2068,13 +2112,6 @@ def sort_IS2_in_CS2_beam(date_list,ref_data_dict,is2_data_dict,is2_info_dict,com
         for gdr in is2_gdrs:
             for p in is2_list_param[gdr]:
                 is2_data_dict[gdr][p].append(ma.masked_array(np.zeros((N_IS2PTS_IN_CS2BEAMS,n_cs2_beam)),mask=np.ones((N_IS2PTS_IN_CS2BEAMS,n_cs2_beam)),dtype=np.float64))
-                
-        """
-        for p in is2_list_param['ATL10']:
-            #dtype='str' if p=='beam' else np.float64
-            dtype = np.float64
-            is2_data_dict['ATL10'][p].append(ma.masked_array(np.zeros((N_IS2PTS_IN_CS2BEAMS,n_cs2_beam)),mask=np.ones((N_IS2PTS_IN_CS2BEAMS,n_cs2_beam)),dtype=dtype))
-        """
 
     for n,date in enumerate(date_list):
          for gdr in is2_gdrs:
@@ -2098,9 +2135,6 @@ def sort_IS2_in_CS2_beam(date_list,ref_data_dict,is2_data_dict,is2_info_dict,com
             if ref_idx in common_data_list[n]['idx_gaps'] or ref_idx in [np.min(ref_idx_list),np.max(ref_idx_list)]:
                 continue
             
-            #for p in list_param_ATL07: data_list[p] = list();
-            #for p in list_param_ATL10: ATL10_data_list[p] = list();
-            # for both ATL07 and ATL10 data
             for gdr in is2_gdrs:
 
                 for p in is2_list_param[gdr]: is2_data_list[p] = list();
@@ -2166,6 +2200,11 @@ def sort_IS2_in_CS2_beam(date_list,ref_data_dict,is2_data_dict,is2_info_dict,com
 
 
 def print_status_params(cs2_info_dict,is2_info_dict,outpath,filename):
+
+    """
+    print parameter of sorted data for each collocated tracks
+
+    """
      
     for n,date in enumerate(date_list):
         
@@ -2434,43 +2473,10 @@ if __name__ == '__main__':
         else:
             data_dict[sat]['xings'] = find_xings2_sat(sat,date_list,file_dict_all[sat],common_data_list)
 
-    print("stop")
-    """
-    # apply weighting coefficients
-    print("Applying weighting coefficients to xings params")
-    for sat in other_missions.keys():
-        print("%s \n#------" %(sat))
-        for p in data_dict[sat]['xings'].keys():
-            if p in ['lat','lon','time','delay','dist','beam','weight']:
-                print("%s" %(p))
-                weight1 = data_dict[sat]['xings']['weight']
-                weight2 = data_dict[sat]['xings']['Lseg']
-                val = data_dict[sat]['xings'][p]
-                mean, std = get_weighted_stats(weight1,weight2,val)
-                data_dict[sat]['xings'][p+'_mean'] = mean
-                data_dict[sat]['xings'][p+'_std'] = std
-
-                # empty param matrix
-                data_dict[sat]['xings'][p] = {}
-                
-        for p in data_dict[sat]['xings'].keys():
-            
-    """
+    
     # add dates
     data_dict['dates'] = date_list
-
-
     
-    # testing of high number of associated values from #ref
-    """
-    ref_idx = 5;ndate=0
-    plt.plot(data_dict['IS2']['ATL07']['gt1r']['lat'][ndate], data_dict['IS2']['ATL07']['gt1r']['lon'][ndate],'.')
-    plt.plot(data_dict['IS2']['ATL07']['gt2r']['lat'][ndate], data_dict['IS2']['ATL07']['gt2r']['lon'][ndate],'.')
-    plt.plot(data_dict['IS2']['ATL07']['gt3r']['lat'][ndate], data_dict['IS2']['ATL07']['gt3r']['lon'][ndate],'.')
-    plt.plot(data_dict['CS2'][REF_GDR]['latref'][ndate], data_dict['CS2'][REF_GDR]['lonref'][ndate],'*')
-    plt.plot(data_dict['CS2'][REF_GDR]['latref'][ndate][ref_idx], data_dict['CS2'][REF_GDR]['lonref'][ndate][ref_idx],'*')
-    plt.show()
-    """
 
     # merge dictionnaries
     info_dict = dict()

@@ -1362,32 +1362,62 @@ def get_ASD(pixsize,datestr):
     return lat,lon,snow,snow_unc
 
 
-def get_W99(datestr):
+def get_ASD(pixsize,datestr):
     
     #datestr = date.strftime('%Y%m%d')
-    path_data = path_dict.PATH_DICT['PATH_DATA']+'W99/'
-    filepattern =path_data +'snow_w99_*%s.mat' %(datestr[-2:])
+    path_data = path_dict.PATH_DICT['PATH_DATA']+'ASD/'
+    filepattern =path_data +'*w%i*_%s.nc' %(pixsize,datestr)
     filename = glob.glob(filepattern)
-    if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
+    if len(filename)==0:
+        print("\n%s: No found" %(filepattern))
+        return None,None,None,None
     else:
         filename = filename[0]
-        print("\nReading W99 file %s" %(filename))
+        print("\nReading ASD file %s" %(filename))
 
-    import scipy.io
-    mat = scipy.io.loadmat(filename)
+    try:
+        f = nc.Dataset(filename)
+    except:
+        sys.exit("Cannot open file %s" % filename)
 
     # Read params
-    lat = mat['lat'][:]
-    lon = mat['lon'][:]
+    lat = f.variables['latitude'][:]
+    lon = f.variables['longitude'][:]
+    snow = np.squeeze(f.variables['snow_depth'][:])
+    snow_unc = np.squeeze(f.variables['snow_depth_unc'][:])
 
-    snow_w99 = mat['w99'][:]
+    return lat,lon,snow,snow_unc
 
-    # get Warren modified from years
-    #snow_m = np.squeeze(f.variables['snow_depth'][:])
-    #ice_type_old = np.squeeze(f.variables['sea_ice_type_osisaf'][:])
-    #snow_m[ice_type_old==2] = 2*snow_m[ice_type_old==2]
 
-    return lat,lon,snow_w99
+
+def get_Laku(datestr):
+    
+    #datestr = date.strftime('%Y%m%d')
+    path_data = path_dict.PATH_DICT['PATH_DATA']+'Laku/'
+    filepattern =path_data +'LaKu_%s.nc' %(datestr)
+    filename = glob.glob(filepattern)
+    if len(filename)==0:
+        print("\n%s: No found" %(filepattern))
+        return None,None,None,None
+    else:
+        filename = filename[0]
+        print("\nReading Laku file %s" %(filename))
+
+    try:
+        f = nc.Dataset(filename)
+    except:
+        sys.exit("Cannot open file %s" % filename)
+
+    # Read params
+    lat = f.variables['latitude'][:]
+    lon = f.variables['longitude'][:]
+    snow = np.squeeze(f.variables['snow_depth_laku_sam'][:])
+    #snow_unc = np.squeeze(f.variables['snow_depth_unc'][:])
+
+    return lat,lon,snow
+
+
+
 
 def get_SIMBA_traj(id_simba):
 
@@ -1821,7 +1851,7 @@ def datenum_to_datetime(datenum):
 
 
 
-def fbr2sit(fb_radar,snow_depth,ice_type,date,d_w=1024):
+def fbr2sit(fb_radar,snow_depth,ice_type,ds=300,d_w=1024):
 
     # Get ice density
     d_i = np.ma.ones(fb_radar.shape)
@@ -1832,7 +1862,7 @@ def fbr2sit(fb_radar,snow_depth,ice_type,date,d_w=1024):
     #t = ((datetime - datetime.datetime(2020,10,1))/30).days
     #if t > 8: sys.exit()
     #d_s =6.50t+274.51
-    d_s = 300
+    #d_s = 300
 
     snow_density = d_s/d_w
     speed_of_light_ratio = np.power(1 + 0.51*snow_density,1.5) # speed of light in snow over speed of light in vacuum
@@ -1845,7 +1875,7 @@ def fbr2sit(fb_radar,snow_depth,ice_type,date,d_w=1024):
 
 
 
-def fbt2sit(fb_total,snow_depth,ice_type,date,d_w=1024):
+def fbt2sit(fb_total,snow_depth,ice_type,ds=300,d_w=1024):
 
     # Get ice density
     d_i = np.ma.ones(fb_total.shape)
@@ -1856,7 +1886,7 @@ def fbt2sit(fb_total,snow_depth,ice_type,date,d_w=1024):
     #t = ((datetime - datetime.datetime(2020,10,1))/30).days
     #if t > 8: sys.exit()
     #d_s =6.50t+274.51
-    d_s = 300
+    #d_s = 300
 
     
     sit = (d_w*(fb_total-snow_depth) + d_s*snow_depth)/(d_w-d_i)

@@ -16,7 +16,7 @@ PATH_DICT = {
     # Repertory to store gridded data
     'PATH_GRID': '/home/antlafe/Documents/work/grid_data/',
     # Repertory to store output figures
-    'PATH_FIG': '/home/antlafe/Documents/work/figures/cryo2ice/outputs/',
+    'PATH_FIG': '/home/antlafe/Documents/work/figures/cryo2ice/',
     # repertory to store spreadsheet
     'PATH_SPREADSHEET': '/home/antlafe/Documents/work/projet_cryo2ice/data/',
 }

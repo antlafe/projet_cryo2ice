@@ -73,7 +73,7 @@ import path_dict
 
 PATH_DATA= path_dict.PATH_DICT['PATH_DATA']
 PATH_INPUT =  path_dict.PATH_DICT['PATH_OUT']
-PATH_OUT = path_dict.PATH_DICT['PATH_FIG']
+PATH_OUT = path_dict.PATH_DICT['PATH_FIG']+'animation/'
 
 # info: possibility to use lat01 to avoid POCA coord over SARin mask areas
 REF_GDR = 'ESA_BD_GDR'
@@ -98,9 +98,9 @@ list_midnight_dates = {
 
 #list_midnight_dates = ['20201018','20201108'] 
 
-dist_frame = 40#km
+dist_frame = 40#40#km
 interval = 20 #ms
-show_plot = True #False
+show_plot = False #False
 outfilename= 'animation_NovMar_ESA'
 
 # mean density to show data
@@ -108,7 +108,7 @@ MIN_IS2_DATA_DENSITY = 1 #00 # pts/km
 MIN_CS2_DATA_DENSITY = 0.3 # pts/km
 
 # limits 
-xylim = [-0.3, 0.6] # scatter limits
+xylim = [-0.1, 0.6] # scatter limits
 snowlim = [0,0.4]
 
 
@@ -431,13 +431,36 @@ if __name__ == '__main__':
     # Get full coordinates
     #cs2_full_lats = list(np.array(data_dict['CS2'][REF_GDR]['latref_full'],dtype=object)[idx_dates])
     #cs2_full_lons = list(np.array(data_dict['CS2'][REF_GDR]['lonref_full'],dtype=object)[idx_dates])
-    cs2_full_lats = list(np.array(data_dict['CS2'][REF_GDR]['lat'],dtype=object)[idx_dates])
-    cs2_full_lons = list(np.array(data_dict['CS2'][REF_GDR]['lon'],dtype=object)[idx_dates])
+    #cs2_full_lats = list(np.array(data_dict['CS2'][REF_GDR]['lat'],dtype=object)[idx_dates])
+    #cs2_full_lons = list(np.array(data_dict['CS2'][REF_GDR]['lon'],dtype=object)[idx_dates])
     
     
     # Get ref lat/lon
     ref_seg_lats = list(np.array(data_dict['CS2'][REF_GDR]['lat'],dtype=object)[idx_dates])
     ref_seg_lons = list(np.array(data_dict['CS2'][REF_GDR]['lon'],dtype=object)[idx_dates])
+
+    print("stop")
+    # eliminate too short tracks
+    idx_dates_toremove = list()
+    for n in range(ndates):
+        distance = np.nancumsum(cf.dist_btw_two_coords(ref_seg_lats[n][1:],ref_seg_lats[n][:-1],ref_seg_lons[n][1:],ref_seg_lons[n][:-1]))
+        max_distance = distance[-1]
+        if max_distance < dist_frame:
+            idx_dates_toremove.append(True)
+        else:
+            idx_dates_toremove.append(False)
+
+    
+    idx_dates = idx_dates[~np.array(idx_dates_toremove)]
+    ndates = ndates - np.sum(np.array(idx_dates_toremove))
+
+    # Get ref lat/lon
+    ref_seg_lats = list(np.array(data_dict['CS2'][REF_GDR]['lat'],dtype=object)[idx_dates])
+    ref_seg_lons = list(np.array(data_dict['CS2'][REF_GDR]['lon'],dtype=object)[idx_dates])
+
+    cs2_full_lats = list(np.array(data_dict['CS2'][REF_GDR]['lat'],dtype=object)[idx_dates])
+    cs2_full_lons = list(np.array(data_dict['CS2'][REF_GDR]['lon'],dtype=object)[idx_dates])
+    
     
     data_cs2_list = dict()
     data_cs2 = dict()
@@ -825,7 +848,7 @@ if __name__ == '__main__':
     
     # Plot parameter as animation
     #-----------------------------------------------------------
-    fig = plt.figure(1,figsize=(20,7)) #,constrained_layout=True)
+    fig = plt.figure(1,figsize=(18,7)) #,constrained_layout=True)
     #fig = plt.figure(1,figsize=(14,5))
     #gs = fig.add_gridspec(3, 3)
     spec = gridspec.GridSpec(ncols=13, nrows=10) #,width_ratios=[1.2, 2])
@@ -878,7 +901,7 @@ if __name__ == '__main__':
     
     xptsT, yptsT = m(lons_icetype[0], lats_icetype[0])
     
-    cmap = cmap = mpl.colors.ListedColormap(["white", "lightgrey"])
+    cmap = mpl.colors.ListedColormap(["white", "lightgrey"])
     im = m.contourf(xptsT , yptsT, icetype[0],linewidths=0.5,cmap=cmap, alpha=1,zorder=2)
     norm = mpl.colors.BoundaryNorm(np.arange(2,4), cmap.N)
     cbar = fig.colorbar(im,ticks=[2.5,3.5],orientation='horizontal',fraction=0.046, pad=0.04,extend='both')
@@ -1267,11 +1290,9 @@ if __name__ == '__main__':
 
                     # update common data
                     SD_n = np.array(is2_mean_data_line)[N] - np.array(cs2_mean_data_pts)[N]
-                    snow_depth.append(SD_n)
-                    #print('sd',snow_depth)
-                    #print('xdist',x_dist_data_cs2[cs2_prod])
-                    #print('ice_type',icetype_al_full[N])
 
+                    # snow depth
+                    snow_depth.append(SD_n)
                     data_seg[ntrack].set_offsets(np.c_[xseg_data_cs2,yseg_data_cs2])
                     data_seg[ntrack].set_array(np.array(snow_depth))
 
@@ -1303,7 +1324,9 @@ if __name__ == '__main__':
         if i==len(full_frame):
 
             print("last frame")
-            fig.savefig("tracks.png")
+            #fig.savefig("tracks.png")
+
+            
             
             # Regression curve MYI
             x_cs2_myi = np.array(cs2_mean_data_pts)[icetype_al_full.data==4]
@@ -1368,7 +1391,26 @@ if __name__ == '__main__':
             #is2_full.clear()
             cs2_sat[0].set_data(0,0)
             is2_sat[0].set_data(0,0)
+
+            #snow_depth.clear()
+            
+
+            
             fig.canvas.draw()
+
+            # Save map only
+            an_delay.set_text("")
+            an_dist.set_text("")
+            an_date.set_text("")
+            str_date = "%s" %(found_dates[ntrack].strftime("%b-%Y"))
+            str_date1 =found_dates[ntrack].strftime("%Y%m")
+            an_date.set_text(str_date) #,fontsize=15)
+            
+            PATH_OUT + inputfolder
+            outimagemap = PATH_OUT + inputfolder + 'map_' + outfilename + '_%s.png' %(str_date1)
+            ax2 = fig.add_subplot(spec_map)
+            extent = ax2.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+            fig.savefig(outimagemap, bbox_inches=extent.expanded(1.65, 1.4))
 
             
             #def init_sat_track(ndates):
@@ -1428,6 +1470,11 @@ if __name__ == '__main__':
     writer = Writer(fps=60, metadata=dict(artist='Me'), bitrate=1800)
     anim.save(outfile, writer=writer)
     fig.savefig(outimage)
+
+    # Save map only
+    outimagemap = outfolder + outfilename+'map.png'
+    extent = ax2.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+    fig.savefig(outimagemap, bbox_inches=extent.expanded(1.1, 1.2))
     print("\n Writing file: %s \n" %(outfile))
 
     #anim.close()

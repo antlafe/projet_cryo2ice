@@ -170,7 +170,9 @@ def grid_and_filter_wrt_distance(lon, lat, all_data_in, map_frame, pixel_size=10
 
     # init weight factor
     if weight is None:
-        weight_data = np.ones(lon.shape)
+        weight_coef = np.ones(lon.shape)
+    else:
+        weight_coef = weight
 
  
     # SORT TRACK POINTS    
@@ -293,11 +295,11 @@ def grid_and_filter_wrt_distance(lon, lat, all_data_in, map_frame, pixel_size=10
             #mode = 'gaussian_radius'
             #weighting = weight
             if mode=='filter_gauss':
-                weighting = np.exp(-squared_dist/squared_range_filter)*weight[numbers_of_data_used]
+                weighting = np.exp(-squared_dist/squared_range_filter)*weight_coef[numbers_of_data_used]
                 
                 for p_name,data in all_data.items():
                     data_results[p_name][i,j] = np.nansum(data[numbers_of_data_used]*weighting)/np.sum(weighting)
-                    data_results[rms_p_name][i,j] = np.ma.sqrt(np.ma.sum(weighting**(data[numbers_of_data_used]-data_results[p_name][i,j])**2) / np.ma.sum(weighting) )
+                    data_results[rms_p_name][i,j] = np.ma.sqrt(np.ma.sum(weighting*(data[numbers_of_data_used]-data_results[p_name][i,j])**2) / np.ma.sum(weighting) )
                     #data_results[rms_p_name][i,j] = np.std(data[numbers_of_data_used])
             
             """
@@ -394,7 +396,7 @@ if __name__ == '__main__':
     date = args.date
 
     # 
-    outfolder = args.outputfile
+    outfilename = args.outputfile
 
     #
     is2Beams = [b for b in args.is2Beams.split(',')]
@@ -498,18 +500,27 @@ if __name__ == '__main__':
             beamName = get_strong_beams(filename,is2Beams)
             
             for beam in beamName.keys():
-                data_desc_is2 = is2_dict.init_dict(gdr,beamName[beam],'granules')
+                
+                # data type
+                # if SWATH data
+                if 'sla' in plist:
+                    flag_swath=True
+                    data_desc_is2 = is2_dict.init_dict(gdr,beamName[beam],'swath')
+                    weight = None  
+                else:
+                    flag_swath=False
+                    data_desc_is2 = is2_dict.init_dict(gdr,beamName[beam],'granule')
+                    Lseg,units,param_is_flag = cf.get_param_from_hf5(filename,data_desc_is2,'Lseg',hemispherecode,LAT_BOUND)
+                    weight.append(Lseg)
 
+                print(filename)
                 lat,lon,timeIS2,x_dist,selected_idx = cf.get_coord_from_hf5(filename,data_desc_is2,hemispherecode,LAT_BOUND)
                 if lat is None: continue
                 
                 lat_list.append(lat)
                 lon_list.append(lon)
 
-                Lseg,units,param_is_flag = cf.get_param_from_hf5(filename,data_desc_is2,'Lseg',hemispherecode,LAT_BOUND)
-                weight.append(Lseg)
                 
-
                 for pname in plist:
                     param,units,param_is_flag = cf.get_param_from_hf5(filename,data_desc_is2,pname,hemispherecode,LAT_BOUND)
                     # make it for each beam XXX
@@ -525,7 +536,7 @@ if __name__ == '__main__':
     lat_array = np.ma.concatenate(lat_list,axis=0)
     lon_array = np.ma.concatenate(lon_list,axis=0)
 
-    if sat=='IS2': weight = np.ma.concatenate(weight,axis=0)
+    if sat=='IS2' and not flag_swath: weight = np.ma.concatenate(weight,axis=0)
     
     data_results = dict()
     lat_grid = dict()
@@ -561,21 +572,25 @@ if __name__ == '__main__':
     # Saving data in NETCDF
     #-----------------------------------------------
     
-    if outfolder: pathout = outfolder
+    if outfilename:
+        pathout = '/'.join(outfilename.split('/')[:-1])+'/'
+        fileoutname = outfilename.split('/')[-1]
+        file_out = outfilename
+        
     else:
         pathout = PATH_INPUT+ "grid/%s/%s/" %(sat,gdr)
+        fileoutname = '%s_%s_%s.nc' %(sat,gdr,date)
+        file_out = pathout + fileoutname
 
-
-    size_grid = lon_grid_mesh.shape[0]
-    fileoutname = '%s_%s_%s.nc' %(sat,gdr,date)
+    
 
     if not os.path.exists(pathout):
         print("creating:",pathout)
         os.makedirs(pathout)
     
-
-    file_out = pathout + fileoutname
-
+    
+    size_grid = lon_grid_mesh.shape[0]
+    
     # save into Netcdf
     dataset = Dataset(file_out, 'w',format='NETCDF4_CLASSIC')
 
