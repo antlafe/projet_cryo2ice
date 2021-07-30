@@ -1335,6 +1335,36 @@ def get_PIOMAS_SD(date):
     return lat,lon,snow
 
 
+
+def get_W99(datestr):
+
+    #datestr = date.strftime('%Y%m%d')                                                               
+    path_data = path_dict.PATH_DICT['PATH_DATA']+'W99/'
+    filepattern =path_data +'snow_w99_*%s.mat' %(datestr[-2:])
+    filename = glob.glob(filepattern)
+    if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
+    else:
+        filename = filename[0]
+        print("\nReading W99 file %s" %(filename))
+
+    import scipy.io
+    mat = scipy.io.loadmat(filename)
+
+    # Read params                                                                                    
+    lat = mat['lat'][:]
+    lon = mat['lon'][:]
+
+    snow_w99 = mat['w99'][:]
+
+    # get Warren modified from years                                                                 
+    #snow_m = np.squeeze(f.variables['snow_depth'][:])                                               
+    #ice_type_old = np.squeeze(f.variables['sea_ice_type_osisaf'][:])                                
+    #snow_m[ice_type_old==2] = 2*snow_m[ice_type_old==2]                                             
+
+    return lat,lon,snow_w99
+
+
+
 def get_ASD(pixsize,datestr):
     
     #datestr = date.strftime('%Y%m%d')
@@ -1361,32 +1391,6 @@ def get_ASD(pixsize,datestr):
 
     return lat,lon,snow,snow_unc
 
-
-def get_ASD(pixsize,datestr):
-    
-    #datestr = date.strftime('%Y%m%d')
-    path_data = path_dict.PATH_DICT['PATH_DATA']+'ASD/'
-    filepattern =path_data +'*w%i*_%s.nc' %(pixsize,datestr)
-    filename = glob.glob(filepattern)
-    if len(filename)==0:
-        print("\n%s: No found" %(filepattern))
-        return None,None,None,None
-    else:
-        filename = filename[0]
-        print("\nReading ASD file %s" %(filename))
-
-    try:
-        f = nc.Dataset(filename)
-    except:
-        sys.exit("Cannot open file %s" % filename)
-
-    # Read params
-    lat = f.variables['latitude'][:]
-    lon = f.variables['longitude'][:]
-    snow = np.squeeze(f.variables['snow_depth'][:])
-    snow_unc = np.squeeze(f.variables['snow_depth_unc'][:])
-
-    return lat,lon,snow,snow_unc
 
 
 
@@ -1864,7 +1868,7 @@ def fbr2sit(fb_radar,snow_depth,ice_type,ds=300,d_w=1024):
     #d_s =6.50t+274.51
     #d_s = 300
 
-    snow_density = d_s/d_w
+    snow_density = d_s/1000
     speed_of_light_ratio = np.power(1 + 0.51*snow_density,1.5) # speed of light in snow over speed of light in vacuum
     height_snow_penetration_corr = snow_depth*(speed_of_light_ratio-1)
     freeboard = fb_radar + height_snow_penetration_corr

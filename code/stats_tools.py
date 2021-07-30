@@ -234,6 +234,7 @@ def plot_track_map(fig,axm,lon,lat,data,label,xylim,date_icetype,units,flag_comp
     draw_round_frame(m,axm)
     #m.bluemarble(scale=1, zorder=-1)
 
+    
     # defining color map
     if flag_comp:
         cmap='BrBG'
@@ -251,6 +252,12 @@ def plot_track_map(fig,axm,lon,lat,data,label,xylim,date_icetype,units,flag_comp
 
     # show ice_type
     if date_icetype:
+
+        # anotate date
+        bbox_props = dict(boxstyle="round", fc="white", ec="black",alpha=0.8, lw=1)
+        str_date1 =date_icetype.strftime('%b-%Y')
+        an_date = axm.annotate(str_date1, xy=(0.4, 0.92), xycoords='axes fraction', fontsize=14,bbox=bbox_props)
+        
         print("\n Show OSISAF for %s" %(date_icetype))
         lons,lats,OSISAF_ice_type = cf.get_osisaf_ice_type(date_icetype.year,date_icetype.month,date_icetype.day,'01')
         OSISAF_ice_type[OSISAF_ice_type==1] = ma.masked # masked ocean
@@ -264,16 +271,16 @@ def plot_track_map(fig,axm,lon,lat,data,label,xylim,date_icetype,units,flag_comp
 
         # ice line
         #-----------------------------
-        #im = m.contour(xptsT , yptsT, OSISAF_ice_type,levels=1,colors='black',zorder=4)
+        im = m.contour(xptsT , yptsT, OSISAF_ice_type,levels=1,colors='black',zorder=4)
 
         
         # ice type full color
         #----------------------------------
-        im = m.contourf(xptsT , yptsT, OSISAF_ice_type,cmap=cmap_ice, alpha=0.8,zorder=0,antialiased=True)
-        norm = mpl.colors.BoundaryNorm(np.arange(2,4), cmap_ice.N)
-        cbar = fig.colorbar(im,ax=axm,ticks=[2.5,3.5],orientation='horizontal',fraction=0.046, pad=0.04,extend='both',shrink=0.70)
-        cbar.ax.set_xticklabels(['First-Year Ice','Multi-Year Ice'])
-        cbar.set_label('OSISAF daily ice type', labelpad=3)
+        #im = m.contourf(xptsT , yptsT, OSISAF_ice_type,cmap=cmap_ice, alpha=0.8,zorder=0,antialiased=True)
+        #norm = mpl.colors.BoundaryNorm(np.arange(2,4), cmap_ice.N)
+        #cbar = fig.colorbar(im,ax=axm,ticks=[2.5,3.5],orientation='horizontal',fraction=0.046, pad=0.04,extend='both',shrink=0.70)
+        #cbar.ax.set_xticklabels(['First-Year Ice','Multi-Year Ice'])
+        #cbar.set_label('OSISAF daily ice type', labelpad=3)
         
 
     x,y = m(lon,lat)
@@ -282,7 +289,7 @@ def plot_track_map(fig,axm,lon,lat,data,label,xylim,date_icetype,units,flag_comp
     ndata = data.size - np.sum(data.mask)
     
     scat= m.scatter(x,y,c=data,s=size,cmap=cmap,vmin=xylim[0],vmax=xylim[1],zorder=1,alpha=alpha)
-    cbaxes = fig.add_axes([0.95, 0.28, 0.02, 0.5])
+    cbaxes = fig.add_axes([0.89, 0.25, 0.02, 0.5])
     
     cb = fig.colorbar(scat, ax=axm,cax = cbaxes,extend='both',fraction=0.046, pad=0.04,shrink=0.80)
     

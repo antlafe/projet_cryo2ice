@@ -773,15 +773,16 @@ if __name__ == '__main__':
         alpha=0.7
         sizepixmap=1
         nkm = 75 #km
+        pathout='/home/antlafe/Documents/work/figures/cryo2ice/comp_sd/'
 
         
         SD_dict ={}
-        SD_list = ['LaKu','ASD','AMSR','W99']
+        SD_list = ['LaKu','ASD','AMSR','W99','PIOMAS']
         for SDtype in SD_list:
             SD_dict[SDtype] = {}
             for Itype in ['MYI','FYI','ALL']:
                 SD_dict[SDtype][Itype] = {}
-                for Istat in ['mean','std','rmsd','dmean','R']:
+                for Istat in ['mean','std','rmsd','dmean','R','ndata']:
                     SD_dict[SDtype][Itype][Istat] = list()
     
         for month,idx in idx_dates_monthly.items():
@@ -834,8 +835,8 @@ if __name__ == '__main__':
 
             # statistics CRYO2ICE snow
             #----------------------------------
-            mask_FYI = np.ma.concatenate(np.array(icetype_al)[idx_dates[idx]],axis=0) == 2
-            mask_MYI = np.ma.concatenate(np.array(icetype_al)[idx_dates[idx]],axis=0) == 4
+            mask_FYI = np.ma.concatenate(np.array(icetype_al)[idx],axis=0) == 2
+            mask_MYI = np.ma.concatenate(np.array(icetype_al)[idx],axis=0) == 4
 
             SD_dict['LaKu']['FYI']['mean'].append(np.ma.mean(snow_depth[mask_FYI]))
             SD_dict['LaKu']['MYI']['mean'].append(np.ma.mean(snow_depth[mask_MYI]))
@@ -871,6 +872,8 @@ if __name__ == '__main__':
             #------------------------------
             # Get ASD
             #-----------------------------
+
+            print("\n#  ASD \n#############")
             
             #sd_ASD = list()
             sd_ASD_track = list()
@@ -956,13 +959,14 @@ if __name__ == '__main__':
                 
                 # map
                 #--------------------
-                """
+                
                 f1, ax = plt.subplots(1, 1,figsize=(10,10))
                 bmap,cmap = st.plot_track_map(f1,ax,lon_grid,lat_grid,sd_grid,'Snow depth',[0.,0.5],mid_date,'m',False,alpha,size=sizepixmap)
                 st.add_data_track(bmap,cmap,lon_full,lat_full,snow_depth_smooth,maplim)
                 #plot_track_map(f1,ax,lon_full,lat_full,snow_depth,'Snow depth',maplim,None,'m',False)
-                plt.show()
-                """
+                plt.savefig(pathout+'Snow_depth_ASD_%s.png' %(month))
+                #plt.show()
+                
             else:
                 
                 for Itype in ['MYI','FYI','ALL']:
@@ -973,7 +977,9 @@ if __name__ == '__main__':
             #-------------------------
             # Get SD PIOMAS
             #-------------------------
-            """
+
+            print("#  PIOMAS \n#############")
+            
             PIOMAS_SD_track = list()
             lat_grid,lon_grid,sd_grid = cf.get_PIOMAS_SD(date_list[0])
             if lat_grid is not None:
@@ -1049,21 +1055,23 @@ if __name__ == '__main__':
                 f1, ax = plt.subplots(1, 1,figsize=(10,10))
                 bmap,cmap = st.plot_track_map(f1,ax,lon_grid,lat_grid,sd_grid,'Snow depth',maplim,mid_date,'m',False,alpha=alpha,size=sizepixmap)
                 st.add_data_track(bmap,cmap,lon_full,lat_full,snow_depth_smooth_PIOMAS,maplim)
-                
-                plt.show()
+                plt.savefig(pathout+'Snow_depth_PIOMAS_%s.png' %(month))
+                #plt.show()
 
         else:
                 
             for Itype in ['MYI','FYI','ALL']:
                 for Istat in ['mean','std','rmsd','dmean','R']:
                     SD_dict['ASD'][Itype][Istat].append(np.nan)
-                """
+                
                 
 
-            """
+            
             #------------------------------
             # Get Laku
             #-----------------------------
+
+            print("\n#  LaKu \n#############")
             
             #sd_Laku = list()
             sd_Laku_track = list()
@@ -1152,7 +1160,8 @@ if __name__ == '__main__':
                 bmap,cmap = st.plot_track_map(f1,ax,lon_grid,lat_grid,sd_grid,'Snow depth',[0.,0.5],mid_date,'m',False,alpha,size=sizepixmap)
                 st.add_data_track(bmap,cmap,lon_full,lat_full,snow_depth_smooth,maplim)
                 #plot_track_map(f1,ax,lon_full,lat_full,snow_depth,'Snow depth',maplim,None,'m',False)
-                plt.show()
+                plt.savefig(pathout+'Snow_depth_Laku_%s.png' %(month))
+                #plt.show()
 
             else:
                 
@@ -1161,11 +1170,13 @@ if __name__ == '__main__':
                         SD_dict['ASD'][Itype][Istat].append(np.nan)
             
 
-            """
+            
             #-------------------------
             # Get SD AMSR
             #-------------------------
-            """
+
+            print("\n#  AMSR \n#############\n")
+            
             SD_AMSR_al_full = list()
             for ndate,date in enumerate(date_list):
                 lat_grid,lon_grid,SD_AMSR = cf.get_SD_AMSR(date)
@@ -1231,11 +1242,14 @@ if __name__ == '__main__':
             bmap,cmap = st.plot_track_map(f1,ax,lon_grid,lat_grid,SD_AMSR_middate,'Snow depth',maplim,mid_date,'m',False,alpha=alpha,size=sizepixmap)
             #st.add_data_track(bmap,cmap,lon_full,lat_full,snow_depth_smooth,maplim)
             #plot_track_map(f1,ax,lon_full,lat_full,snow_depth,'Snow depth',maplim,None,'m',False)
-            plt.show()
+            plt.savefig(pathout+'Snow_depth_AMSR_%s.png' %(month))
+            #plt.show()
             
             #-------------------------
             # Get Warren climatology
             #-------------------------
+
+            print("/n#  W99 \n#############\n")
 
             #from W99 import W99
             sd_w99 = list()
@@ -1318,9 +1332,10 @@ if __name__ == '__main__':
             bmap,cmap = st.plot_track_map(f1,ax,lon_grid,lat_grid,sd_grid_w99_mid,'Snow depth',maplim,mid_date,'m',False,alpha=alpha,size=sizepixmap)
             st.add_data_track(bmap,cmap,lon_full,lat_full,snow_depth_smooth_W99,maplim)
             #plot_track_map(f1,ax,lon_full,lat_full,snow_depth,'Snow depth',maplim,None,'m',False)
+
+            plt.savefig(pathout+'Snow_depth_W99_%s.png' %(month))
+            #plt.show()
             
-            plt.show()
-            """
 
         # Temporal series
         #---------------------------
