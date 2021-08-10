@@ -62,6 +62,9 @@ def plot_scatter(ax,xylim,sat,units,x_data,x_label,y_data,y_label,icetype,color=
     mask_data = np.logical_and(~x.mask,~y.mask)
     
     data = np.hstack((x[mask_data].reshape(x[mask_data].size,1),y[mask_data].reshape(y[mask_data].size,1)))
+
+    
+    
     z = gaussian_kde(np.transpose(data))(np.transpose(data))
     if icetype is None:
         #ax.scatter(x_data,y_data, s=50, edgecolor='',marker='.',edgecolors='black',)
@@ -100,8 +103,8 @@ def plot_scatter(ax,xylim,sat,units,x_data,x_label,y_data,y_label,icetype,color=
     x = x_data[mask_data]
     y = y_data[mask_data]
     slope, intercept, r_value, p_value, std_err = linregress(x,y)
-    ax.plot(x,slope*x + intercept, label="Slope %.2f" %(slope),color = 'black', linestyle = 'dashed')
-    ax.legend(loc="lower right",fontsize=12)
+    #ax.plot(x,slope*x + intercept, label="Slope %.2f" %(slope),color = 'black', linestyle = 'dashed')
+    #ax.legend(loc="lower right",fontsize=12)
 
     #ax.rcParams.update({'font.size': 20})
 
@@ -119,7 +122,7 @@ def plot_scatter(ax,xylim,sat,units,x_data,x_label,y_data,y_label,icetype,color=
     
     textstr = '\n'.join(('%s' %(sat),'Bias= %.2f %s' % (mean_bias,units),'RMSD= %.2f %s' % (RMSD,units),'R= %.2f' % (R),'Npts = %i' %(nb_data), 'Min/Max px = %.1f/%.1f' %(min_x,max_x), 'Min/Max py = %.1f/%.1f' %(min_y,max_y)))
     props = dict(boxstyle='round', facecolor='white', alpha=0.8)
-    ax.text(xylim[0][1]-0.005,xylim[1][1] , textstr, fontsize=10,verticalalignment='top',horizontalalignment ='right', bbox=props)
+    #ax.text(xylim[0][1]-0.005,xylim[1][1] , textstr, fontsize=10,verticalalignment='top',horizontalalignment ='right', bbox=props)
     
     #else:
     if icetype is not None:
@@ -139,7 +142,7 @@ def plot_scatter(ax,xylim,sat,units,x_data,x_label,y_data,y_label,icetype,color=
 
             textstr = '\n'.join((type_str,'Bias= %.2f %s' % (mean_bias,units),'RMSD= %.2f %s' % (RMSD,units),'R = %.2f' %(R),'Npts = %i' %(nb_data)))
             props = dict(boxstyle='round', facecolor='white', alpha=0.7)
-            ax.text(xylim[0][1]-0.005,xylim[1][0]+(n)*0.25*unit_ord , textstr, fontsize=9,verticalalignment='bottom',horizontalalignment ='right', bbox=props)
+            #ax.text(xylim[0][1]-0.005,xylim[1][0]+(n)*0.25*unit_ord , textstr, fontsize=9,verticalalignment='bottom',horizontalalignment ='right', bbox=props)
     
     #ax.set_aspect('equal') #, adjustable='box')
     #set_axes_equal(ax)
@@ -242,7 +245,7 @@ def plot_track_map(fig,axm,lon,lat,data,label,xylim,date_icetype,units,flag_comp
             #xylim = [-np.max(np.abs(data)),np.max(np.abs(data))]            
             xylim = [-np.std(np.abs(data)),np.std(np.abs(data))]            
     else:
-        cmap='viridis' #'tab20b' #'viridis' #'viridis' #nuplot2' # magma' #'cividis' #jet
+        cmap='magma' #'tab20b' #'viridis' #'viridis' #nuplot2' # magma' #'cividis' #jet
         if xylim is None:
             xylim = [np.min(data),np.max(data)]
 
@@ -256,7 +259,7 @@ def plot_track_map(fig,axm,lon,lat,data,label,xylim,date_icetype,units,flag_comp
         # anotate date
         bbox_props = dict(boxstyle="round", fc="white", ec="black",alpha=0.8, lw=1)
         str_date1 =date_icetype.strftime('%b-%Y')
-        an_date = axm.annotate(str_date1, xy=(0.4, 0.92), xycoords='axes fraction', fontsize=14,bbox=bbox_props)
+        #an_date = axm.annotate(str_date1, xy=(0.4, 0.92), xycoords='axes fraction', fontsize=14,bbox=bbox_props)
         
         print("\n Show OSISAF for %s" %(date_icetype))
         lons,lats,OSISAF_ice_type = cf.get_osisaf_ice_type(date_icetype.year,date_icetype.month,date_icetype.day,'01')
@@ -271,16 +274,16 @@ def plot_track_map(fig,axm,lon,lat,data,label,xylim,date_icetype,units,flag_comp
 
         # ice line
         #-----------------------------
-        im = m.contour(xptsT , yptsT, OSISAF_ice_type,levels=1,colors='black',zorder=4)
+        #im = m.contour(xptsT , yptsT, OSISAF_ice_type,levels=1,colors='black',zorder=4)
 
         
         # ice type full color
         #----------------------------------
-        #im = m.contourf(xptsT , yptsT, OSISAF_ice_type,cmap=cmap_ice, alpha=0.8,zorder=0,antialiased=True)
-        #norm = mpl.colors.BoundaryNorm(np.arange(2,4), cmap_ice.N)
-        #cbar = fig.colorbar(im,ax=axm,ticks=[2.5,3.5],orientation='horizontal',fraction=0.046, pad=0.04,extend='both',shrink=0.70)
-        #cbar.ax.set_xticklabels(['First-Year Ice','Multi-Year Ice'])
-        #cbar.set_label('OSISAF daily ice type', labelpad=3)
+        im = m.contourf(xptsT , yptsT, OSISAF_ice_type,cmap=cmap_ice, alpha=0.8,zorder=1,antialiased=True)
+        norm = mpl.colors.BoundaryNorm(np.arange(2,4), cmap_ice.N)
+        cbar = fig.colorbar(im,ax=axm,ticks=[2.5,3.5],orientation='horizontal',fraction=0.046, pad=0.04,extend='both',shrink=0.70)
+        cbar.ax.set_xticklabels(['First-Year Ice','Multi-Year Ice'])
+        cbar.set_label('OSISAF daily ice type', labelpad=3)
         
 
     x,y = m(lon,lat)

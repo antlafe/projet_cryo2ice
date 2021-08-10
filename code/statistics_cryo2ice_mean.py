@@ -78,7 +78,7 @@ PATH_INPUT = path_dict.PATH_DICT['PATH_OUT']
 
 PATH_GRID = path_dict.PATH_DICT['PATH_GRID']
 
-param_opts = ['sd_month','find_regions','simba','mean_grid','comp_grid','roughness','data_maps','show_data','sd_comp','xings','xings2']
+param_opts = ['sd_month','find_regions','simba','mean_grid','comp_grid','roughness','data_maps','show_data','sd_comp','xings','xings2','simba_grid']
 
 beamList=['gt1r','gt2r','gt3r'] #,'gt1l','gt2l','gt3l']
 MAX_ACROSS_DIST = 1.5 #KM
@@ -326,17 +326,20 @@ if __name__ == '__main__':
         # calculating absolute orbit number
         ndata_per_tracks = [0]
         abs_ref_idx_cs2 = list()
+        abs_ref_idx_is2 = list()
         for nidx,idx in enumerate(idx_dates):
             ndata_tracks = data_dict['CS2']['ESA_BD_GDR']['lat'][idx].size
             ndata_per_tracks.append(ndata_per_tracks[nidx]+ndata_tracks)
 
             abs_ref_idx_cs2.append(np.array(data_dict['CS2']['xings']['ESA_BD_GDR']['idx_ref'][idx])+ ndata_per_tracks[nidx])
             
-            #abs_ref_idx_is2.append(np.array(data_dict['IS2']['xings']['ATL10']['idx_ref'][idx])+ ndata_per_tracks[nidx])
+            abs_ref_idx_is2.append(np.array(data_dict['IS2']['xings']['ATL10']['idx_ref'][idx])+ ndata_per_tracks[nidx])
             
 
         
         abs_ref_idx_cs2 = np.ma.concatenate(abs_ref_idx_cs2,axis=0)
+        abs_ref_idx_is2 = np.ma.concatenate(abs_ref_idx_is2,axis=0)
+
         # collocated data
         #-------------------------------------------
         laser_fb_colloc = np.ma.concatenate(list(np.array(data_dict['IS2']['ATL10']['laser_fb_mean'],dtype=object)[idx_dates]),axis=0)
@@ -357,13 +360,13 @@ if __name__ == '__main__':
 
         # Get IS2 cross-overs
         #-------------------------------------------
-        """
+        
         lat_is2xings = np.ma.concatenate(list(np.array(data_dict['IS2']['xings']['ATL10']['lat'],dtype=object)[idx_dates]),axis=0)
         lon_is2xings = np.ma.concatenate(list(np.array(data_dict['IS2']['xings']['ATL10']['lon'],dtype=object)[idx_dates]),axis=0)
-        laser_fb_xings = np.ma.concatenate(list(np.array(data_dict['IS2']['xings']['ATL10']['radar_fb'],dtype=object)[idx_dates]),axis=0)
+        laser_fb_xings = np.ma.concatenate(list(np.array(data_dict['IS2']['xings']['ATL10']['laser_fb'],dtype=object)[idx_dates]),axis=0)
         ref_idx_is2 =  np.ma.concatenate(list(np.array(data_dict['IS2']['xings']['ATL10']['idx_ref'],dtype=object)[idx_dates]),axis=0)
-        """
-        #delay_cs2 =  np.ma.concatenate(list(np.array(data_dict['IS2']['xings']['ATL10']['delay'],dtype=object)[idx_dates]),axis=0)
+        
+        delay_is2 =  np.ma.concatenate(list(np.array(data_dict['IS2']['xings']['ATL10']['delay'],dtype=object)[idx_dates]),axis=0)
 
 
         maxtime = np.max(np.abs(delay_cs2))
@@ -392,7 +395,7 @@ if __name__ == '__main__':
 
             # Xings from IS2
             #---------------------
-            """
+            
             idx_time_is2 = np.abs(delay_is2.data)>delay
             laser_fb_is2x = np.ma.masked_where(idx_time_is2,laser_fb_xings,copy=True)
             lat_xings_is2 = np.ma.masked_where(idx_time_is2,lat_is2xings,copy=True)
@@ -403,11 +406,11 @@ if __name__ == '__main__':
             lat_is2x = lat[abs_ref_idx_is2x[abs_ref_idx_is2x.mask==False]]
             lon_is2x = lon[abs_ref_idx_is2x[abs_ref_idx_is2x.mask==False]]
             
-             delta_fb_is2x = laser_fb_is2x - radar_fb_is2x
+            delta_fb_is2x = laser_fb_is2x - radar_fb_is2x
 
             ndata_is2x = np.sum(~delta_fb_is2x.mask)
             print("N xings IS2 = %i" %(ndata_is2x))
-            """
+            
 
             # Xings from CS2
             #--------------------
@@ -475,7 +478,7 @@ if __name__ == '__main__':
         # Show Xo
         #-------------------
         
-        """
+        
         f1, ax = plt.subplots(1, 1,figsize=(9,8))
         bmap,cmap = st.plot_track_map(f1,ax,lon_xings,lat_xings,delta_fb,'',[0,0.5],mid_date,'m',False,alpha=1,size=5)
         
@@ -489,7 +492,7 @@ if __name__ == '__main__':
         bmap,cmap = st.plot_track_map(f2,ax,lon,lat,delta_fb_colloc,'',[0,0.5],mid_date,'m',False,alpha=1,size=5)
         
         plt.show()
-        """
+        
 
         
         # style plots
@@ -766,6 +769,7 @@ if __name__ == '__main__':
         sd_W99_all= list()
         sd_PIOMAS_all = list()
         sd_ASD_all = list()
+        sd_Laku_all = list()
 
         max_smoothing = 200
         maplim = [0,0.4]
@@ -872,7 +876,7 @@ if __name__ == '__main__':
             #------------------------------
             # Get ASD
             #-----------------------------
-
+            """
             print("\n#  ASD \n#############")
             
             #sd_ASD = list()
@@ -935,9 +939,12 @@ if __name__ == '__main__':
                     
 
                 
-                f15, ax = plt.subplots(1, 1,figsize=(6,6))
+                f15, ax = plt.subplots(1, 1,figsize=(8,9))
                 f15.suptitle('comparison with snow depth ASD', fontsize=12)
                 R,RMSD,slope,dmean,ndata = st.plot_scatter(ax,xylim,'ASD','m',x_data,x_label,snow_depth_smooth_ASD,y_label,None)
+                plt.clf()
+                #plt.show()
+                
 
                 # statistics
                 #--------------------
@@ -959,13 +966,14 @@ if __name__ == '__main__':
                 
                 # map
                 #--------------------
-                
-                f1, ax = plt.subplots(1, 1,figsize=(10,10))
+                '''
+                f1, ax = plt.subplots(1, 1,figsize=(8,9))
                 bmap,cmap = st.plot_track_map(f1,ax,lon_grid,lat_grid,sd_grid,'Snow depth',[0.,0.5],mid_date,'m',False,alpha,size=sizepixmap)
                 st.add_data_track(bmap,cmap,lon_full,lat_full,snow_depth_smooth,maplim)
                 #plot_track_map(f1,ax,lon_full,lat_full,snow_depth,'Snow depth',maplim,None,'m',False)
                 plt.savefig(pathout+'Snow_depth_ASD_%s.png' %(month))
                 #plt.show()
+                '''
                 
             else:
                 
@@ -973,11 +981,11 @@ if __name__ == '__main__':
                     for Istat in ['mean','std','rmsd','dmean','R']:
                         SD_dict['ASD'][Itype][Istat].append(np.nan)
             
-                
+            """    
             #-------------------------
             # Get SD PIOMAS
             #-------------------------
-
+            """
             print("#  PIOMAS \n#############")
             
             PIOMAS_SD_track = list()
@@ -1009,7 +1017,7 @@ if __name__ == '__main__':
                 #----------------------
                 
                 '''
-                f16, ax = plt.subplots(1, 1,figsize=(6,6))
+                f16, ax = plt.subplots(1, 1,figsize=(8,9))
                 f16.suptitle('Determination of smoothing radius PIOMAS', fontsize=12)
                 
                 R_list,RMSD_list,smoothmin = cf.find_smoothing_radius(x_data,y_data,mean_dist_btw_data,max_smoothing,True)
@@ -1023,10 +1031,11 @@ if __name__ == '__main__':
                 y_data = ma.masked_where(~mask_data,y_data,copy=True)
                 
                 
-               
-                f15, ax = plt.subplots(1, 1,figsize=(6,6))
+                
+                f15, ax = plt.subplots(1, 1,figsize=(8,9))
                 f15.suptitle('comparison with snow depth PIOMAS', fontsize=12)
                 R,RMSD,slope,dmean,ndata = st.plot_scatter(ax,xylim,'PIOMAS','m',x_data,x_label,snow_depth_smooth_PIOMAS,y_label,None)
+                
             
                 # statistics
                 #--------------------
@@ -1052,32 +1061,34 @@ if __name__ == '__main__':
                 
                 # map
                 #--------------------
-                f1, ax = plt.subplots(1, 1,figsize=(10,10))
+                '''
+                f1, ax = plt.subplots(1, 1,figsize=(8,9))
                 bmap,cmap = st.plot_track_map(f1,ax,lon_grid,lat_grid,sd_grid,'Snow depth',maplim,mid_date,'m',False,alpha=alpha,size=sizepixmap)
                 st.add_data_track(bmap,cmap,lon_full,lat_full,snow_depth_smooth_PIOMAS,maplim)
                 plt.savefig(pathout+'Snow_depth_PIOMAS_%s.png' %(month))
                 #plt.show()
+                '''
 
-        else:
+            else:
                 
-            for Itype in ['MYI','FYI','ALL']:
-                for Istat in ['mean','std','rmsd','dmean','R']:
-                    SD_dict['ASD'][Itype][Istat].append(np.nan)
+                for Itype in ['MYI','FYI','ALL']:
+                    for Istat in ['mean','std','rmsd','dmean','R']:
+                        SD_dict['ASD'][Itype][Istat].append(np.nan)
                 
                 
 
-            
+            """
             #------------------------------
             # Get Laku
             #-----------------------------
-
+            
             print("\n#  LaKu \n#############")
             
             #sd_Laku = list()
             sd_Laku_track = list()
             pixsize = 50
             #months = [date.strftime('%Y%m') for date in found_dates]
-            lat_grid,lon_grid,sd_grid,sd_grid_unc = cf.get_Laku(month)
+            lat_grid,lon_grid,sd_grid,sit_grid,roughn_grid,icetype = cf.get_Laku(month)
             if lat_grid is not None:
                 sd_grid = np.squeeze(sd_grid)
 
@@ -1111,7 +1122,7 @@ if __name__ == '__main__':
                 
                 '''
                 print("measuring smoothing radius\n")
-                f16, ax = plt.subplots(1, 1,figsize=(6,6))
+                f16, ax = plt.subplots(1, 1,figsize=(8,9))
                 f16.suptitle('Determination of smoothing radius Laku', fontsize=12)
 
                 R_list,RMSD_list,smoothmin = cf.find_smoothing_radius(x_data,y_data,mean_dist_btw_data,max_smoothing,True)
@@ -1127,54 +1138,57 @@ if __name__ == '__main__':
                 y_data = ma.masked_where(~mask_data,y_data,copy=True)
 
                 
-                f15, ax = plt.subplots(1, 1,figsize=(6,6))
+                f15, ax = plt.subplots(1, 1,figsize=(8,9))
                 f15.suptitle('comparison with snow depth Laku', fontsize=12)
-                st.plot_scatter(ax,xylim,'Laku','m',x_data,x_label,snow_depth_smooth_Laku,y_label,None)
+                R,RMSD,slope,dmean,ndata = st.plot_scatter(ax,xylim,'Laku','m',x_data,x_label,snow_depth_smooth_Laku,y_label,None)
 
                 # statistics
                 #--------------------
-                SD_dict['Laku']['ALL']['rmsd'].append(RMSD)
-                SD_dict['Laku']['ALL']['dmean'].append(dmean)
-                SD_dict['Laku']['ALL']['R'].append(R)
-                SD_dict['Laku']['ALL']['ndata'].append(ndata)
+                SD_dict['LaKu']['ALL']['rmsd'].append(RMSD)
+                SD_dict['LaKu']['ALL']['dmean'].append(dmean)
+                SD_dict['LaKu']['ALL']['R'].append(R)
+                SD_dict['LaKu']['ALL']['ndata'].append(ndata)
 
                 R,RMSD,slope,dmean,ndata = st.plot_scatter(ax,xylim,'Laku','m',x_data[mask_FYI],x_label,snow_depth_smooth_Laku[mask_FYI],y_label,None)
                  
-                SD_dict['Laku']['FYI']['rmsd'].append(RMSD)
-                SD_dict['Laku']['FYI']['dmean'].append(dmean)
-                SD_dict['Laku']['FYI']['R'].append(R)
-                SD_dict['Laku']['FYI']['ndata'].append(ndata)
+                SD_dict['LaKu']['FYI']['rmsd'].append(RMSD)
+                SD_dict['LaKu']['FYI']['dmean'].append(dmean)
+                SD_dict['LaKu']['FYI']['R'].append(R)
+                SD_dict['LaKu']['FYI']['ndata'].append(ndata)
 
                 R,RMSD,slope,dmean,ndata = st.plot_scatter(ax,xylim,'Laku','m',x_data[mask_MYI],x_label,snow_depth_smooth_Laku[mask_MYI],y_label,None)
                 
-                SD_dict['Laku']['MYI']['rmsd'].append(RMSD)
-                SD_dict['Laku']['MYI']['dmean'].append(dmean)
-                SD_dict['Laku']['MYI']['R'].append(R)
-                SD_dict['Laku']['MYI']['ndata'].append(ndata)
+                SD_dict['LaKu']['MYI']['rmsd'].append(RMSD)
+                SD_dict['LaKu']['MYI']['dmean'].append(dmean)
+                SD_dict['LaKu']['MYI']['R'].append(R)
+                SD_dict['LaKu']['MYI']['ndata'].append(ndata)
                 
                 
                 
                 # map
                 #--------------------
-                f1, ax = plt.subplots(1, 1,figsize=(10,10))
+                
+                f1, ax = plt.subplots(1, 1,figsize=(8,9))
                 bmap,cmap = st.plot_track_map(f1,ax,lon_grid,lat_grid,sd_grid,'Snow depth',[0.,0.5],mid_date,'m',False,alpha,size=sizepixmap)
                 st.add_data_track(bmap,cmap,lon_full,lat_full,snow_depth_smooth,maplim)
                 #plot_track_map(f1,ax,lon_full,lat_full,snow_depth,'Snow depth',maplim,None,'m',False)
                 plt.savefig(pathout+'Snow_depth_Laku_%s.png' %(month))
                 #plt.show()
+                
 
             else:
                 
                 for Itype in ['MYI','FYI','ALL']:
                     for Istat in ['mean','std','rmsd','dmean','R']:
                         SD_dict['ASD'][Itype][Istat].append(np.nan)
-            
+
+                      
 
             
             #-------------------------
             # Get SD AMSR
             #-------------------------
-
+            """
             print("\n#  AMSR \n#############\n")
             
             SD_AMSR_al_full = list()
@@ -1209,10 +1223,12 @@ if __name__ == '__main__':
             snow_depth_smooth = st.rolling_stats(snow_depth,int(nkm/mean_dist_btw_data), stats=['mean'])[0]
             snow_depth_smooth_AMSR =  ma.masked_where(~mask_data,snow_depth_smooth,copy=True)
             y_data = ma.masked_where(~mask_data,y_data,copy=True)
-           
+
+            
             f15, ax = plt.subplots(1, 1,figsize=(6,6))
             f15.suptitle('comparison with snow depth AMSR', fontsize=12)
             R,RMSD,slope,dmean,ndata = st.plot_scatter(ax,xylim,'AMSR','m',x_data,x_label,snow_depth_smooth_AMSR,y_label,None)
+            
 
             # statistics
             #--------------------
@@ -1238,17 +1254,21 @@ if __name__ == '__main__':
             
             # map
             #--------------------
+            '''
             f1, ax = plt.subplots(1, 1,figsize=(10,10))
             bmap,cmap = st.plot_track_map(f1,ax,lon_grid,lat_grid,SD_AMSR_middate,'Snow depth',maplim,mid_date,'m',False,alpha=alpha,size=sizepixmap)
-            #st.add_data_track(bmap,cmap,lon_full,lat_full,snow_depth_smooth,maplim)
+            st.add_data_track(bmap,cmap,lon_full,lat_full,snow_depth_smooth,maplim)
             #plot_track_map(f1,ax,lon_full,lat_full,snow_depth,'Snow depth',maplim,None,'m',False)
             plt.savefig(pathout+'Snow_depth_AMSR_%s.png' %(month))
             #plt.show()
+            '''
             
+            """
             #-------------------------
             # Get Warren climatology
             #-------------------------
-
+            
+            """
             print("/n#  W99 \n#############\n")
 
             #from W99 import W99
@@ -1304,6 +1324,7 @@ if __name__ == '__main__':
             R,RMSD,slope,dmean,ndata = st.plot_scatter(ax,xylim,'W99','m',x_data,x_label,snow_depth_smooth_W99,y_label,None)
             #plt.show()
             
+            
             # statistics
             #--------------------
             SD_dict['W99']['ALL']['rmsd'].append(RMSD)
@@ -1328,6 +1349,7 @@ if __name__ == '__main__':
             
             # map
             #--------------------
+            '''
             f1, ax = plt.subplots(1, 1,figsize=(10,10))
             bmap,cmap = st.plot_track_map(f1,ax,lon_grid,lat_grid,sd_grid_w99_mid,'Snow depth',maplim,mid_date,'m',False,alpha=alpha,size=sizepixmap)
             st.add_data_track(bmap,cmap,lon_full,lat_full,snow_depth_smooth_W99,maplim)
@@ -1335,45 +1357,94 @@ if __name__ == '__main__':
 
             plt.savefig(pathout+'Snow_depth_W99_%s.png' %(month))
             #plt.show()
+            '''
+           
+
+            """
+            for prod in SD_dict.keys():
+                print("\n %s ####\n" %(prod));
+                for ntype,dtype in enumerate(['ALL','MYI','FYI']):
+                    print("\n%s ####\n" %(prod));
+                    print("dmean[%s]=%.2f" %(dtype,np.nanmean(SD_dict[prod][dtype]['dmean'])));
+                    print("rmsd[%s]=%.2f" %(dtype,np.nanmean(SD_dict[prod][dtype]['rmsd'])));
+                    print("R[%s]=%.2f" %(dtype,np.nanmean(SD_dict[prod][dtype]['R'])));
             
 
         # Temporal series
         #---------------------------
-        plt.style.use('seaborn-whitegrid')
-        palette = plt.get_cmap('tab20c')
+        plt.style.use('seaborn-darkgrid')
+        palette = plt.get_cmap('Set1')
 
         # Laku
         #---------------------------
+        
         f1, ax = plt.subplots(1, 1,figsize=(12,5))
-        plt.plot(monthstr_list,SD_dict['LaKu']['ALL']['mean'],label='ALL',color=palette(0))
+        plt.plot(monthstr_list,SD_dict['LaKu']['ALL']['mean'],label='ALL',color=palette(0),marker='*')
         plt.fill_between(monthstr_list,np.array(SD_dict['LaKu']['ALL']['mean'])-np.array(SD_dict['LaKu']['ALL']['std']),np.array(SD_dict['LaKu']['ALL']['mean'])+np.array(SD_dict['LaKu']['ALL']['std']),color=palette(0),alpha=0.1)
-        plt.plot(monthstr_list,SD_dict['LaKu']['MYI']['mean'],label='MYI',color=palette(2))
+        plt.plot(monthstr_list,SD_dict['LaKu']['MYI']['mean'],label='MYI',color=palette(2),marker='*')
         plt.fill_between(monthstr_list,np.array(SD_dict['LaKu']['MYI']['mean'])-np.array(SD_dict['LaKu']['MYI']['std']),np.array(SD_dict['LaKu']['MYI']['mean'])+np.array(SD_dict['LaKu']['MYI']['std']),color=palette(2),alpha=0.1)
-        plt.plot(monthstr_list,SD_dict['LaKu']['FYI']['mean'],label='FYI',color=palette(3))
+        plt.plot(monthstr_list,SD_dict['LaKu']['FYI']['mean'],label='FYI',color=palette(3),marker='*')
         plt.fill_between(monthstr_list,np.array(SD_dict['LaKu']['FYI']['mean'])-np.array(SD_dict['LaKu']['FYI']['std']),np.array(SD_dict['LaKu']['FYI']['mean'])+np.array(SD_dict['LaKu']['FYI']['std']),color=palette(3),alpha=0.1)
         plt.legend()
         plt.ylabel("Snow depth (La-Ku) [m]")
         plt.show()
         
+
+
+       
+        
         # ASD
         #---------------------------
-        palette = plt.get_cmap('Set3')
-        f1, ax = plt.subplots(1, 1,figsize=(12,5))
+        palette = plt.get_cmap('Set1')
+        f1, ax = plt.subplots(1, 1,figsize=(3,4))
         for ntype,dtype in enumerate(['ALL','MYI','FYI']):
             
-            plt.plot(monthstr_list,SD_dict['ASD'][dtype]['rmsd'],label='RMSD %s' %(dtype),color=palette(ntype))
-            plt.plot(monthstr_list,SD_dict['ASD'][dtype]['R'],label='Rpearson %s' %(dtype),color=palette(ntype))
-            plt.plot(monthstr_list,SD_dict['ASD'][dtype]['dmean'],label='Dmean %s' %(dtype),color=palette(ntype))
-        plt.legend()
+            plt.plot(monthstr_list,SD_dict['ASD'][dtype]['rmsd'],label='RMSD %s' %(dtype),color=palette(ntype),linestyle='-');
+            plt.plot(monthstr_list,SD_dict['ASD'][dtype]['R'],label='Rpearson %s' %(dtype),color=palette(ntype),linestyle='--');
+            plt.plot(monthstr_list,SD_dict['ASD'][dtype]['dmean'],label='Dmean %s' %(dtype),color=palette(ntype),linestyle=':');
+        #plt.legend()
         plt.show()
         
 
 
         # PIOMAS
         #--------------------------
+        palette = plt.get_cmap('Set1')
+        f1, ax = plt.subplots(1, 1,figsize=(7,4))
+        for ntype,dtype in enumerate(['ALL','MYI','FYI']):
+            
+            plt.plot(monthstr_list,SD_dict['PIOMAS'][dtype]['rmsd'],label='RMSD %s' %(dtype),color=palette(ntype),linestyle='-');
+            plt.plot(monthstr_list,SD_dict['PIOMAS'][dtype]['R'],label='Rpearson %s' %(dtype),color=palette(ntype),linestyle='--');
+            plt.plot(monthstr_list,SD_dict['PIOMAS'][dtype]['dmean'],label='Dmean %s' %(dtype),color=palette(ntype),linestyle=':');
+        plt.legend()
+        plt.show()
 
         # AMSR
         #--------------------------
+        palette = plt.get_cmap('Set1')
+        f1, ax = plt.subplots(1, 1,figsize=(12,5))
+        for ntype,dtype in enumerate(['ALL','MYI','FYI']):
+            
+            plt.plot(monthstr_list,SD_dict['AMSR'][dtype]['rmsd'],label='RMSD %s' %(dtype),color=palette(ntype),linestyle='-');
+            plt.plot(monthstr_list,SD_dict['AMSR'][dtype]['R'],label='Rpearson %s' %(dtype),color=palette(ntype),linestyle='--');
+            plt.plot(monthstr_list,SD_dict['AMSR'][dtype]['dmean'],label='Dmean %s' %(dtype),color=palette(ntype),linestyle=':');
+        plt.legend()
+        plt.show()
+
+
+        # W99
+        #--------------------------
+        palette = plt.get_cmap('Set1')
+        f1, ax = plt.subplots(1, 1,figsize=(12,5))
+        for ntype,dtype in enumerate(['ALL','MYI','FYI']):
+            
+            plt.plot(monthstr_list,SD_dict['W99'][dtype]['rmsd'],label='RMSD %s' %(dtype),color=palette(ntype),linestyle='-');
+            plt.plot(monthstr_list,SD_dict['W99'][dtype]['R'],label='Rpearson %s' %(dtype),color=palette(ntype),linestyle='--');
+            plt.plot(monthstr_list,SD_dict['W99'][dtype]['dmean'],label='Dmean %s' %(dtype),color=palette(ntype),linestyle=':');
+        plt.legend()
+        plt.show()
+
+        
             
             
         # SD map
@@ -1460,10 +1531,16 @@ if __name__ == '__main__':
         max_dist=30 #km
 
         # get SIMBA cross-overs
-        idx_colloc,lon_colloc,lat_colloc,delay_colloc,day_colloc,lon_simba,lat_simba,sit_colloc7,sd_colloc7 = cf.get_xings_SIMBA('607',lat,lon,time,delay,max_dist)
-        idx_colloc8,lon_colloc8,lat_colloc8,delay_colloc8,day_colloc8,lon_simba8,lat_simba8,sit_colloc8,sd_colloc8 = cf.get_xings_SIMBA('608',lat,lon,time,delay,max_dist)
 
+        # 607
+        lat_simba,lon_simba,time_simba,sd_simba7,sit_simba7,year_simba,month_simba,day_simba,date_simba = cf.get_SIMBA_data('607')
+        idx_colloc,lon_colloc,lat_colloc,delay_colloc,day_colloc,sit_colloc7,sd_colloc7 = cf.get_CRYO2ICE_xings(lat_simba,lon_simba,time_simba,sd_simba7,sit_simba7,year_simba,month_simba,day_simba,lon,lat,time,date_simba,delay,max_dist)
 
+        # 608
+        #lat_simba8,lon_simba8,time_simba8,sd_simba8,sit_simba8 = cf.get_CRYO2ICE_xings('608')
+        #idx_colloc8,lon_colloc8,lat_colloc8,delay_colloc8,day_colloc8,sit_colloc8,sd_colloc8 = cf.get_xings_SIMBA(lat_simba8,lon_simba8,time_simba8,sd_simba8,sit_simba8,lat,lon,time,delay,max_dist)
+
+        
         """
         month0 = day_colloc[0]
         id_month = list()
@@ -1499,7 +1576,7 @@ if __name__ == '__main__':
         for month,idx in idx_dates_monthly.items():
             latref.append(np.ma.concatenate(list(np.array(data_dict['CS2'][REF_GDR]['latref'],dtype=object)[idx_dates[idx]]),axis=0))
             lonref.append(np.ma.concatenate(list(np.array(data_dict['CS2'][REF_GDR]['lonref'],dtype=object)[idx_dates[idx]]),axis=0))
-            icetyperef.append(np.ma.concatenate(np.array(icetype_al)[idx_dates[idx]],axis=0))
+            icetyperef.append(np.ma.concatenate(np.array(icetype_al)[idx],axis=0))
         icetype = np.ma.concatenate(icetyperef,axis=0)
 
         # Get W99
@@ -1513,7 +1590,7 @@ if __name__ == '__main__':
             SD_W99[icetyperef[ndate]==2]= 0.5*SD_W99[icetyperef[ndate]==2]
             SD_W99 = SD_W99/100
             sd_w99.append(SD_W99)
-        SD_W99_full = np.ma.concatenate(sd_w99,axis=0)
+        sd_w99_full = np.ma.concatenate(sd_w99,axis=0)
         
         
         ds = 0.300
@@ -1524,17 +1601,32 @@ if __name__ == '__main__':
 
         # Get only coincident measurements with SIMBA
         sd_laku_sim = sd_laku[idx_colloc]
-        SD_W99_sim = SD_W99_full[idx_colloc]
+        SD_W99_sim = sd_w99_full[idx_colloc]
         radar_fb_sim =  radar_fb[idx_colloc]
         laser_fb_sim = laser_fb[idx_colloc]
         icetype_sim = icetype[idx_colloc]
 
+        # snow density (from Mallett)                                                              
+        #------------------------
+        """
+        if dateTime.month in np.arange(6):
+            nbMonthFromOct = 12 + (dateTime.month - 10)
+        else:
+            nbMonthFromOct = (dateTime.month - 10)
+
+        #dw = 1024                                                                                       
+        ds = (6.50*nbMonthFromOct + 274.51)/1000
+        ds_grid = np.ma.ones(lat.shape)*ds
+        ns = (1 + 0.51*ds)**(-1.5)
+        """
+        ds=300
+
         
-        sit_radar_w99m = cf.fbr2sit(radar_fb_sim,SD_W99_sim,icetype_sim,day_colloc)
+        sit_radar_w99m = cf.fbr2sit(radar_fb_sim,SD_W99_sim,icetype_sim,ds)
 
-        sit_laser_w99m = cf.fbt2sit(laser_fb_sim,SD_W99_sim,icetype_sim,day_colloc)
+        sit_laser_w99m = cf.fbt2sit(laser_fb_sim,SD_W99_sim,icetype_sim,ds)
 
-        sit_cryo2ice = cf.fbt2sit(laser_fb_sim,sd_laku_sim,icetype_sim,day_colloc)
+        sit_cryo2ice = cf.fbt2sit(laser_fb_sim,sd_laku_sim,icetype_sim,ds)
 
         #sit_radar_sdsimba = cf.fbr2sit(radar_fb_sim,SD_W99_sim,icetype_sim,day_colloc)
 
@@ -1561,27 +1653,66 @@ if __name__ == '__main__':
         
         for day in np.unique(day_colloc):
             idx = np.argwhere(day_colloc==day)
-            sit_radar_w99m_mean.append(np.ma.mean(sit_radar_w99m[idx]))
-            sit_radar_w99m_std.append(np.ma.std(sit_radar_w99m[idx]))
-            sit_laser_w99m_mean.append(np.ma.mean(sit_laser_w99m[idx]))
-            sit_laser_w99m_std.append(np.ma.std(sit_laser_w99m[idx]))
-            sit_cryo2ice_mean.append(np.ma.mean(sit_cryo2ice[idx]))
-            sit_cryo2ice_std.append(np.ma.std(sit_cryo2ice[idx]))
-            sit_simba7_mean.append(np.ma.mean(np.ma.array(sit_colloc7)[idx])/100)
-            sit_simba7_std.append(np.ma.std(np.ma.array(sit_colloc7)[idx])/100)
-            
-            sd_cryo2ice_mean.append(np.ma.mean(sd_laku_sim[idx]))
-            sd_cryo2ice_std.append(np.ma.std(sd_laku_sim[idx]))
-            sd_simba7_mean.append(np.ma.mean(np.ma.array(sd_colloc7)[idx])/100)
-            sd_simba7_std.append(np.ma.std(np.ma.array(sd_colloc7)[idx])/100)
-            sd_w99m_mean.append(np.ma.mean(SD_W99_sim[idx]))
-            sd_w99m_std.append(np.ma.std(SD_W99_sim[idx]))
 
+            #if idx.size>10:
+            if np.sum(~sit_radar_w99m[idx].mask) > 5:
+                sit_radar_w99m_mean.append(np.ma.mean(sit_radar_w99m[idx]))
+                sit_radar_w99m_std.append(np.ma.std(sit_radar_w99m[idx]))
+            else:
+                sit_radar_w99m_mean.append(np.nan)
+                sit_radar_w99m_std.append(np.nan)
+
+            if np.sum(~sit_laser_w99m[idx].mask) > 5:
+                sit_laser_w99m_mean.append(np.ma.mean(sit_laser_w99m[idx]))
+                sit_laser_w99m_std.append(np.ma.std(sit_laser_w99m[idx]))
+            else:
+                sit_laser_w99m_mean.append(np.nan)
+                sit_laser_w99m_std.append(np.nan)
+
+            if np.sum(~sit_cryo2ice[idx].mask) > 5:
+                sit_cryo2ice_mean.append(np.ma.mean(sit_cryo2ice[idx]))
+                sit_cryo2ice_std.append(np.ma.std(sit_cryo2ice[idx]))
+            else:
+                sit_cryo2ice_mean.append(np.nan)
+                sit_cryo2ice_std.append(np.nan)
+
+            if np.array(sit_colloc7)[idx].size > 5:
+                sit_simba7_mean.append(np.ma.mean(np.array(sit_colloc7)[idx])/100)
+                sit_simba7_std.append(np.ma.std(np.array(sit_colloc7)[idx])/100)
+            else:
+                sit_simba7_mean.append(np.nan)
+                sit_simba7_std.append(np.nan)
+
+            
+            if np.sum(~sd_laku_sim[idx].mask) > 5:
+                sd_cryo2ice_mean.append(np.ma.mean(sd_laku_sim[idx]))
+                sd_cryo2ice_std.append(np.ma.std(sd_laku_sim[idx]))
+            else:
+                sd_cryo2ice_mean.append(np.nan)
+                sd_cryo2ice_std.append(np.nan)
+            
+            if np.array(sd_colloc7)[idx].size > 5:
+                sd_simba7_mean.append(np.ma.mean(np.array(sd_colloc7)[idx])/100)
+                sd_simba7_std.append(np.ma.std(np.array(sd_colloc7)[idx])/100)
+            else:
+                sd_simba7_mean.append(np.nan)
+                sd_simba7_std.append(np.nan)
+            
+            if SD_W99_sim[idx].size > 5:
+                sd_w99m_mean.append(np.ma.mean(SD_W99_sim[idx]))
+                sd_w99m_std.append(np.ma.std(SD_W99_sim[idx]))
+            else:
+                sd_w99m_mean.append(np.nan)
+                sd_w99m_std.append(np.nan)
+            
+
+            """
             idx8 = np.argwhere(day_colloc8==day)
             if idx8.size>0:
                 list_days8.append(day)
                 sd_simba8_mean.append(np.ma.mean(np.ma.array(sd_colloc8)[idx8])/100)
                 sd_simba8_std.append(np.ma.std(np.ma.array(sd_colloc8)[idx8])/100)
+            """
                 
                 
             
@@ -1641,8 +1772,8 @@ if __name__ == '__main__':
         plt.plot(list_days,sd_simba7_mean,label='sd_simba #607',color=palette(3))
         plt.fill_between(list_days,np.array(sd_simba7_mean)-np.array(sd_simba7_std),np.array(sd_simba7_mean)+np.array(sd_simba7_std),color=palette(3),alpha=0.1)
 
-        plt.plot(np.ma.array(list_days8),sd_simba8_mean,label='sd_simba #608',color=palette(4))
-        plt.fill_between(list_days,np.array(sd_simba8_mean)-np.array(sd_simba8_std),np.array(sd_simba8_mean)+np.array(sd_simba8_std),color=palette(4),alpha=0.1)
+        #plt.plot(np.ma.array(list_days8),sd_simba8_mean,label='sd_simba #608',color=palette(4))
+        #plt.fill_between(list_days,np.array(sd_simba8_mean)-np.array(sd_simba8_std),np.array(sd_simba8_mean)+np.array(sd_simba8_std),color=palette(4),alpha=0.1)
        
         plt.legend()
         plt.xlabel("date")
@@ -1657,6 +1788,178 @@ if __name__ == '__main__':
         plt.plot(sd_colloc,label='sd_simba')
         plt.legend()
         plt.show()
+
+
+    if param=='simba_grid':
+
+
+      
+
+       
+        
+        delay=5 #days
+        max_dist=30 #km
+
+        # 607
+        lat_simba,lon_simba,time_simba,sd_simba,sit_simba,year_simba,month_simba,day_simba,date_simba = cf.get_SIMBA_data('607')
+
+        Laku_monthly_sd =list()
+        Laku_monthly_sit =list()
+        w99_monthly_sd =list()
+        w99_monthly_sd_rms =list()
+        Laku_monthly_sd_rms =list()
+        Laku_monthly_sit_rms =list()
+
+        icetype_monthly =list()
+
+        simba_monthly_sd =list()
+        simba_monthly_sit =list()
+        simba_monthly_sd_rms =list()
+        simba_monthly_sit_rms =list()
+        
+        for month,idx in idx_dates_monthly.items():
+
+            mid_date = datetime.strptime(month,'%Y%m') + timedelta(days=20)
+            yearLK = int(month[:4])
+            monthLK = int(month[4:6])
+            flag_year = (year_simba==yearLK)
+            flag_month = (month_simba==monthLK)
+
+            flag = np.logical_and(flag_year,flag_month)
+            
+            # get W99m
+            lat_w99_grid,lon_w99_grid,sd_w99_grid = cf.get_W99(month)
+
+            # get Laku
+            lat_grid,lon_grid,sd_grid,sit_grid,roughness_grid,ice_type = cf.get_Laku(month)
+
+          
+
+            
+            # show on map
+            """
+            f1, ax = plt.subplots(1, 1,figsize=(9,8))
+            bmap,cmap = st.plot_track_map(f1,ax,lon_grid,lat_grid,sit_grid,'SIT LaKu',[0,2.],mid_date,'m',False,alpha=1)
+            for n,id_simba in enumerate(['607']):
+                lat_simba,lon_simba = cf.get_SIMBA_traj(id_simba)
+                x,y = bmap(lon_simba,lat_simba)
+                bmap.plot(x,y, linewidth=1.5, color='red',linestyle='-',zorder=2)
+            plt.show()
+            """
+
+            lat_month = lat_simba[flag]
+            lon_month = lon_simba[flag]
+
+            simba_monthly_sd.append(np.mean(sd_simba[flag])/100)
+            simba_monthly_sit.append(np.mean(sit_simba[flag])/100)
+            simba_monthly_sd_rms.append(np.std(sd_simba[flag])/100)
+            simba_monthly_sit_rms.append(np.std(sit_simba[flag])/100)
+
+            sd_list = list()
+            sit_list = list()
+            sd_w99_list = list()
+            icetype_list = list()
+            
+            if sit_grid is not None:
+                sit_grid = sit_grid.flatten()
+            if sd_grid is not None:
+                sd_grid = sd_grid.flatten()
+            if sd_w99_grid is not None:
+                sd_w99_grid = sd_w99_grid.flatten()/100
+            if ice_type is not None:
+                ice_type = ice_type.flatten()
+            
+            for coord_simba in zip(lat_month,lon_month):
+
+                # Min dist Laku
+                ###############
+                dist_sdelay = np.sqrt((coord_simba[0]-lat_grid)**2 + (coord_simba[1]-lon_grid)**2).flatten()
+                idx = np.argmin(dist_sdelay)
+                min_dist= dist_sdelay[idx]
+
+                #print(min_dist)
+
+                if dist_sdelay[idx]< 1:
+                    sd_list.append(sd_grid[idx])
+                    sit_list.append(sit_grid[idx])
+                    icetype_list.append(ice_type[idx])
+                else:
+                    sd_list.append(np.nan) 
+                    sit_list.append(np.nan)
+                    icetype_list.append(np.nan)
+
+                # Min dist W99
+                ###########
+                dist_sdelay = np.sqrt((coord_simba[0]-lat_w99_grid)**2 + (coord_simba[1]-lon_w99_grid)**2).flatten()
+                idx = np.argmin(dist_sdelay)
+                min_dist= dist_sdelay[idx]
+
+                #print(min_dist)
+
+                if dist_sdelay[idx]< 1:
+                    sd_w99_list.append(sd_w99_grid[idx])
+                else:
+                    sd_w99_list.append(np.nan)
+                   
+
+            Laku_monthly_sd.append(np.nanmean(sd_list))
+            Laku_monthly_sit.append(np.nanmean(sit_list))
+            Laku_monthly_sd_rms.append(np.nanstd(sd_list))
+            Laku_monthly_sit_rms.append(np.nanstd(sit_list))
+            icetype_monthly.append(np.nanmedian(icetype_list))
+            w99_monthly_sd.append(np.nanmean(sd_w99_list))
+            w99_monthly_sd_rms.append(np.nanstd(sd_w99_list))
+
+        
+        plt.style.use('seaborn-darkgrid')
+        palette = plt.get_cmap('Set1')
+
+        # plot various data
+        #-----------------------
+
+        # sea-ice thickness
+        #-------------------------
+        f1, ax = plt.subplots(1, 1,figsize=(12,5))
+        plt.plot(monthstr_list,Laku_monthly_sit,label='sit_LaKu',color=palette(0),marker='*')
+        plt.fill_between(monthstr_list,np.array(Laku_monthly_sit)-np.array(Laku_monthly_sit_rms),np.array(Laku_monthly_sit)+np.array(Laku_monthly_sit_rms),color=palette(0),alpha=0.1)
+        
+        plt.plot(monthstr_list,simba_monthly_sit,label='sit_SIMBA',color=palette(3),marker='*')
+        plt.fill_between(monthstr_list,np.array(simba_monthly_sit)-np.array(simba_monthly_sit_rms),np.array(simba_monthly_sit)+np.array(simba_monthly_sit_rms),color=palette(3),alpha=0.1)
+        
+        plt.legend()
+        plt.xlabel("date")
+        plt.ylabel("sea-ice thickness [m]")
+        plt.show()
+
+        # snow depth
+        #-------------------------
+        f1, ax = plt.subplots(1, 1,figsize=(12,5))
+        plt.plot(monthstr_list,Laku_monthly_sd,label='sd_LaKu',color=palette(0),marker='*')
+        plt.fill_between(monthstr_list,np.array(Laku_monthly_sd)-np.array(Laku_monthly_sd_rms),np.array(Laku_monthly_sd)+np.array(Laku_monthly_sd_rms),color=palette(0),alpha=0.1)
+
+        plt.plot(monthstr_list,w99_monthly_sd,label='sd_w99m',color=palette(1),marker='*')
+        plt.fill_between(monthstr_list,np.array(w99_monthly_sd)-np.array(w99_monthly_sd_rms),np.array(w99_monthly_sd)+np.array(w99_monthly_sd_rms),color=palette(1),alpha=0.1)
+        
+        plt.plot(monthstr_list,simba_monthly_sd,label='sd_SIMBA',color=palette(3),marker='*')
+        plt.fill_between(monthstr_list,np.array(simba_monthly_sd)-np.array(simba_monthly_sd_rms),np.array(simba_monthly_sd)+np.array(simba_monthly_sd_rms),color=palette(3),alpha=0.1)
+        
+        plt.legend()
+        plt.xlabel("date")
+        plt.ylabel("snow depth [m]")
+        plt.show()
+               
+                
+
+            
+            
+             
+
+
+
+           
+        
+
+        
 
         
         
@@ -1868,21 +2171,64 @@ if __name__ == '__main__':
         
     if param=='roughness':
         print("\nComparing roughness")
-        nkm = 50
+        nkm = 25
+
+        # with ESA_BD only
+        """
+        correlation_list = list()
+        for month,idx in idx_dates_monthly.items():
+
+            laser_fb = np.ma.concatenate(list(np.array(data_dict['IS2']['ATL10']['laser_fb_mean'],dtype=object)[idx_dates[idx]]),axis=0)
+            radar_fb = np.ma.concatenate(list(np.array(data_dict['CS2']['ESA_BD_GDR']['radar_fb'],dtype=object)[idx_dates[idx]]),axis=0)
+            lat = np.ma.concatenate(list(np.array(data_dict['CS2']['ESA_BD_GDR']['lat'],dtype=object)[idx_dates[idx]]),axis=0)
+            lon = np.ma.concatenate(list(np.array(data_dict['CS2']['ESA_BD_GDR']['lon'],dtype=object)[idx_dates[idx]]),axis=0)
+            
+            delta_laku = laser_fb - radar_fb
+            mask_data = delta_laku.mask
+            delta_laku_smooth = st.rolling_stats(delta_laku,int(nkm/mean_dist_btw_data), stats=['mean'])[0]
+            delta_laku_smooth =  ma.masked_where(~mask_data,delta_laku_smooth,copy=True)
+            
+
+            lat_grid,lon_grid,sd_grid,sit_grid,roughness,icetype = cf.get_Laku(month)
+
+            roughness_al = cf.grid_to_track(sd_grid,lon_grid,lat_grid,lon,lat)
+            roughness_al = ma.masked_where(~mask_data,roughness_al,copy=True)
+            
+
+            #gaussian_w = np.ma.concatenate(list(np.array(data_dict['IS2']['ATL10']['gaussian_w_mean'],dtype=object)[idx_dates[idx]]),axis=0)
+
+            
+            xylim = [[-0.1,0.5],[-0.1,0.5]]
+            f1, ax = plt.subplots(1, 1, sharey=True)
+            f1.suptitle('Delta fb LaKu vs Gaussian width IS2', fontsize=12)
+            #xylim = [[-0.1,1],[-0.1,1]]
+            x_data = roughness_al
+            x_label = 'Gaussian width IS2 (m)'
+            y_label='Delta fb LaKu (m)'
+            y_data = delta_laku_smooth
+            R,RMSD,slope,dmean,ndata = st.plot_scatter(ax,xylim,'Roughness','m',x_data,x_label,y_data,y_label,None)
+            plt.show()
+            correlation_list.append(R)
+            
+
+        print("stop")
+        """
+            
         
         laser_fb = np.ma.concatenate(list(np.array(data_dict['IS2']['ATL10']['laser_fb_mean'],dtype=object)[idx_dates]),axis=0)
         gaussian_w = np.ma.concatenate(list(np.array(data_dict['IS2']['ATL10']['gaussian_w_mean'],dtype=object)[idx_dates]),axis=0)
-        roughness_log = np.ma.concatenate(list(np.array(data_dict['CS2']['UOB']['roughness'],dtype=object)[idx_dates]),axis=0)
+        #roughness_log = np.ma.concatenate(list(np.array(data_dict['CS2']['UOB']['roughness'],dtype=object)[idx_dates]),axis=0)
 
         icetype = np.ma.concatenate(icetype_al,axis=0)
 
         #atIS2 = np.ma.concatenate(list(np.array(data_dict['IS2']['ATL10']['lat'],dtype=object)[idx_dates]),axis=0)
         latCS2 = np.ma.concatenate(list(np.array(data_dict['CS2']['ESA_BD_GDR']['lat'],dtype=object)[idx_dates]),axis=0)
         lonCS2 = np.ma.concatenate(list(np.array(data_dict['CS2']['ESA_BD_GDR']['lon'],dtype=object)[idx_dates]),axis=0)
-        latCS1 = np.ma.concatenate(list(np.array(data_dict['CS2']['UOB']['lat'],dtype=object)[idx_dates]),axis=0)
+        #latCS1 = np.ma.concatenate(list(np.array(data_dict['CS2']['UOB']['lat'],dtype=object)[idx_dates]),axis=0)
 
+      
         # Get CS2 freeboard
-        npts = roughness_log.shape[0]
+        npts = lonCS2.shape[0]
         mask_list_all = np.zeros((npts,))
         radar_fb_list = list()
         radar_fb_matrix = ma.masked_array(np.zeros((len(prod_L2P),npts)),mask=np.ones((len(prod_L2P),npts)),dtype='float')
@@ -1905,11 +2251,39 @@ if __name__ == '__main__':
         dlaku_smooth = st.rolling_stats(dlaku,int(nkm/mean_dist_btw_data), stats=['mean'])[0]
         dlaku_smooth = ma.masked_where(dlaku_mask,dlaku_smooth,copy=True)
 
+        
+        xylim = [0,0.4]
+        f1, ax = plt.subplots(1, 1,figsize=(8,6))
+        #f1.suptitle('Gaussian width', fontsize=12)
+        bmap,cmap = st.plot_track_map(f1,ax,lonCS2,latCS2,dlaku_smooth,'$\Delta fb(la - ku)$',xylim,mid_date,'m',False,alpha=1)
+        plt.show()
+
+
 
         # Histogramm freeboard
         #-------------------------------
-        
         xylim = [-0.2,0.6]
+
+        # ALL
+        f1, axh = plt.subplots(1, 1,figsize=(8,8))
+        f1.suptitle('Histogram of laser vs radar freeboard', fontsize=14)
+        
+        label_list = list()
+        data_list = list()
+        legend_list = list()
+        
+        label_IS2 = 'laser fb IS2 (m)'
+        legend_list.append(label_IS2)
+        data_list.append(laser_fb)
+        xlabel= 'freeboard (m)'
+        
+        for nprod,cs2_gdr in enumerate(prod_L2P):
+
+            legend_list.append('radar freeboard [%s] (m)' %(cs2_gdr))
+            data_list.append(radar_fb_list[nprod])
+        
+        st.plot_histo(axh,xylim,'m',xlabel,legend_list,data_list,True)
+        plt.show()
        
 
         # FYI
@@ -1957,29 +2331,10 @@ if __name__ == '__main__':
         st.plot_histo(axh,xylim,'m',xlabel,legend_list,data_list,True)
         plt.show()
 
-        # ALL
-        f1, axh = plt.subplots(1, 1,figsize=(8,8))
-        f1.suptitle('Histogram of laser vs radar freeboard', fontsize=14)
-        
-        label_list = list()
-        data_list = list()
-        legend_list = list()
-        
-        label_IS2 = 'laser fb IS2 (m)'
-        legend_list.append(label_IS2)
-        data_list.append(laser_fb)
-        xlabel= 'freeboard (m)'
-        
-        for nprod,cs2_gdr in enumerate(prod_L2P):
-
-            legend_list.append('radar freeboard [%s] (m)' %(cs2_gdr))
-            data_list.append(radar_fb_list[nprod])
-        
-        st.plot_histo(axh,xylim,'m',xlabel,legend_list,data_list,True)
-        plt.show()
+       
         
         
-        
+        print("stop")
 
         
         # map freeboard

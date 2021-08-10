@@ -65,11 +65,7 @@ import stats_tools as st
 spreadsheetpath = '../CRYO2ICE_tracks.xlsx'
 
 # list of days for which CS2/IS2 are collocated with one day apart
-list_midnight_dates = {
-    'ATL07 ': ['20201005','20201018','20201022','20201108','20201125','20201129','20201216','20200102','20200119','20200123'],
-    'ATL10': ['20201005','20201018','20201022','20201108','20201125','20201129','20201216','20200102','20200119','20200123'],
-    'ATL12': ['20201014','20201031'],
-    }
+list_midnight_dates = path_dict.MIDNIGHT_DATES
 
 REF_GDR_CS2 = 'ESA_BD_GDR'
 REF_GDR_IS2 = 'ATL10'

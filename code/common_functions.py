@@ -1290,7 +1290,9 @@ def get_PIOMAS_SD(date):
 
     f = open(filename,'rb')
     data = np.fromfile(f, dtype='float32')
-    data = np.double(data.reshape((12,120,360)))
+
+    NmonthsAvail = 12 if year <=2020 else 7 # case 2021 where not all months are available
+    data = np.double(data.reshape((NmonthsAvail,120,360)))
     data[data==0]=np.NaN
     
     snow=np.double(np.squeeze(data[month-1,:,:]))
@@ -1402,7 +1404,7 @@ def get_Laku(datestr):
     filename = glob.glob(filepattern)
     if len(filename)==0:
         print("\n%s: No found" %(filepattern))
-        return None,None,None,None
+        return None,None,None,None,None,None
     else:
         filename = filename[0]
         print("\nReading Laku file %s" %(filename))
@@ -1416,9 +1418,12 @@ def get_Laku(datestr):
     lat = f.variables['latitude'][:]
     lon = f.variables['longitude'][:]
     snow = np.squeeze(f.variables['snow_depth_laku_sam'][:])
+    sit = np.squeeze(f.variables['sea_ice_thickness'][:])
+    roughness = np.squeeze(f.variables['gaussian_w'][:])
+    icetype = np.squeeze(f.variables['icetype'][:])
     #snow_unc = np.squeeze(f.variables['snow_depth_unc'][:])
 
-    return lat,lon,snow
+    return lat,lon,snow,sit,roughness,icetype
 
 
 
@@ -1442,7 +1447,7 @@ def get_SIMBA_traj(id_simba):
 
 
 
-def get_xings_SIMBA(id_simba,lat_cs2,lon_cs2,time_cs2,delay=3,max_dist=100):
+def get_SIMBA_data(id_simba):
 
     # Get trajectories and time
     #----------------------
@@ -1510,6 +1515,13 @@ def get_xings_SIMBA(id_simba,lat_cs2,lon_cs2,time_cs2,delay=3,max_dist=100):
         #date_simba = [datetime.datetime.fromtimestamp(tm) for tm in timestamps_interp]
     sd_simba = np.interp(time_simba,time_sit,sd_simba)
     sit_simba = np.interp(time_simba,time_sit,sit_simba)
+
+
+    return lat_simba,lon_simba,time_simba,sd_simba,sit_simba,year,month,day,date_simba
+
+
+
+def get_CRYO2ICE_xings(lat_simba,lon_simba,time_simba,sd_simba,sit_simba,year,month,day,lon_cs2, lat_cs2,time_cs2,date_simba,delay,max_dist):
         
 
     #time_simba = np.array([(t-datetime.datetime(2000,1,1)).total_seconds() for t in date_simba])
@@ -1591,7 +1603,7 @@ def get_xings_SIMBA(id_simba,lat_cs2,lon_cs2,time_cs2,delay=3,max_dist=100):
     lat_colloc = lat_cs2[idx_colloc]
     delay_colloc = deltaT_list/(60*60)
 
-    return idx_colloc,lon_colloc,lat_colloc,delay_colloc,day_colloc,lon_simba,lat_simba,sit_colloc,sd_colloc
+    return idx_colloc,lon_colloc,lat_colloc,delay_colloc,day_colloc,sit_colloc,sd_colloc
 
 
 def get_data_polygon(lat,lon,polygon):
@@ -1855,12 +1867,18 @@ def datenum_to_datetime(datenum):
 
 
 
-def fbr2sit(fb_radar,snow_depth,ice_type,ds=300,d_w=1024):
+def fbr2sit(fb_radar,snow_depth,ice_type,d_s=300,d_w=1024):
+
+    
+    if 4 in ice_type:
+        print("Wrong value in IceType")
+        sys.exit()
 
     # Get ice density
     d_i = np.ma.ones(fb_radar.shape)
-    d_i[ice_type==2] = 917
-    d_i[ice_type==3] = 882
+    d_i[ice_type==0] = 917
+    #d_i[ice_type==3] = 882
+    d_i[ice_type==2] = 882
 
     # Get snow density
     #t = ((datetime - datetime.datetime(2020,10,1))/30).days
@@ -1879,12 +1897,13 @@ def fbr2sit(fb_radar,snow_depth,ice_type,ds=300,d_w=1024):
 
 
 
-def fbt2sit(fb_total,snow_depth,ice_type,ds=300,d_w=1024):
+def fbt2sit(fb_total,snow_depth,ice_type,d_s=300,d_w=1024):
 
     # Get ice density
     d_i = np.ma.ones(fb_total.shape)
-    d_i[ice_type==2] = 917
-    d_i[ice_type==3] = 882
+    d_i[ice_type==0] = 917
+    #d_i[ice_type==3] = 882
+    d_i[ice_type==2] = 882
 
     # Get snow density
     #t = ((datetime - datetime.datetime(2020,10,1))/30).days

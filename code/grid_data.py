@@ -299,7 +299,7 @@ def grid_and_filter_wrt_distance(lon, lat, all_data_in, map_frame, pixel_size=10
                 
                 for p_name,data in all_data.items():
                     data_results[p_name][i,j] = np.nansum(data[numbers_of_data_used]*weighting)/np.sum(weighting)
-                    data_results[rms_p_name][i,j] = np.ma.sqrt(np.ma.sum(weighting*(data[numbers_of_data_used]-data_results[p_name][i,j])**2) / np.ma.sum(weighting) )
+                    data_results[rms_p_name][i,j] = np.sqrt(np.nansum(weighting*(data[numbers_of_data_used]-data_results[p_name][i,j])**2) / np.sum(weighting) )
                     #data_results[rms_p_name][i,j] = np.std(data[numbers_of_data_used])
             
             """
@@ -384,6 +384,8 @@ if __name__ == '__main__':
 
     parser.add_argument("-hp","--hemisphere",required=True,help="provide hemisphere code (N=01/S=02)")
 
+    parser.add_argument("-opt","--options",required=True,help="provide pix size and weighting radius")
+
     # Read arguments
     # ----------------------------------------------------------
     args = parser.parse_args()
@@ -400,6 +402,9 @@ if __name__ == '__main__':
 
     #
     is2Beams = [b for b in args.is2Beams.split(',')]
+
+    #
+    pix_size,Rweight = [int(p) for p in args.options.split(',')]
 
     #
     if args.inputfile is None: inputfile=None
@@ -509,7 +514,7 @@ if __name__ == '__main__':
                     weight = None  
                 else:
                     flag_swath=False
-                    data_desc_is2 = is2_dict.init_dict(gdr,beamName[beam],'granule')
+                    data_desc_is2 = is2_dict.init_dict(gdr,beamName[beam],'granules')
                     Lseg,units,param_is_flag = cf.get_param_from_hf5(filename,data_desc_is2,'Lseg',hemispherecode,LAT_BOUND)
                     weight.append(Lseg)
 
@@ -559,7 +564,7 @@ if __name__ == '__main__':
     # Gridding the data
     f2, ax = plt.subplots(1, 1,figsize=(9,8)) #'nplaea'
     m = Basemap(projection='nplaea', llcrnrlat=llcrnrlat,urcrnrlat=urcrnrlat,llcrnrlon=-180,urcrnrlon=180,boundinglat=LAT_BOUND,lon_0=0, resolution='l',round=True,ax=ax)
-    x_grid, y_grid, lat_grid_mesh, lon_grid_mesh, x_grid_mesh, y_grid_mesh,data_grid = grid_and_filter_wrt_distance(lon_array, lat_array, data2grid, m, pixel_size=12500,mode='filter_gauss',range_filter=25000,weight=weight,verbose=0)
+    x_grid, y_grid, lat_grid_mesh, lon_grid_mesh, x_grid_mesh, y_grid_mesh,data_grid = grid_and_filter_wrt_distance(lon_array, lat_array, data2grid, m, pixel_size=pix_size,mode='filter_gauss',range_filter=Rweight,weight=weight,verbose=0)
     
     
     if show_figure:

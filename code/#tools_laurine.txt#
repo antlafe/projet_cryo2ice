@@ -1,0 +1,11 @@
+module unload python
+
+module load conda
+
+conda activate /work/ALT/odatis/seaice/users/bocquem/conda/ICE
+
+Fill  /work/ALT/odatis/seaice/users/meuniel/code/PROD_DESC.desc
+
+python /work/ALT/odatis/seaice/users/meuniel/code/comp_maps.v2.py -d201903,201905 -wscatter -Mnp2ease12500,500w25 -sOIB -psnow_depth -sSD_LAKU -psd
+
+python /work/ALT/odatis/seaice/users/meuniel/code/plot_time_serie.py -d201810,202103 -s product_laku_sam -psnow_depth -s product_laku_t50 -psnow_depth -sproduct_kaku -psnow_depth -w evolution -M np2ease12500,712w25
