@@ -55,14 +55,17 @@ import scipy.spatial
 import pickle
 from scipy.stats import pearsonr, gaussian_kde,linregress
 import matplotlib as mpl
+import os
 import stats_tools as st
 
 # Global attributs
 ###########################################
 
-PATH_DATA= '/home/antlafe/Documents/work/projet_cryo2ice/data/'
-PATH_INPUT = "/home/antlafe/Documents/work/projet_cryo2ice/data/Cryo2Ice/"
-PATH_OUT = "/home/antlafe/Documents/work/projet_cryo2ice/outputs/"
+varHome = os.environ['HOME']
+
+PATH_DATA = path_dict.PATH_DICT[varHome]['PATH_DATA']
+PATH_INPUT = path_dict.PATH_DICT[varHome]['PATH_OUT']
+
 
 param_opts = ['surface_classif','sla','ish','freeboard','roughness','xings','penetration','wvf','corrs','snow_depth','ocean','regions','sd_map','tracks_map']
 

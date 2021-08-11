@@ -40,6 +40,9 @@ import requests
 from calendar import monthrange
 import path_dict
 
+global varHome
+varHome = os.environ['HOME']
+
 def get_osisaf_ice_type(year,month,day,hemispherecode):
 
     """
@@ -66,7 +69,7 @@ def get_osisaf_ice_type(year,month,day,hemispherecode):
     ftp_address = 'ftp.osisaf.met.no'
     #file_path = './archive/ice/type/%s/%s' %(year_str,month_str)
     file_path = './archive/ice/type/%s/%s' %(year_str,month_str)
-    local_dir = path_dict.PATH_DICT['PATH_DATA']+'OSISAF/'
+    local_dir = path_dict.PATH_DICT[varHome]['PATH_DATA']+'OSISAF/'
 
     # Test if file already exists in local repertory
     filename = glob.glob(local_dir+filepattern)
@@ -150,7 +153,7 @@ def get_sst_metoffice(date):
     """
 
     # Surface temperature
-    path_data = path_dict.PATH_DICT['PATH_DATA'] +'SST/'
+    path_data = path_dict.PATH_DICT[varHome]['PATH_DATA'] +'SST/'
     filepattern =path_data +'*.nc'
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
@@ -1131,7 +1134,7 @@ def plot_histo(ax,xylim,units,xlabel,legend_list,data_list,commun_mask=None):
 def get_emissivity_SSMIS(date):
 
     datestr = date.strftime('%Y%m%d')
-    path_data = path_dict.PATH_DICT['PATH_DATA']
+    path_data = path_dict.PATH_DICT[varHome]['PATH_DATA']
     filepattern =path_data +'SSMIS/*_%s*.nc' %(datestr)
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
@@ -1152,7 +1155,7 @@ def get_emissivity_SSMIS(date):
 def get_SD_AMSR(date):
 
     datestr = date.strftime('%Y%m%d')
-    path_data = path_dict.PATH_DICT['PATH_DATA']+'AMSR/'
+    path_data = path_dict.PATH_DICT[varHome]['PATH_DATA']+'AMSR/'
     filepattern =path_data +'*_%s.he5' %(datestr)
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
@@ -1278,7 +1281,7 @@ def get_PIOMAS_SD(date):
     year = date.year
     month = date.month
 
-    path_data = path_dict.PATH_DICT['PATH_DATA']+'PIOMAS/'
+    path_data = path_dict.PATH_DICT[varHome]['PATH_DATA']+'PIOMAS/'
     filepattern = path_data +'snow.H%s' %(year)
     filename = glob.glob(filepattern)
     if len(filename)==0:
@@ -1341,7 +1344,7 @@ def get_PIOMAS_SD(date):
 def get_W99(datestr):
 
     #datestr = date.strftime('%Y%m%d')                                                               
-    path_data = path_dict.PATH_DICT['PATH_DATA']+'W99/'
+    path_data = path_dict.PATH_DICT[varHome]['PATH_DATA']+'W99/'
     filepattern =path_data +'snow_w99_*%s.mat' %(datestr[-2:])
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
@@ -1370,7 +1373,7 @@ def get_W99(datestr):
 def get_ASD(pixsize,datestr):
     
     #datestr = date.strftime('%Y%m%d')
-    path_data = path_dict.PATH_DICT['PATH_DATA']+'ASD/'
+    path_data = path_dict.PATH_DICT[varHome]['PATH_DATA']+'ASD/'
     filepattern =path_data +'*w%i*_%s.nc' %(pixsize,datestr)
     filename = glob.glob(filepattern)
     if len(filename)==0:
@@ -1399,7 +1402,7 @@ def get_ASD(pixsize,datestr):
 def get_Laku(datestr):
     
     #datestr = date.strftime('%Y%m%d')
-    path_data = path_dict.PATH_DICT['PATH_DATA']+'Laku/'
+    path_data = path_dict.PATH_DICT[varHome]['PATH_DATA']+'Laku/'
     filepattern =path_data +'LaKu_%s.nc' %(datestr)
     filename = glob.glob(filepattern)
     if len(filename)==0:
@@ -1431,7 +1434,7 @@ def get_Laku(datestr):
 def get_SIMBA_traj(id_simba):
 
     # plot buoys data SIMBA
-    filepattern = path_dict.PATH_DICT['PATH_DATA']+'SIMBA/FMI*%sGPS*.dat' %(id_simba)
+    filepattern = path_dict.PATH_DICT[varHome]['PATH_DATA']+'SIMBA/FMI*%sGPS*.dat' %(id_simba)
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
     else:
@@ -1452,7 +1455,7 @@ def get_SIMBA_data(id_simba):
     # Get trajectories and time
     #----------------------
     
-    filepattern =path_dict.PATH_DICT['PATH_DATA'] +'SIMBA/FMI*%sGPS*.dat' %(id_simba)
+    filepattern =path_dict.PATH_DICT[varHome]['PATH_DATA'] +'SIMBA/FMI*%sGPS*.dat' %(id_simba)
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
     else:
@@ -1484,7 +1487,7 @@ def get_SIMBA_data(id_simba):
     # Get thickness data
     #-----------------------
     
-    filepattern =path_dict.PATH_DICT['PATH_DATA'] +'SIMBA/Hsi*%s*.dat' %(id_simba)
+    filepattern =path_dict.PATH_DICT[varHome]['PATH_DATA'] +'SIMBA/Hsi*%s*.dat' %(id_simba)
     filename = glob.glob(filepattern)
     if len(filename)==0: sys.exit("\n%s: No found" %(filepattern))
     else:

@@ -66,17 +66,19 @@ import cs2_dict
 import pandas as pd
 import seaborn as sns
 import matplotlib.dates as mdates
-       
+import os
         
 
 # Global attributs
 ###########################################
 
-PATH_DATA = path_dict.PATH_DICT['PATH_DATA']
-PATH_INPUT = path_dict.PATH_DICT['PATH_OUT']
+varHome = os.environ['HOME']
+
+PATH_DATA = path_dict.PATH_DICT[varHome]['PATH_DATA']
+PATH_INPUT = path_dict.PATH_DICT[varHome]['PATH_OUT']
 #PATH_OUT = "/home/antlafe/Documents/work/projet_cryo2ice/outputs/"
 
-PATH_GRID = path_dict.PATH_DICT['PATH_GRID']
+PATH_GRID = path_dict.PATH_DICT[varHome]['PATH_GRID']
 
 param_opts = ['sd_month','find_regions','simba','mean_grid','comp_grid','roughness','data_maps','show_data','sd_comp','xings','xings2','simba_grid']
 

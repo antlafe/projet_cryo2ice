@@ -71,9 +71,11 @@ import path_dict
 # Global attributs
 ###########################################
 
-PATH_DATA= path_dict.PATH_DICT['PATH_DATA']
-PATH_INPUT =  path_dict.PATH_DICT['PATH_OUT']
-PATH_OUT = path_dict.PATH_DICT['PATH_FIG']+'animation/'
+varHome = os.environ['HOME']
+
+PATH_DATA= path_dict.PATH_DICT[varHome]['PATH_DATA']
+PATH_INPUT =  path_dict.PATH_DICT[varHome]['PATH_OUT']
+PATH_OUT = path_dict.PATH_DICT[varHome]['PATH_FIG']+'animation/'
 
 # info: possibility to use lat01 to avoid POCA coord over SARin mask areas
 REF_GDR = 'ESA_BD_GDR'

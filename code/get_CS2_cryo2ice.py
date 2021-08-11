@@ -40,11 +40,13 @@ from datetime import datetime,timedelta
 import xlrd
 import path_dict
 import netCDF4 as nc
+import os
 
 # Global attributs
 ###########################################
 
-spreadsheetpath = path_dict.PATH_DICT['PATH_SPREADSHEET']+ '/CRYO2ICE_tracks.xlsx'
+varHome = os.environ['HOME']
+spreadsheetpath = path_dict.PATH_DICT[varHome]['PATH_SPREADSHEET']+ '/CRYO2ICE_tracks.xlsx'
 
 
 filepattern={

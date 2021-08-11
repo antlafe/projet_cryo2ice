@@ -8,6 +8,9 @@ CS2_DATA_DESC = {
     'ESA_BD_GDR':
     {
 
+        'file_pattern': 'CS_OFFL_SIR_GDR*yyyymmddT*.nc',
+        'path': 'CS2/ESA_BD_GDR/yyyymm/',
+
         'lf':
         {
             
@@ -47,117 +50,15 @@ CS2_DATA_DESC = {
         },
             
     },
-
-    'ESA_BD':
-    {
-
-         'lf':
-        {
-            
-        'lon': 'lon_01',
-        'lat': 'lat_01',
-        'time':'time_cor_01',
-
-        # correction
-        'ssb': 'sea_state_bias_01_ku',
-        #'load_tide': 'load_tide_01',
-        #'ocean_tide': 'ocean_tide_01',
-        #'ocean_eq_tide': 'ocean_tide_eq_01',
-        #'pole_tide' : 'pole_tide_01',
-        #'solid_earth_tide': 'solid_earth_tide_01',
-        #'dac': 'hf_fluct_total_cor_01',
-        #'geoid': 'geoid_01',
-        'sic':  'sea_ice_concentration_01',
-        'mss': 'mean_sea_surf_sea_ice_01',
-        
-        'swh': 'swh_ocean_01_ku',
-        'u10': 'wind_speed_alt_01_ku',
-        },
-
-        'hf':
-        {
-        'lon': 'lon_poca_20_ku',
-        'lat': 'lat_poca_20_ku',
-        'time': 'time_20_ku',
-        'radar_fb':'freeboard_20_ku',
-        'sla': 'ssha_interp_20_ku',
-        #'sea_ice_fb': None,
-        'radar_h': 'height_1_20_ku',
-        'surface_type':'surf_type_20_ku',
-        'lead_height' : 'height_sea_ice_lead_20_ku',
-        'isa': 'height_sea_ice_floe_20_ku',
-        'quality_flag' : 'flag_prod_status_20_ku',
-        },
-            
-    },
-
-    'ESA_BD_SIN1':
-    {
-
-        'hf':{
-        'lon': 'lon_20_ku',
-        'lat': 'lat_20_ku',
-        'time': 'time_20_ku',
-        #'lat':  'alt_20_ku',
-        'alt':  'alt_20_ku',
-        'wvf'       :'pwr_waveform_20_ku',
-        'coherence' :'coherence_waveform_20_ku',
-        'ph_diff'   :'ph_diff_waveform_20_ku',
-        'traker'    :'window_del_20_ku',
-        #'corr'      :'instr_cor_range_rx',
-        'quality_flag' : 'flag_prod_status_20_ku',
-           } ,
-
-        'lf':{},
-        
-            
-    },
-
-    'ESA_BD_SIN2':
-    {
-        'hf':{
-            
-        'lon': 'lon_poca_20_ku',
-        'lat': 'lat_poca_20_ku',
-        'time': 'time_20_ku',
-        #'alt':  'alt_20_ku',
-        #'roll_angle': 'off_nadir_roll_angle_str_01',
-        #'sic': 'sea_ice_concentration_01',
-        'range1': 'range_1_20_ku',
-        #'range2': 'range_2_20_ku',
-        #'range3': 'range_3_20_ku',
-        'height1': 'height_1_20_ku',
-        #'height2': 'height_2_20_ku',
-        #'height3': 'height_3_20_ku',
-        'flag_corr': 'flag_cor_applied_20_ku',
-        #'alt' : 'alt_01',
-        'quality_flag' : 'flag_prod_status_20_ku',
-        },
-
-        'lf':{},
-        
-        
-    },
-
-    
-
-    
-
-    'ESA_BD_1B':
-    {
-        'hf':{
-        'lon': 'lon_20_ku',
-        'lat': 'lat_20_ku',
-        'time': 'time_20_ku',
-        'wvf':'pwr_waveform_20_ku',
-        },
-
-        'lf':{},
-            
-    },
+       
 
     'CPOM':
     {
+
+        'file_pattern': 'cry_NO_yyyymmddT*.dat',
+        'path': 'CS2/CPOM/yyyymm/',
+
+        
         'hf':{
         'time': 0,
         'lat' : 1,
@@ -174,13 +75,18 @@ CS2_DATA_DESC = {
 
     'LEGOS_SAM':
     {
+
+        'file_pattern': 'fb_SRL_GPS_*yyyymmdd*.nc',
+        'path': 'CS2/LEGOS_SAM/yyyymm/',
+
+        
         'hf':{
             
         'lon' : 'lon_20hz',
         'lat' : 'lat_20hz',
         'time': 'time_20hz',
         'radar_fb':'radar_freeboard_20hz',
-        'sla': 'ssa_interp_20hz',
+        'sla': 'sla_interp_20hz',
         'isa': 'ice_surface_anomaly_20hz',
         #'sea_ice_fb':'freeboard_20hz',
         'radar_h':'anomaly_samosa_20hz',
@@ -189,24 +95,28 @@ CS2_DATA_DESC = {
         'flag_leads': 'leads_true_20hz',
         'pp':'wvf_pulse_peakiness_20hz',
         
-        'isa': 'ice_surface_anomaly_raw_20hz',
+        'isa': 'ila_smooth_20hz',
         'flag_floes': 'floes_true_20hz',
               },
 
         'lf':{},
     },
 
+    
     'LEGOS_T50':
     {
-
+        
+        'file_pattern': 'fb_SRL_GPS_*yyyymmdd*.nc',
+        'path': 'CS2/LEGOS_T50/yyyymm/',
+        
         'hf':{
             
         'lon' : 'lon_20hz',
         'lat' : 'lat_20hz',
         'time': 'time_20hz',
         'radar_fb':'radar_freeboard_20hz',
-        'sla': 'ssa_interp_20hz',
-        'isa': 'ice_surface_anomaly_20hz',
+        'sla': 'sla_interp_20hz',
+        'isa': 'ila_smooth_20hz',
         #'sea_ice_fb':'freeboard_20hz',
         'radar_h':'radar_freeboard_raw_20hz',
         'surface_type':'surface_type_20hz',
@@ -221,6 +131,10 @@ CS2_DATA_DESC = {
      'LEGOS_PLRM':
     {
 
+        'file_pattern': 'CS_GOPC_PLRM_L2_*yyyymmdd.nc',
+        'path': 'CS2/LEGOS_PLRM/yyyymm/',
+        
+
         'hf':{
             
         'lon' : 'lon_20_ku',
@@ -228,7 +142,7 @@ CS2_DATA_DESC = {
         'time': 'time_20_ku',
         'radar_fb':'radar_freeboard_20hz',
         'isa': 'ice_surface_anomaly_20hz',
-        'sla': 'ssa_interp_20hz',
+        'sla': 'sla_interp_20hz',
         #'sea_ice_fb':'freeboard_20hz',
         'radar_h':'radar_freeboard_raw_20hz',
         'surface_type':'surface_type_20hz',
@@ -242,6 +156,10 @@ CS2_DATA_DESC = {
 
     'AWI':
     {
+        
+        'file_pattern': 'awi-siral-l2i*yyyymmdd*.nc',
+        'path': 'CS2/AWI/yyyymm/',
+        
          'hf':{
              
         'lon' : 'longitude',
@@ -265,6 +183,10 @@ CS2_DATA_DESC = {
     
     'UOB':
     {
+        
+        'file_pattern': 'ubristol_trajectory_rfb_yyyymmdd*.txt',
+        'path': 'CS2/UOB/yyyymm/',
+        
         'hf':{
             
         'lon' : 'Longitude',

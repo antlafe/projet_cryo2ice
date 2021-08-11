@@ -1,4 +1,6 @@
 
+import sys
+
 ################################
 # Icesat-2 dictionnary
 ################################
@@ -14,6 +16,13 @@ def init_dict(dataproduct,BeamN,segment):
     IS2_DATA_DESC = {   
         'ATL07':
         {
+
+            'fileinfo':
+            {
+                'file_pattern': 'ATL07-01_yyyymmdd*.h5',
+                'path': 'IS2/ATL07/yyyymm/',
+            },
+            
             'granules':
             {
 
@@ -42,6 +51,12 @@ def init_dict(dataproduct,BeamN,segment):
 
         'ATL10':
         {
+
+            'fileinfo':
+            {
+                'file_pattern': 'ATL10-01_yyyymmdd*.h5',
+                'path': 'IS2/ATL10/yyyymm/',
+            },
 
             'granules':
             {
@@ -120,6 +135,12 @@ def init_dict(dataproduct,BeamN,segment):
 
         'ATL12':
         {
+            
+            'fileinfo':
+            {
+                'file_pattern': 'ATL12_yyyymmdd%s*.h5',
+                'path': 'IS2/ATL12/yyyymm/',
+            },
 
             'granules':
             {
@@ -140,27 +161,12 @@ def init_dict(dataproduct,BeamN,segment):
             #'laser_fb_swath':'/freeboard_swath_segment/'+BeamN+'/swath_freeboard/fbswath_fb_height',
         },
     }
-        
-    # case swath    
-    #else:
-        
-    #IS2_DATA_DESC = {
-            
-    #'ATL10':
-    #{
-    # warning low freq data
-    #'time': '/freeboard_swath_segment/delta_time',
-    #'lon': '/freeboard_swath_segment/longitude',
-    #'lat':  '/freeboard_swath_segment/latitude',
-    # Mean of the Freeboard height segments in freeboard swathsegment
-    #'fb_swath': '/freeboard_swath_segment/fbswath_fb_height',
-    #'fb_swath_length': '/freeboard_swath_segment/fbswath_fb_length',
-    #'ssh_swath': '/freeboard_swath_segment/fbswath_refsurf_height',
-    #'swath_width':'/freeboard_swath_segment/fbswath_fb_width',
-    #'fb_quality':'/freeboard_swath_segment/fbswath_fb_quality_flag',
-                
-    #           },
-    #      }
-        
 
+    if dataproduct not in IS2_DATA_DESC.keys():
+
+        print("\nError: Missing %s in IS2 in file dictionnary is2_dict.py \n" %(prodName));
+        sys.exit()
+    
     return IS2_DATA_DESC[dataproduct][segment]
+
+

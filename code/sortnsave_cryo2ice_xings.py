@@ -39,6 +39,8 @@ EXAMPLES:
  
     python sortnsave_cryo2ice_xings.py -s CS2 -g ESA_BD_GDR,CPOM,AWI,LEGOS_SAM,UOB,LEGOS_T50,LEGOS_PLRM -s SARAL -gLEGOS_T50 -sIS2 -gATL07,ATL10 -d20201103,20201111 -ofn 202011_all
 
+
+
 """
    
 import json
@@ -71,19 +73,18 @@ from parserObjects import ParentAction,ChildAction
 # Global attributs
 ###########################################
 
+varHome = os.environ['HOME']
+
 # Get paths
-PATH_COLLOC=path_dict.PATH_DICT['PATH_COLLOC']
-PATH_ALL=path_dict.PATH_DICT['PATH_DATA']
-PATH_OUT = path_dict.PATH_DICT['PATH_OUT']
+PATH_COLLOC=path_dict.PATH_DICT[varHome]['PATH_COLLOC']
+PATH_ALL=path_dict.PATH_DICT[varHome]['PATH_DATA']
+PATH_OUT = path_dict.PATH_DICT[varHome]['PATH_OUT']
 
 # ref GDR: serving as reference for all other data-sets
 REF_GDR = 'ESA_BD_GDR'
 
 # IS2 gdr required
-is2_gdrs = ['ATL10']
-
-colors_plot_cs2 = ['deepskyblue','dodgerblue','turquoise','royalblue','palegreen']
-colors_plot_is2 =['seagreen','forestgreen','olivedrab']
+#is2_gdrs = ['ATL10']
 
 matrixParamList = ['coherence','ph_diff','wvf']
 
@@ -170,64 +171,6 @@ def is2date_2_cs2date(date,is2gdr):
         date_1 = date
 
     return date_1
-
-#---------------------------------
-# Get available files
-#---------------------------------
-
-def get_sat_filepattern(satName,prodName,date_str,d_str_folder):
-    
-    """
-    provides file pattern and path for each SAT + GDR
-    Rq: could be done using a dictionnary
-    """
-
-    path = '%s/%s/%s/' %(satName,prodName,d_str_folder)
-
-    if satName=='CS2':
-
-        if prodName=='AWI': file_pattern='awi-siral-l2i*%s*.nc' %(date_str)
-        elif prodName=='ESA_BD': file_pattern='CS_OFFL_SIR_SAR_2*%sT*.nc' %(date_str)
-        #elif prodName=='ESA_BD_1B': file_pattern='CS_OFFL_SIR_GDR*%sT*.nc' %(date_str)
-        elif prodName=='ESA_BD_GDR': file_pattern='CS_OFFL_SIR_GDR*%sT*.nc' %(date_str)
-        elif prodName=='LEGOS_SAM': file_pattern='fb_SRL_GPS_*%s*.nc' %(date_str)
-        elif prodName=='LEGOS_T50': file_pattern='fb_SRL_GPS_*%s*.nc' %(date_str)
-        elif prodName=='LEGOS_PLRM': file_pattern='CS_GOPC_PLRM_L2_*%s.nc' %(date_str)
-        elif prodName=='CPOM': file_pattern='cry_NO_%sT*.dat' %(date_str)
-        elif 'ESA_BD_SIN' in prodName: file_pattern='CS_OFFL_SIR_SIN*%sT*.nc' %(date_str)       
-        elif 'UOB' in prodName:
-            file_pattern='ubristol_trajectory_rfb_%s*.txt' %(date_str)
-        else:
-            print("\nError: Missing %s in CS2 in file pattern product dictionnary\n Add %s to list" %(prodName,prodName));sys.exit()
-
-    elif satName=='IS2': # case IS2
-
-        if prodName=='ATL07': file_pattern='ATL07-01_%s*.h5' %(date_str)
-        elif prodName=='ATL10': file_pattern='ATL10-01_%s*.h5' %(date_str)
-        elif prodName=='ATL12': file_pattern='ATL12_%s*.h5' %(date_str)
-        else:
-            print("\nError: Missing %s in IS2 in file pattern product dictionnary\n Check provided product name" %(prodName));sys.exit()
-
-    elif satName=='SARAL':
-
-        if prodName=='LEGOS_T50': file_pattern='*_%s_*.nc' %(date_str)
-        elif prodName=='GDR': file_pattern='*_%s_*.nc' %(date_str)
-        else:
-            print("\nError: Missing %s in %s in file pattern product dictionnary\n Add %s to list" %(prodName,satName,prodName));sys.exit()
-
-    elif satName=='S3':
-
-        if prodName=='LEGOS_SAM': file_pattern='%s*.nc' %(date_str)
-        elif prodName=='LEGOS_T50': file_pattern='%s*.nc' %(date_str)
-        else:
-            print("\nError: Missing %s in %s in file pattern product dictionnary\n Add %s to list" %(prodName,satName,prodName));sys.exit()        
-
-    else:
-        print("\n%s not found in",['CS2','IS2','SARAL','S3'])
-        sys.exit()
-
-    return path,file_pattern
-
 
 
 def align_sla_swath_seg(date_list,file_dict,common_data_list,cs2_gdr,is2_gdr,is2_b,LAT_MIN):
@@ -465,7 +408,30 @@ def get_avail_files(satName,prod_list,date_list,flag_colloc):
             d_str_folder = d.strftime("%Y%m")
             d_str = d.strftime("%Y%m%d")
             d_str_print = d.strftime("%d/%m/%y")
-            satpath,filepattern = get_sat_filepattern(satName,gdr,d_str,d_str_folder)
+            #satpath,filepattern = get_sat_filepattern(satName,gdr,d_str,d_str_folder)
+
+            # Get CS2 file pattern
+            if satName=='CS2':
+
+                dict_cs2 = cs2_dict.CS2_DATA_DESC
+                
+                if gdr not in dict_cs2.keys():
+                    print("\nError: Missing %s in CS2 in file dictionnary cs2_dict.py \n" %(gdr));sys.exit()
+                filepattern = dict_cs2[gdr]['file_pattern'].replace('yyyymmdd',d_str)
+                satpath = dict_cs2[gdr]['path'].replace('yyyymm',d_str_folder)
+
+            # Get IS2 file pattern
+            elif satName=='IS2':
+
+                dict_is2 = is2_dict.init_dict(gdr,'','fileinfo')
+                
+                filepattern = dict_is2['file_pattern'].replace('yyyymmdd',d_str)
+                satpath = dict_is2['path'].replace('yyyymm',d_str_folder)
+
+            # Unknown satellite
+            else:
+                print("\nError: Unknown satellite %s \n create new dictionnary" %(satName));sys.exit()
+            
             if nd==0: print("%s%s\n" %(PATH,satpath))
             file_pattern = PATH + satpath + filepattern
             filename = glob.glob(file_pattern)
@@ -545,7 +511,7 @@ def get_strong_beams(filename,is2Beams):
 #---------------------------------
 
 
-def get_collocated_data(date_list,file_dict,is2Beams):
+def get_collocated_data(date_list,is2_gdrs,file_dict,is2Beams):
 
     """
     Associate and sort collocated track points 
@@ -771,7 +737,7 @@ def get_collocated_data(date_list,file_dict,is2Beams):
 #---------------------------------
 
 
-def concatenate_cs2_data(date_list,file_dict,common_data_list):
+def concatenate_cs2_data(date_list,is2_gdrs,file_dict,common_data_list):
 
     """
     Align various CRYOSAT-2 products (AWI,GPOD...etc) on reference track (usually ESA BASELINE-D official product) defined in function get_collocated_data 
@@ -1752,7 +1718,7 @@ def find_xings_is2(date_list,file_dict,file_dict_colloc,common_data_list,is2Beam
     return data_dict
 
 
-def concatenate_is2_data(date_list,file_dict,common_data_list,is2Beams):
+def concatenate_is2_data(date_list,is2_gdrs,file_dict,common_data_list,is2Beams):
 
     """
     Align IceSat-2 data products (ATL10,ATL07 ...etc) on reference track (usually ESA BASELINE-D official product) defined in function get_collocated_data 
@@ -1788,37 +1754,16 @@ def concatenate_is2_data(date_list,file_dict,common_data_list,is2Beams):
 
             # get beam names
             beamName = get_strong_beams(filename,is2Beams)
-            #if beamName is None: continue
-            #else:
-            #    is2_data_dict[gdr]['beamName'] = beamName
             
-            # + ['swath'] if swath added
             for b in beamName.keys():
 
                 flag_data_dict[gdr][date_str][b] = dict()
-                #if gdr=='ATL07' and b=='swath':continue
-                #print("\nBeam %s\n----" %(b))
                 
                 # init data dict for beam b
                 if n==0:is2_data_dict[gdr][b]= {}
             
                 data_desc_is2 = is2_dict.init_dict(gdr,beamName[b],'granules')
                 lat_i,lon_i,time_i,x_dist,valid_idx = cf.get_coord_from_hf5(filename,data_desc_is2,'01',LAT_MIN)
-
-                
-                """
-                # convert to cartesien
-                x_i,y_i,z_i = cf.lon_lat_to_cartesian(lon_i, lat_i)
-                coordinates = np.vstack((x_i,y_i,z_i)).T
-                tree = scipy.spatial.KDTree(coordinates)
-            
-                # get first/last CS2 coords in track
-                start_coord = cf.lon_lat_to_cartesian(common_data_list[n]['coord_first_pt_cs2'][0],common_data_list[n]['coord_first_pt_cs2'][1])
-                end_coord = cf.lon_lat_to_cartesian(common_data_list[n]['coord_last_pt_cs2'][0],common_data_list[n]['coord_last_pt_cs2'][1])
-                bound_coord = np.vstack((start_coord,end_coord))
-            
-                d,bound_idx = tree.query(bound_coord,1)
-                """
 
                 # XXXX find start end from lat start/end like CS2
                 selected_idx = common_data_list[n][gdr][b]['idx_is2']
@@ -1830,19 +1775,7 @@ def concatenate_is2_data(date_list,file_dict,common_data_list,is2Beams):
                 new_lat = lat_i[selected_idx]
                 new_lon = lon_i[selected_idx]
                 new_time = time_i[selected_idx]
-
-
-                # too use aligned of IS2 data
-                """
-                if ngdr==0:
-                    lat_i_ref,lon_i_ref = new_lat,new_lon
-                    
-                
-                else:
-                    lat_new = ma.masked_array(np.zeros((ref_size,)),mask=np.ones((ref_size,))) 
-                """
-                    
-               
+            
                 # initiating list
                 list_param = ['id','ref_idx','dist','delay','latfull','lonfull','is2_idx','weight'] + [pname for pname in data_desc_is2.keys()]
                 if n==0:
@@ -1943,9 +1876,6 @@ def get_beamwise_mean(date_list,ref_data_dict,is2_data_dict,is2_info_dict,is2Bea
                     is2_data_dict[gdr][p+'_std'] = list()
                     is2_data[gdr][p+'_mean'] = list()
                     is2_data[gdr][p+'_std'] = list()
-                #else:
-                #    is2_data_dict[gdr][p] = list()
-                #    is2_data_dict[gdr][p] = list()
 
 
     # fill matrices
@@ -1959,10 +1889,6 @@ def get_beamwise_mean(date_list,ref_data_dict,is2_data_dict,is2_info_dict,is2Bea
         # For each CS2 beam
         #---------------------------------------
         for ref_idx in ref_idx_list:
-
-            # skip where REF_TRACK contains gaps in the data
-            # because two many IS2 data linked to it
-            #if ref_idx in common_data_list[n]['idx_gaps'] or ref_idx in [np.min(ref_idx_list),np.max(ref_idx_list)]: continue
 
             for gdr in is2_gdrs:
 
@@ -2069,7 +1995,7 @@ def get_beamwise_mean(date_list,ref_data_dict,is2_data_dict,is2_info_dict,is2Bea
             
 
 
-def sort_IS2_in_CS2_beam(date_list,ref_data_dict,is2_data_dict,is2_info_dict,common_data_list):
+def sort_IS2_in_CS2_beam(date_list,is2_gdrs,ref_data_dict,is2_data_dict,is2_info_dict,common_data_list):
 
     """
     sort IS2 granule points associated with each CS2 beam in matrix where each columns correspond to the beams of CS2 reference track. The rows of the matrix are sorted by order of smallest distance to CS2 beam center.
@@ -2328,6 +2254,18 @@ if __name__ == '__main__':
         print("Check CS2 dictionnary")
         sys.exit()
 
+
+    # print
+    idx_is2 = np.argwhere(np.array([sat[0] for sat in sats])=='IS2')[0]
+    if idx_is2.size==0:
+        print("\n IS2 must be provided in option -s")
+        sys.exit()
+    elif idx_is2.size==1:
+        is2_gdrs = sats[idx_is2[0]][-1].gdrs.split(',')
+    else:
+        print("\n Too many -s IS2 provided")
+        sys.exit()
+
     # get Is2 beams
     is2Beams = [b for b in args.is2Beams.split(',')]
 
@@ -2414,7 +2352,7 @@ if __name__ == '__main__':
     # Get position of matching data between IS2 and CS2
     # -----------------------------------------------------------
     print("\n# Sorting data\n##################")
-    common_data_list = get_collocated_data(date_list,file_dict_colloc,is2Beams)
+    common_data_list = get_collocated_data(date_list,is2_gdrs,file_dict_colloc,is2Beams)
 
     # Concatanate data
     # -----------------------------------------------------------
@@ -2427,8 +2365,8 @@ if __name__ == '__main__':
     
     
     # Align find xings points with collocated tracks
-    data_dict['CS2'],cs2_info_dict = concatenate_cs2_data(date_list,file_dict_colloc['CS2'],common_data_list)
-    data_dict['IS2'],is2_info_dict = concatenate_is2_data(date_list,file_dict_colloc['IS2'],common_data_list,is2Beams)
+    data_dict['CS2'],cs2_info_dict = concatenate_cs2_data(date_list,is2_gdrs,file_dict_colloc['CS2'],common_data_list)
+    data_dict['IS2'],is2_info_dict = concatenate_is2_data(date_list,is2_gdrs,file_dict_colloc['IS2'],common_data_list,is2Beams)
 
     # get swath data
     if flag_swath:
